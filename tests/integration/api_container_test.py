@@ -7,7 +7,7 @@ from datetime import datetime
 
 import docker
 from docker.constants import IS_WINDOWS_PLATFORM
-from docker.utils.socket import next_frame_size
+from docker.utils.socket import next_frame_header
 from docker.utils.socket import read_exactly
 
 import pytest
@@ -490,7 +490,20 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         self.client.start(ctnr)
         assert rule in self.client.logs(ctnr).decode('utf-8')
 
+    def test_create_with_uts_mode(self):
+        container = self.client.create_container(
+            BUSYBOX, ['echo'], host_config=self.client.create_host_config(
+                uts_mode='host'
+            )
+        )
+        self.tmp_containers.append(container)
+        config = self.client.inspect_container(container)
+        assert config['HostConfig']['UTSMode'] == 'host'
 
+
+@pytest.mark.xfail(
+    IS_WINDOWS_PLATFORM, reason='Test not designed for Windows platform'
+)
 class VolumeBindTest(BaseAPIIntegrationTest):
     def setUp(self):
         super(VolumeBindTest, self).setUp()
@@ -507,9 +520,6 @@ class VolumeBindTest(BaseAPIIntegrationTest):
             ['touch', os.path.join(self.mount_dest, self.filename)],
         )
 
-    @pytest.mark.xfail(
-        IS_WINDOWS_PLATFORM, reason='Test not designed for Windows platform'
-    )
     def test_create_with_binds_rw(self):
 
         container = self.run_with_volume(
@@ -525,9 +535,6 @@ class VolumeBindTest(BaseAPIIntegrationTest):
         inspect_data = self.client.inspect_container(container)
         self.check_container_data(inspect_data, True)
 
-    @pytest.mark.xfail(
-        IS_WINDOWS_PLATFORM, reason='Test not designed for Windows platform'
-    )
     def test_create_with_binds_ro(self):
         self.run_with_volume(
             False,
@@ -548,9 +555,6 @@ class VolumeBindTest(BaseAPIIntegrationTest):
         inspect_data = self.client.inspect_container(container)
         self.check_container_data(inspect_data, False)
 
-    @pytest.mark.xfail(
-        IS_WINDOWS_PLATFORM, reason='Test not designed for Windows platform'
-    )
     @requires_api_version('1.30')
     def test_create_with_mounts(self):
         mount = docker.types.Mount(
@@ -569,9 +573,6 @@ class VolumeBindTest(BaseAPIIntegrationTest):
         inspect_data = self.client.inspect_container(container)
         self.check_container_data(inspect_data, True)
 
-    @pytest.mark.xfail(
-        IS_WINDOWS_PLATFORM, reason='Test not designed for Windows platform'
-    )
     @requires_api_version('1.30')
     def test_create_with_mounts_ro(self):
         mount = docker.types.Mount(
@@ -882,6 +883,8 @@ Line2'''
         assert logs == (snippet + '\n').encode(encoding='ascii')
 
     @pytest.mark.timeout(5)
+    @pytest.mark.skipif(os.environ.get('DOCKER_HOST', '').startswith('ssh://'),
+                        reason='No cancellable streams over SSH')
     def test_logs_streaming_and_follow_and_cancel(self):
         snippet = 'Flowering Nights (Sakuya Iyazoi)'
         container = self.client.create_container(
@@ -1077,14 +1080,19 @@ class KillTest(BaseAPIIntegrationTest):
 
 class PortTest(BaseAPIIntegrationTest):
     def test_port(self):
-
         port_bindings = {
             '1111': ('127.0.0.1', '4567'),
-            '2222': ('127.0.0.1', '4568')
+            '2222': ('127.0.0.1', '4568'),
+            '3333/udp': ('127.0.0.1', '4569'),
         }
+        ports = [
+            1111,
+            2222,
+            (3333, 'udp'),
+        ]
 
         container = self.client.create_container(
-            BUSYBOX, ['sleep', '60'], ports=list(port_bindings.keys()),
+            BUSYBOX, ['sleep', '60'], ports=ports,
             host_config=self.client.create_host_config(
                 port_bindings=port_bindings, network_mode='bridge'
             )
@@ -1095,13 +1103,15 @@ class PortTest(BaseAPIIntegrationTest):
 
         # Call the port function on each biding and compare expected vs actual
         for port in port_bindings:
+            port, _, protocol = port.partition('/')
             actual_bindings = self.client.port(container, port)
             port_binding = actual_bindings.pop()
 
             ip, host_port = port_binding['HostIp'], port_binding['HostPort']
 
-            assert ip == port_bindings[port][0]
-            assert host_port == port_bindings[port][1]
+            port_binding = port if not protocol else port + "/" + protocol
+            assert ip == port_bindings[port_binding][0]
+            assert host_port == port_bindings[port_binding][1]
 
         self.client.kill(id)
 
@@ -1116,9 +1126,7 @@ class ContainerTopTest(BaseAPIIntegrationTest):
 
         self.client.start(container)
         res = self.client.top(container)
-        if IS_WINDOWS_PLATFORM:
-            assert res['Titles'] == ['PID', 'USER', 'TIME', 'COMMAND']
-        else:
+        if not IS_WINDOWS_PLATFORM:
             assert res['Titles'] == [
                 'UID', 'PID', 'PPID', 'C', 'STIME', 'TTY', 'TIME', 'CMD'
             ]
@@ -1164,6 +1172,15 @@ class RestartContainerTest(BaseAPIIntegrationTest):
         assert 'Running' in info2['State']
         assert info2['State']['Running'] is True
         self.client.kill(id)
+
+    def test_restart_with_low_timeout(self):
+        container = self.client.create_container(BUSYBOX, ['sleep', '9999'])
+        self.client.start(container)
+        self.client.timeout = 1
+        self.client.restart(container, timeout=3)
+        self.client.timeout = None
+        self.client.restart(container, timeout=3)
+        self.client.kill(container)
 
     def test_restart_with_dict_instead_of_id(self):
         container = self.client.create_container(BUSYBOX, ['sleep', '9999'])
@@ -1232,7 +1249,8 @@ class AttachContainerTest(BaseAPIIntegrationTest):
 
         self.client.start(container)
 
-        next_size = next_frame_size(pty_stdout)
+        (stream, next_size) = next_frame_header(pty_stdout)
+        assert stream == 1  # correspond to stdout
         assert next_size == len(line)
         data = read_exactly(pty_stdout, next_size)
         assert data.decode('utf-8') == line
@@ -1247,16 +1265,18 @@ class AttachContainerTest(BaseAPIIntegrationTest):
         assert output == 'hello\n'.encode(encoding='ascii')
 
     @pytest.mark.timeout(5)
+    @pytest.mark.skipif(os.environ.get('DOCKER_HOST', '').startswith('ssh://'),
+                        reason='No cancellable streams over SSH')
     def test_attach_stream_and_cancel(self):
         container = self.client.create_container(
-            BUSYBOX, 'sh -c "echo hello && sleep 60"',
+            BUSYBOX, 'sh -c "sleep 2 && echo hello && sleep 60"',
             tty=True
         )
         self.tmp_containers.append(container)
         self.client.start(container)
         output = self.client.attach(container, stream=True, logs=True)
 
-        threading.Timer(1, output.close).start()
+        threading.Timer(3, output.close).start()
 
         lines = []
         for line in output:

@@ -95,6 +95,7 @@ class ContainerCollectionTest(unittest.TestCase):
             ulimits=[{"Name": "nofile", "Soft": 1024, "Hard": 2048}],
             user='bob',
             userns_mode='host',
+            uts_mode='host',
             version='1.23',
             volume_driver='some_driver',
             volumes=[
@@ -174,6 +175,8 @@ class ContainerCollectionTest(unittest.TestCase):
                 'Tmpfs': {'/blah': ''},
                 'Ulimits': [{"Name": "nofile", "Soft": 1024, "Hard": 2048}],
                 'UsernsMode': 'host',
+                'UTSMode': 'host',
+                'VolumeDriver': 'some_driver',
                 'VolumesFrom': ['container'],
             },
             healthcheck={'test': 'true'},
@@ -188,7 +191,6 @@ class ContainerCollectionTest(unittest.TestCase):
             stop_signal=9,
             tty=True,
             user='bob',
-            volume_driver='some_driver',
             volumes=[
                 '/mnt/vol2',
                 '/mnt/vol1',
@@ -230,7 +232,9 @@ class ContainerCollectionTest(unittest.TestCase):
         container = client.containers.run('alpine', 'sleep 300', detach=True)
 
         assert container.id == FAKE_CONTAINER_ID
-        client.api.pull.assert_called_with('alpine', platform=None, tag=None)
+        client.api.pull.assert_called_with(
+            'alpine', platform=None, tag=None, stream=True
+        )
 
     def test_run_with_error(self):
         client = make_fake_client()
@@ -359,6 +363,18 @@ class ContainerCollectionTest(unittest.TestCase):
         assert isinstance(containers[0], Container)
         assert containers[0].id == FAKE_CONTAINER_ID
 
+    def test_list_ignore_removed(self):
+        def side_effect(*args, **kwargs):
+            raise docker.errors.NotFound('Container not found')
+        client = make_fake_client({
+            'inspect_container.side_effect': side_effect
+        })
+
+        with pytest.raises(docker.errors.NotFound):
+            client.containers.list(all=True, ignore_removed=False)
+
+        assert client.containers.list(all=True, ignore_removed=True) == []
+
 
 class ContainerTest(unittest.TestCase):
     def test_name(self):
@@ -400,10 +416,11 @@ class ContainerTest(unittest.TestCase):
         client.api.exec_create.assert_called_with(
             FAKE_CONTAINER_ID, "echo hello world", stdout=True, stderr=True,
             stdin=False, tty=False, privileged=True, user='', environment=None,
-            workdir=None
+            workdir=None,
         )
         client.api.exec_start.assert_called_with(
-            FAKE_EXEC_ID, detach=False, tty=False, stream=True, socket=False
+            FAKE_EXEC_ID, detach=False, tty=False, stream=True, socket=False,
+            demux=False,
         )
 
     def test_exec_run_failure(self):
@@ -413,10 +430,11 @@ class ContainerTest(unittest.TestCase):
         client.api.exec_create.assert_called_with(
             FAKE_CONTAINER_ID, "docker ps", stdout=True, stderr=True,
             stdin=False, tty=False, privileged=True, user='', environment=None,
-            workdir=None
+            workdir=None,
         )
         client.api.exec_start.assert_called_with(
-            FAKE_EXEC_ID, detach=False, tty=False, stream=False, socket=False
+            FAKE_EXEC_ID, detach=False, tty=False, stream=False, socket=False,
+            demux=False,
         )
 
     def test_export(self):

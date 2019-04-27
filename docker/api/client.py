@@ -22,20 +22,26 @@ from .volume import VolumeApiMixin
 from .. import auth
 from ..constants import (
     DEFAULT_TIMEOUT_SECONDS, DEFAULT_USER_AGENT, IS_WINDOWS_PLATFORM,
-    DEFAULT_DOCKER_API_VERSION, STREAM_HEADER_SIZE_BYTES, DEFAULT_NUM_POOLS,
-    MINIMUM_DOCKER_API_VERSION
+    DEFAULT_DOCKER_API_VERSION, MINIMUM_DOCKER_API_VERSION,
+    STREAM_HEADER_SIZE_BYTES, DEFAULT_NUM_POOLS_SSH, DEFAULT_NUM_POOLS
 )
 from ..errors import (
     DockerException, InvalidVersion, TLSParameterError,
     create_api_error_from_http_exception
 )
 from ..tls import TLSConfig
-from ..transport import SSLAdapter, UnixAdapter
+from ..transport import SSLHTTPAdapter, UnixHTTPAdapter
 from ..utils import utils, check_resource, update_headers, config
-from ..utils.socket import frames_iter, socket_raw_iter
+from ..utils.socket import frames_iter, consume_socket_output, demux_adaptor
 from ..utils.json_stream import json_stream
+from ..utils.proxy import ProxyConfig
 try:
-    from ..transport import NpipeAdapter
+    from ..transport import NpipeHTTPAdapter
+except ImportError:
+    pass
+
+try:
+    from ..transport import SSHHTTPAdapter
 except ImportError:
     pass
 
@@ -76,13 +82,15 @@ class APIClient(
         base_url (str): URL to the Docker server. For example,
             ``unix:///var/run/docker.sock`` or ``tcp://127.0.0.1:1234``.
         version (str): The version of the API to use. Set to ``auto`` to
-            automatically detect the server's version. Default: ``1.30``
+            automatically detect the server's version. Default: ``1.35``
         timeout (int): Default timeout for API calls, in seconds.
         tls (bool or :py:class:`~docker.tls.TLSConfig`): Enable TLS. Pass
             ``True`` to enable it with default options, or pass a
             :py:class:`~docker.tls.TLSConfig` object to use custom
             configuration.
         user_agent (str): Set a custom user agent for requests to the server.
+        credstore_env (dict): Override environment variables when calling the
+            credential store process.
     """
 
     __attrs__ = requests.Session.__attrs__ + ['_auth_configs',
@@ -93,7 +101,8 @@ class APIClient(
 
     def __init__(self, base_url=None, version=None,
                  timeout=DEFAULT_TIMEOUT_SECONDS, tls=False,
-                 user_agent=DEFAULT_USER_AGENT, num_pools=DEFAULT_NUM_POOLS):
+                 user_agent=DEFAULT_USER_AGENT, num_pools=None,
+                 credstore_env=None):
         super(APIClient, self).__init__()
 
         if tls and not base_url:
@@ -106,15 +115,29 @@ class APIClient(
         self.headers['User-Agent'] = user_agent
 
         self._general_configs = config.load_general_config()
+
+        proxy_config = self._general_configs.get('proxies', {})
+        try:
+            proxies = proxy_config[base_url]
+        except KeyError:
+            proxies = proxy_config.get('default', {})
+
+        self._proxy_configs = ProxyConfig.from_dict(proxies)
+
         self._auth_configs = auth.load_config(
-            config_dict=self._general_configs
+            config_dict=self._general_configs, credstore_env=credstore_env,
         )
+        self.credstore_env = credstore_env
 
         base_url = utils.parse_host(
             base_url, IS_WINDOWS_PLATFORM, tls=bool(tls)
         )
+        # SSH has a different default for num_pools to all other adapters
+        num_pools = num_pools or DEFAULT_NUM_POOLS_SSH if \
+            base_url.startswith('ssh://') else DEFAULT_NUM_POOLS
+
         if base_url.startswith('http+unix://'):
-            self._custom_adapter = UnixAdapter(
+            self._custom_adapter = UnixHTTPAdapter(
                 base_url, timeout, pool_connections=num_pools
             )
             self.mount('http+docker://', self._custom_adapter)
@@ -128,7 +151,7 @@ class APIClient(
                     'The npipe:// protocol is only supported on Windows'
                 )
             try:
-                self._custom_adapter = NpipeAdapter(
+                self._custom_adapter = NpipeHTTPAdapter(
                     base_url, timeout, pool_connections=num_pools
                 )
             except NameError:
@@ -137,12 +160,25 @@ class APIClient(
                 )
             self.mount('http+docker://', self._custom_adapter)
             self.base_url = 'http+docker://localnpipe'
+        elif base_url.startswith('ssh://'):
+            try:
+                self._custom_adapter = SSHHTTPAdapter(
+                    base_url, timeout, pool_connections=num_pools
+                )
+            except NameError:
+                raise DockerException(
+                    'Install paramiko package to enable ssh:// support'
+                )
+            self.mount('http+docker://ssh', self._custom_adapter)
+            self._unmount('http://', 'https://')
+            self.base_url = 'http+docker://ssh'
         else:
             # Use SSLAdapter for the ability to specify SSL version
             if isinstance(tls, TLSConfig):
                 tls.configure_client(self)
             elif tls:
-                self._custom_adapter = SSLAdapter(pool_connections=num_pools)
+                self._custom_adapter = SSLHTTPAdapter(
+                    pool_connections=num_pools)
                 self.mount('https://', self._custom_adapter)
             self.base_url = base_url
 
@@ -275,6 +311,8 @@ class APIClient(
         self._raise_for_status(response)
         if self.base_url == "http+docker://localnpipe":
             sock = response.raw._fp.fp.raw.sock
+        elif self.base_url.startswith('http+docker://ssh'):
+            sock = response.raw._fp.fp.channel
         elif six.PY3:
             sock = response.raw._fp.fp.raw
             if self.base_url.startswith("https://"):
@@ -358,19 +396,23 @@ class APIClient(
         for out in response.iter_content(chunk_size, decode):
             yield out
 
-    def _read_from_socket(self, response, stream, tty=False):
+    def _read_from_socket(self, response, stream, tty=True, demux=False):
         socket = self._get_raw_response_socket(response)
 
-        gen = None
-        if tty is False:
-            gen = frames_iter(socket)
+        gen = frames_iter(socket, tty)
+
+        if demux:
+            # The generator will output tuples (stdout, stderr)
+            gen = (demux_adaptor(*frame) for frame in gen)
         else:
-            gen = socket_raw_iter(socket)
+            # The generator will output strings
+            gen = (data for (_, data) in gen)
 
         if stream:
             return gen
         else:
-            return six.binary_type().join(gen)
+            # Wait for all the frames, concatenate them, and return the result
+            return consume_socket_output(gen, demux=demux)
 
     def _disable_socket_timeout(self, socket):
         """ Depending on the combination of python version and whether we're
@@ -453,4 +495,6 @@ class APIClient(
         Returns:
             None
         """
-        self._auth_configs = auth.load_config(dockercfg_path)
+        self._auth_configs = auth.load_config(
+            dockercfg_path, credstore_env=self.credstore_env
+        )

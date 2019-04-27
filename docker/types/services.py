@@ -82,7 +82,7 @@ class ContainerSpec(dict):
         args (:py:class:`list`): Arguments to the command.
         hostname (string): The hostname to set on the container.
         env (dict): Environment variables.
-        dir (string): The working directory for commands to run in.
+        workdir (string): The working directory for commands to run in.
         user (string): The user inside the container.
         labels (dict): A map of labels to associate with the service.
         mounts (:py:class:`list`): A list of specifications for mounts to be
@@ -110,13 +110,15 @@ class ContainerSpec(dict):
         privileges (Privileges): Security options for the service's containers.
         isolation (string): Isolation technology used by the service's
             containers. Only used for Windows containers.
+        init (boolean): Run an init inside the container that forwards signals
+            and reaps processes.
     """
     def __init__(self, image, command=None, args=None, hostname=None, env=None,
                  workdir=None, user=None, labels=None, mounts=None,
                  stop_grace_period=None, secrets=None, tty=None, groups=None,
                  open_stdin=None, read_only=None, stop_signal=None,
                  healthcheck=None, hosts=None, dns_config=None, configs=None,
-                 privileges=None, isolation=None):
+                 privileges=None, isolation=None, init=None):
         self['Image'] = image
 
         if isinstance(command, six.string_types):
@@ -182,6 +184,9 @@ class ContainerSpec(dict):
 
         if isolation is not None:
             self['Isolation'] = isolation
+
+        if init is not None:
+            self['Init'] = init
 
 
 class Mount(dict):
@@ -368,10 +373,11 @@ class UpdateConfig(dict):
 
         parallelism (int): Maximum number of tasks to be updated in one
           iteration (0 means unlimited parallelism). Default: 0.
-        delay (int): Amount of time between updates.
+        delay (int): Amount of time between updates, in nanoseconds.
         failure_action (string): Action to take if an updated task fails to
           run, or stops running during the update. Acceptable values are
-          ``continue`` and ``pause``. Default: ``continue``
+          ``continue``, ``pause``, as well as ``rollback`` since API v1.28.
+          Default: ``continue``
         monitor (int): Amount of time to monitor each updated task for
           failures, in nanoseconds.
         max_failure_ratio (float): The fraction of tasks that may fail during
@@ -385,9 +391,9 @@ class UpdateConfig(dict):
         self['Parallelism'] = parallelism
         if delay is not None:
             self['Delay'] = delay
-        if failure_action not in ('pause', 'continue'):
+        if failure_action not in ('pause', 'continue', 'rollback'):
             raise errors.InvalidArgument(
-                'failure_action must be either `pause` or `continue`.'
+                'failure_action must be one of `pause`, `continue`, `rollback`'
             )
         self['FailureAction'] = failure_action
 
@@ -411,6 +417,30 @@ class UpdateConfig(dict):
                     'order must be either `start-first` or `stop-first`'
                 )
             self['Order'] = order
+
+
+class RollbackConfig(UpdateConfig):
+    """
+    Used to specify the way containe rollbacks should be performed by a service
+
+    Args:
+        parallelism (int): Maximum number of tasks to be rolled back in one
+          iteration (0 means unlimited parallelism). Default: 0
+        delay (int): Amount of time between rollbacks, in nanoseconds.
+        failure_action (string): Action to take if a rolled back task fails to
+          run, or stops running during the rollback. Acceptable values are
+          ``continue``, ``pause`` or ``rollback``.
+          Default: ``continue``
+        monitor (int): Amount of time to monitor each rolled back task for
+          failures, in nanoseconds.
+        max_failure_ratio (float): The fraction of tasks that may fail during
+          a rollback before the failure action is invoked, specified as a
+          floating point number between 0 and 1. Default: 0
+        order (string): Specifies the order of operations when rolling out a
+          rolled back task. Either ``start_first`` or ``stop_first`` are
+          accepted.
+    """
+    pass
 
 
 class RestartConditionTypesEnum(object):
@@ -623,24 +653,51 @@ class Placement(dict):
         Placement constraints to be used as part of a :py:class:`TaskTemplate`
 
         Args:
-            constraints (:py:class:`list`): A list of constraints
-            preferences (:py:class:`list`): Preferences provide a way to make
-                the scheduler aware of factors such as topology. They are
-                provided in order from highest to lowest precedence.
-            platforms (:py:class:`list`): A list of platforms expressed as
-                ``(arch, os)`` tuples
+            constraints (:py:class:`list` of str): A list of constraints
+            preferences (:py:class:`list` of tuple): Preferences provide a way
+                to make the scheduler aware of factors such as topology. They
+                are provided in order from highest to lowest precedence and
+                are expressed as ``(strategy, descriptor)`` tuples. See
+                :py:class:`PlacementPreference` for details.
+            platforms (:py:class:`list` of tuple): A list of platforms
+                expressed as ``(arch, os)`` tuples
     """
     def __init__(self, constraints=None, preferences=None, platforms=None):
         if constraints is not None:
             self['Constraints'] = constraints
         if preferences is not None:
-            self['Preferences'] = preferences
+            self['Preferences'] = []
+            for pref in preferences:
+                if isinstance(pref, tuple):
+                    pref = PlacementPreference(*pref)
+                self['Preferences'].append(pref)
         if platforms:
             self['Platforms'] = []
             for plat in platforms:
                 self['Platforms'].append({
                     'Architecture': plat[0], 'OS': plat[1]
                 })
+
+
+class PlacementPreference(dict):
+    """
+        Placement preference to be used as an element in the list of
+        preferences for :py:class:`Placement` objects.
+
+        Args:
+            strategy (string): The placement strategy to implement. Currently,
+                the only supported strategy is ``spread``.
+            descriptor (string): A label descriptor. For the spread strategy,
+                the scheduler will try to spread tasks evenly over groups of
+                nodes identified by this label.
+    """
+    def __init__(self, strategy, descriptor):
+        if strategy != 'spread':
+            raise errors.InvalidArgument(
+                'PlacementPreference strategy value is invalid ({}):'
+                ' must be "spread".'.format(strategy)
+            )
+        self['Spread'] = {'SpreadDescriptor': descriptor}
 
 
 class DNSConfig(dict):
@@ -662,7 +719,7 @@ class DNSConfig(dict):
 
 
 class Privileges(dict):
-    """
+    r"""
         Security options for a service's containers.
         Part of a :py:class:`ContainerSpec` definition.
 

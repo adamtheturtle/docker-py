@@ -13,7 +13,7 @@ from ..types import (
 class ContainerApiMixin(object):
     @utils.check_resource('container')
     def attach(self, container, stdout=True, stderr=True,
-               stream=False, logs=False):
+               stream=False, logs=False, demux=False):
         """
         Attach to a container.
 
@@ -28,11 +28,15 @@ class ContainerApiMixin(object):
             stream (bool): Return container output progressively as an iterator
                 of strings, rather than a single string.
             logs (bool): Include the container's previous output.
+            demux (bool): Keep stdout and stderr separate.
 
         Returns:
-            By default, the container's output as a single string.
+            By default, the container's output as a single string (two if
+            ``demux=True``: one for stdout and one for stderr).
 
-            If ``stream=True``, an iterator of output strings.
+            If ``stream=True``, an iterator of output strings. If
+            ``demux=True``, two iterators are returned: one for stdout and one
+            for stderr.
 
         Raises:
             :py:class:`docker.errors.APIError`
@@ -54,8 +58,7 @@ class ContainerApiMixin(object):
         response = self._post(u, headers=headers, params=params, stream=True)
 
         output = self._read_from_socket(
-            response, stream, self._check_is_tty(container)
-        )
+            response, stream, self._check_is_tty(container), demux=demux)
 
         if stream:
             return CancellableStream(output, response)
@@ -139,8 +142,9 @@ class ContainerApiMixin(object):
             'changes': changes
         }
         u = self._url("/commit")
-        return self._result(self._post_json(u, data=conf, params=params),
-                            json=True)
+        return self._result(
+            self._post_json(u, data=conf, params=params), json=True
+        )
 
     def containers(self, quiet=False, all=False, trunc=False, latest=False,
                    since=None, before=None, limit=-1, size=False,
@@ -217,7 +221,8 @@ class ContainerApiMixin(object):
                          working_dir=None, domainname=None, host_config=None,
                          mac_address=None, labels=None, stop_signal=None,
                          networking_config=None, healthcheck=None,
-                         stop_timeout=None, runtime=None):
+                         stop_timeout=None, runtime=None,
+                         use_config_proxy=False):
         """
         Creates a container. Parameters are similar to those for the ``docker
         run`` command except it doesn't support the attach options (``-a``).
@@ -386,6 +391,10 @@ class ContainerApiMixin(object):
             runtime (str): Runtime to use with this container.
             healthcheck (dict): Specify a test to perform to check that the
                 container is healthy.
+            use_config_proxy (bool): If ``True``, and if the docker client
+                configuration file (``~/.docker/config.json`` by default)
+                contains a proxy configuration, the corresponding environment
+                variables will be set in the container being created.
 
         Returns:
             A dictionary with an image 'Id' key and a 'Warnings' key.
@@ -398,6 +407,14 @@ class ContainerApiMixin(object):
         """
         if isinstance(volumes, six.string_types):
             volumes = [volumes, ]
+
+        if isinstance(environment, dict):
+            environment = utils.utils.format_environment(environment)
+
+        if use_config_proxy:
+            environment = self._proxy_configs.inject_proxy_environment(
+                environment
+            )
 
         config = self.create_container_config(
             image, command, hostname, user, detach, stdin_open, tty,
@@ -464,7 +481,7 @@ class ContainerApiMixin(object):
             dns_opt (:py:class:`list`): Additional options to be added to the
                 container's ``resolv.conf`` file
             dns_search (:py:class:`list`): DNS search domains.
-            extra_hosts (dict): Addtional hostnames to resolve inside the
+            extra_hosts (dict): Additional hostnames to resolve inside the
                 container, as a mapping of hostname to IP address.
             group_add (:py:class:`list`): List of additional group names and/or
                 IDs that the container process will run as.
@@ -472,16 +489,12 @@ class ContainerApiMixin(object):
                 signals and reaps processes
             init_path (str): Path to the docker-init binary
             ipc_mode (str): Set the IPC mode for the container.
-            isolation (str): Isolation technology to use. Default: `None`.
-            links (dict or list of tuples): Either a dictionary mapping name
-                to alias or as a list of ``(name, alias)`` tuples.
-            log_config (dict): Logging configuration, as a dictionary with
-                keys:
-
-                - ``type`` The logging driver name.
-                - ``config`` A dictionary of configuration for the logging
-                  driver.
-
+            isolation (str): Isolation technology to use. Default: ``None``.
+            links (dict): Mapping of links using the
+                ``{'container': 'alias'}`` format. The alias is optional.
+                Containers declared in this dict will be linked to the new
+                container using the provided alias. Default: ``None``.
+            log_config (LogConfig): Logging configuration
             lxc_conf (dict): LXC config.
             mem_limit (float or str): Memory limit. Accepts float values
                 (which represent the memory limit of the created container in
@@ -499,7 +512,7 @@ class ContainerApiMixin(object):
             network_mode (str): One of:
 
                 - ``bridge`` Create a new network stack for the container on
-                  on the bridge network.
+                  the bridge network.
                 - ``none`` No networking for this container.
                 - ``container:<name|id>`` Reuse another container's network
                   stack.
@@ -542,10 +555,12 @@ class ContainerApiMixin(object):
                     }
 
             ulimits (:py:class:`list`): Ulimits to set inside the container,
-                as a list of dicts.
+                as a list of :py:class:`docker.types.Ulimit` instances.
             userns_mode (str): Sets the user namespace mode for the container
                 when user namespace remapping option is enabled. Supported
                 values are: ``host``
+            uts_mode (str): Sets the UTS namespace mode for the container.
+                Supported values are: ``host``
             volumes_from (:py:class:`list`): List of container names or IDs to
                 get volumes from.
             runtime (str): Runtime to use with this container.
@@ -608,9 +623,10 @@ class ContainerApiMixin(object):
             aliases (:py:class:`list`): A list of aliases for this endpoint.
                 Names in that list can be used within the network to reach the
                 container. Defaults to ``None``.
-            links (:py:class:`list`): A list of links for this endpoint.
-                Containers declared in this list will be linked to this
-                container. Defaults to ``None``.
+            links (dict): Mapping of links for this endpoint using the
+                ``{'container': 'alias'}`` format. The alias is optional.
+                Containers declared in this dict will be linked to this
+                container using the provided alias. Defaults to ``None``.
             ipv4_address (str): The IP address of this container on the
                 network, using the IPv4 protocol. Defaults to ``None``.
             ipv6_address (str): The IP address of this container on the
@@ -625,7 +641,7 @@ class ContainerApiMixin(object):
 
             >>> endpoint_config = client.create_endpoint_config(
                 aliases=['web', 'app'],
-                links=['app_db'],
+                links={'app_db': 'db', 'another': None},
                 ipv4_address='132.65.0.123'
             )
 
@@ -694,6 +710,18 @@ class ContainerApiMixin(object):
         Raises:
             :py:class:`docker.errors.APIError`
                 If the server returns an error.
+
+        Example:
+
+            >>> c = docker.APIClient()
+            >>> f = open('./sh_bin.tar', 'wb')
+            >>> bits, stat = c.get_archive(container, '/bin/sh')
+            >>> print(stat)
+            {'name': 'sh', 'size': 1075464, 'mode': 493,
+             'mtime': '2018-10-01T15:37:48-07:00', 'linkTarget': ''}
+            >>> for chunk in bits:
+            ...    f.write(chunk)
+            >>> f.close()
         """
         params = {
             'path': path
@@ -762,16 +790,16 @@ class ContainerApiMixin(object):
 
         Args:
             container (str): The container to get logs from
-            stdout (bool): Get ``STDOUT``
-            stderr (bool): Get ``STDERR``
-            stream (bool): Stream the response
-            timestamps (bool): Show timestamps
+            stdout (bool): Get ``STDOUT``. Default ``True``
+            stderr (bool): Get ``STDERR``. Default ``True``
+            stream (bool): Stream the response. Default ``False``
+            timestamps (bool): Show timestamps. Default ``False``
             tail (str or int): Output specified number of lines at the end of
                 logs. Either an integer of number of lines or the string
                 ``all``. Default ``all``
             since (datetime or int): Show logs since a given datetime or
                 integer epoch (in seconds)
-            follow (bool): Follow log output
+            follow (bool): Follow log output. Default ``False``
             until (datetime or int): Show logs that occurred before the given
                 datetime or integer epoch (in seconds)
 
@@ -887,9 +915,10 @@ class ContainerApiMixin(object):
         if '/' in private_port:
             return port_settings.get(private_port)
 
-        h_ports = port_settings.get(private_port + '/tcp')
-        if h_ports is None:
-            h_ports = port_settings.get(private_port + '/udp')
+        for protocol in ['tcp', 'udp', 'sctp']:
+            h_ports = port_settings.get(private_port + '/' + protocol)
+            if h_ports:
+                break
 
         return h_ports
 
@@ -1018,7 +1047,10 @@ class ContainerApiMixin(object):
         """
         params = {'t': timeout}
         url = self._url("/containers/{0}/restart", container)
-        res = self._post(url, params=params)
+        conn_timeout = self.timeout
+        if conn_timeout is not None:
+            conn_timeout += timeout
+        res = self._post(url, params=params, timeout=conn_timeout)
         self._raise_for_status(res)
 
     @utils.check_resource('container')
@@ -1068,7 +1100,8 @@ class ContainerApiMixin(object):
         Args:
             container (str): The container to stream statistics from
             decode (bool): If set to true, stream will be decoded into dicts
-                on the fly. False by default.
+                on the fly. Only applicable if ``stream`` is True.
+                False by default.
             stream (bool): If set to false, only the current stats will be
                 returned instead of a stream. True by default.
 
@@ -1082,6 +1115,10 @@ class ContainerApiMixin(object):
             return self._stream_helper(self._get(url, stream=True),
                                        decode=decode)
         else:
+            if decode:
+                raise errors.InvalidArgument(
+                    "decode is only available in conjuction with stream=True"
+                )
             return self._result(self._get(url, params={'stream': False}),
                                 json=True)
 
@@ -1107,9 +1144,10 @@ class ContainerApiMixin(object):
         else:
             params = {'t': timeout}
         url = self._url("/containers/{0}/stop", container)
-
-        res = self._post(url, params=params,
-                         timeout=(timeout + (self.timeout or 0)))
+        conn_timeout = self.timeout
+        if conn_timeout is not None:
+            conn_timeout += timeout
+        res = self._post(url, params=params, timeout=conn_timeout)
         self._raise_for_status(res)
 
     @utils.check_resource('container')

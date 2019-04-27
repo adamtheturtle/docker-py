@@ -19,7 +19,8 @@ class BuildApiMixin(object):
               forcerm=False, dockerfile=None, container_limits=None,
               decode=False, buildargs=None, gzip=False, shmsize=None,
               labels=None, cache_from=None, target=None, network_mode=None,
-              squash=None, extra_hosts=None, platform=None, isolation=None):
+              squash=None, extra_hosts=None, platform=None, isolation=None,
+              use_config_proxy=False):
         """
         Similar to the ``docker build`` command. Either ``path`` or ``fileobj``
         needs to be set. ``path`` can be a local path (to a directory
@@ -103,6 +104,10 @@ class BuildApiMixin(object):
             platform (str): Platform in the format ``os[/arch[/variant]]``
             isolation (str): Isolation technology used during build.
                 Default: `None`.
+            use_config_proxy (bool): If ``True``, and if the docker client
+                configuration file (``~/.docker/config.json`` by default)
+                contains a proxy configuration, the corresponding environment
+                variables will be set in the container being built.
 
         Returns:
             A generator for the build output.
@@ -116,6 +121,7 @@ class BuildApiMixin(object):
         remote = context = None
         headers = {}
         container_limits = container_limits or {}
+        buildargs = buildargs or {}
         if path is None and fileobj is None:
             raise TypeError("Either path or fileobj needs to be provided.")
         if gzip and encoding is not None:
@@ -168,6 +174,10 @@ class BuildApiMixin(object):
         }
         params.update(container_limits)
 
+        if use_config_proxy:
+            proxy_args = self._proxy_configs.get_environment()
+            for k, v in proxy_args.items():
+                buildargs.setdefault(k, v)
         if buildargs:
             params.update({'buildargs': json.dumps(buildargs)})
 
@@ -264,34 +274,42 @@ class BuildApiMixin(object):
 
         return self._stream_helper(response, decode=decode)
 
+    @utils.minimum_version('1.31')
+    def prune_builds(self):
+        """
+        Delete the builder cache
+
+        Returns:
+            (dict): A dictionary containing information about the operation's
+                    result. The ``SpaceReclaimed`` key indicates the amount of
+                    bytes of disk space reclaimed.
+
+        Raises:
+            :py:class:`docker.errors.APIError`
+                If the server returns an error.
+        """
+        url = self._url("/build/prune")
+        return self._result(self._post(url), True)
+
     def _set_auth_headers(self, headers):
         log.debug('Looking for auth config')
 
         # If we don't have any auth data so far, try reloading the config
         # file one more time in case anything showed up in there.
-        if not self._auth_configs:
+        if not self._auth_configs or self._auth_configs.is_empty:
             log.debug("No auth config in memory - loading from filesystem")
-            self._auth_configs = auth.load_config()
+            self._auth_configs = auth.load_config(
+                credstore_env=self.credstore_env
+            )
 
         # Send the full auth configuration (if any exists), since the build
         # could use any (or all) of the registries.
         if self._auth_configs:
-            auth_data = {}
-            if self._auth_configs.get('credsStore'):
-                # Using a credentials store, we need to retrieve the
-                # credentials for each registry listed in the config.json file
-                # Matches CLI behavior: https://github.com/docker/docker/blob/
-                # 67b85f9d26f1b0b2b240f2d794748fac0f45243c/cliconfig/
-                # credentials/native_store.go#L68-L83
-                for registry in self._auth_configs.get('auths', {}).keys():
-                    auth_data[registry] = auth.resolve_authconfig(
-                        self._auth_configs, registry
-                    )
-            else:
-                auth_data = self._auth_configs.get('auths', {}).copy()
-                # See https://github.com/docker/docker-py/issues/1683
-                if auth.INDEX_NAME in auth_data:
-                    auth_data[auth.INDEX_URL] = auth_data[auth.INDEX_NAME]
+            auth_data = self._auth_configs.get_all_credentials()
+
+            # See https://github.com/docker/docker-py/issues/1683
+            if auth.INDEX_URL not in auth_data and auth.INDEX_URL in auth_data:
+                auth_data[auth.INDEX_URL] = auth_data.get(auth.INDEX_NAME, {})
 
             log.debug(
                 'Sending auth config ({0})'.format(
@@ -299,9 +317,10 @@ class BuildApiMixin(object):
                 )
             )
 
-            headers['X-Registry-Config'] = auth.encode_header(
-                auth_data
-            )
+            if auth_data:
+                headers['X-Registry-Config'] = auth.encode_header(
+                    auth_data
+                )
         else:
             log.debug('No auth config found')
 
@@ -313,7 +332,14 @@ def process_dockerfile(dockerfile, path):
     abs_dockerfile = dockerfile
     if not os.path.isabs(dockerfile):
         abs_dockerfile = os.path.join(path, dockerfile)
-
+        if constants.IS_WINDOWS_PLATFORM and path.startswith(
+                constants.WINDOWS_LONGPATH_PREFIX):
+            abs_dockerfile = '{}{}'.format(
+                constants.WINDOWS_LONGPATH_PREFIX,
+                os.path.normpath(
+                    abs_dockerfile[len(constants.WINDOWS_LONGPATH_PREFIX):]
+                )
+            )
     if (os.path.splitdrive(path)[0] != os.path.splitdrive(abs_dockerfile)[0] or
             os.path.relpath(abs_dockerfile, path).startswith('..')):
         # Dockerfile not in context - read data to insert into tar later
@@ -324,4 +350,9 @@ def process_dockerfile(dockerfile, path):
             )
 
     # Dockerfile is inside the context - return path relative to context root
-    return (os.path.relpath(abs_dockerfile, path), None)
+    if dockerfile == abs_dockerfile:
+        # Only calculate relpath if necessary to avoid errors
+        # on Windows client -> Linux Docker
+        # see https://github.com/docker/compose/issues/5969
+        dockerfile = os.path.relpath(abs_dockerfile, path)
+    return (dockerfile, None)

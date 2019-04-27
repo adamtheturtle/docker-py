@@ -26,13 +26,15 @@ class DockerClient(object):
         base_url (str): URL to the Docker server. For example,
             ``unix:///var/run/docker.sock`` or ``tcp://127.0.0.1:1234``.
         version (str): The version of the API to use. Set to ``auto`` to
-            automatically detect the server's version. Default: ``1.30``
+            automatically detect the server's version. Default: ``1.35``
         timeout (int): Default timeout for API calls, in seconds.
         tls (bool or :py:class:`~docker.tls.TLSConfig`): Enable TLS. Pass
             ``True`` to enable it with default options, or pass a
             :py:class:`~docker.tls.TLSConfig` object to use custom
             configuration.
         user_agent (str): Set a custom user agent for requests to the server.
+        credstore_env (dict): Override environment variables when calling the
+            credential store process.
     """
     def __init__(self, *args, **kwargs):
         self.api = APIClient(*args, **kwargs)
@@ -60,12 +62,14 @@ class DockerClient(object):
 
         Args:
             version (str): The version of the API to use. Set to ``auto`` to
-                automatically detect the server's version. Default: ``1.30``
+                automatically detect the server's version. Default: ``1.35``
             timeout (int): Default timeout for API calls, in seconds.
             ssl_version (int): A valid `SSL version`_.
             assert_hostname (bool): Verify the hostname of the server.
             environment (dict): The environment to read environment variables
                 from. Default: the value of ``os.environ``
+            credstore_env (dict): Override environment variables when calling
+                the credential store process.
 
         Example:
 
@@ -77,8 +81,9 @@ class DockerClient(object):
         """
         timeout = kwargs.pop('timeout', DEFAULT_TIMEOUT_SECONDS)
         version = kwargs.pop('version', None)
-        return cls(timeout=timeout, version=version,
-                   **kwargs_from_env(**kwargs))
+        return cls(
+            timeout=timeout, version=version, **kwargs_from_env(**kwargs)
+        )
 
     # Resources
     @property

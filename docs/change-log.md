@@ -1,10 +1,178 @@
 Change log
 ==========
 
+3.7.1
+-----
+
+[List of PRs / issues for this release](https://github.com/docker/docker-py/milestone/58?closed=1)
+
+### Bugfixes
+
+* Set a different default number (which is now 9) for SSH pools
+* Adds a BaseHTTPAdapter with a close method to ensure that the
+pools is clean on close()
+* Makes SSHHTTPAdapter reopen a closed connection when needed
+like the others
+
+3.7.0
+-----
+
+[List of PRs / issues for this release](https://github.com/docker/docker-py/milestone/56?closed=1)
+
+### Features
+
+* Added support for multiplexed streams (for `attach` and `exec_start`). Learn
+  more at https://docker-py.readthedocs.io/en/stable/user_guides/multiplex.html
+* Added the `use_config_proxy` parameter to the following methods:
+  `APIClient.build`, `APIClient.create_container`, `DockerClient.images.build`
+  and `DockerClient.containers.run` (`False` by default). **This parameter**
+  **will become `True` by default in the 4.0.0 release.**
+* Placement preferences for Swarm services are better validated on the client
+  and documentation has been updated accordingly
+
+### Bugfixes
+
+* Fixed a bug where credential stores weren't queried for relevant registry
+  credentials with certain variations of the `config.json` file.
+* `DockerClient.swarm.init` now returns a boolean value as advertised.
+
+3.6.0
+-----
+
+[List of PRs / issues for this release](https://github.com/docker/docker-py/milestone=55?closed=1)
+
+### Features
+
+* Added support for connecting to the Docker Engine over SSH. Additional
+  dependencies for this feature can be installed with
+  `pip install "docker[ssh]"`
+* Added support for the `named` parameter in `Image.save`, which may be
+  used to ensure the resulting tarball retains the image's name on save.
+
+### Bugfixes
+
+* Fixed a bug where builds on Windows with a context path using the `\\?\`
+  prefix would fail with some relative Dockerfile paths.
+* Fixed an issue where pulls made with the `DockerClient` would fail when
+  setting the `stream` parameter to `True`.
+
+### Miscellaneous
+
+* The minimum requirement for the `requests` dependency has been bumped
+  to 2.20.0
+
+3.5.1
+-----
+
+[List of PRs / issues for this release](https://github.com/docker/docker-py/milestone/54?closed=1)
+
+### Miscellaneous
+
+* Bumped version of `pyOpenSSL` in `requirements.txt` and `setup.py` to prevent
+  installation of a vulnerable version
+
+* Docs fixes
+
+3.5.0
+-----
+
+[List of PRs / issues for this release](https://github.com/docker/docker-py/milestone/53?closed=1)
+
+### Deprecation warning
+
+* Support for Python 3.3 will be dropped in the 4.0.0 release
+
+### Features
+
+* Updated dependencies to ensure support for Python 3.7 environments
+* Added support for the `uts_mode` parameter in `HostConfig`
+* The `UpdateConfig` constructor now allows `rollback` as a valid
+  value for `failure_action`
+* Added support for `rollback_config` in `APIClient.create_service`,
+  `APIClient.update_service`, `DockerClient.services.create` and
+  `Service.update`.
+
+### Bugfixes
+
+* Credential helpers are now properly leveraged by the `build` method
+* Fixed a bug that caused placement preferences to be ignored when provided
+  to `DockerClient.services.create`
+* Fixed a bug that caused a `user` value of `0` to be ignored in
+  `APIClient.create_container` and `DockerClient.containers.create`
+
+3.4.1
+-----
+
+[List of PRs / issues for this release](https://github.com/docker/docker-py/milestone/52?closed=1)
+
+### Bugfixes
+
+* Fixed a bug that caused auth values in config files written using one of the
+  legacy formats to be ignored
+* Fixed issues with handling of double-wildcard `**` patterns in
+  `.dockerignore` files
+
+3.4.0
+-----
+
+[List of PRs / issues for this release](https://github.com/docker/docker-py/milestone/51?closed=1)
+
+### Features
+
+* The `APIClient` and `DockerClient` constructors now accept a `credstore_env`
+  parameter. When set, values in this dictionary are added to the environment
+  when executing the credential store process.
+
+### Bugfixes
+
+* `DockerClient.networks.prune` now properly returns the operation's result
+* Fixed a bug that caused custom Dockerfile paths in a subfolder of the build
+  context to be invalidated, preventing these builds from working
+* The `plugin_privileges` method can now be called for plugins requiring
+  authentication to access
+* Fixed a bug that caused attempts to read a data stream over an unsecured TCP
+  socket to crash on Windows clients
+* Fixed a bug where using the `read_only` parameter when creating a service using
+  the `DockerClient` was being ignored
+* Fixed an issue where `Service.scale` would not properly update the service's
+  mode, causing the operation to fail silently
+
+3.3.0
+-----
+
+[List of PRs / issues for this release](https://github.com/docker/docker-py/milestone/49?closed=1)
+
+### Features
+
+* Added support for `prune_builds` in `APIClient` and `DockerClient.images`
+* Added support for `ignore_removed` parameter in
+  `DockerClient.containers.list`
+
+### Bugfixes
+
+* Fixed an issue that caused builds to fail when an in-context Dockerfile
+  would be specified using its absolute path
+* Installation with pip 10.0.0 and above no longer fails
+* Connection timeout for `stop` and `restart` now gets properly adjusted to
+  allow for the operation to finish in the specified time
+* Improved docker credential store support on Windows
+
+3.2.1
+-----
+
+[List of PRs / issues for this release](https://github.com/docker/docker-py/milestone/50?closed=1)
+
+### Bugfixes
+
+* Fixed a bug with builds not properly identifying Dockerfile paths relative
+  to the build context
+* Fixed an issue where builds would raise a `ValueError` when attempting to
+  build with a Dockerfile on a different Windows drive.
+
 3.2.0
 -----
 
-[List of PRs/ issues for this release](https://github.com/docker/docker-py/milestone/45?closed=1)
+[List of PRs / issues for this release](https://github.com/docker/docker-py/milestone/45?closed=1)
 
 ### Features
 

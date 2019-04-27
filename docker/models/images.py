@@ -1,5 +1,6 @@
 import itertools
 import re
+import warnings
 
 import six
 
@@ -59,14 +60,20 @@ class Image(Model):
         """
         return self.client.api.history(self.id)
 
-    def save(self, chunk_size=DEFAULT_DATA_CHUNK_SIZE):
+    def save(self, chunk_size=DEFAULT_DATA_CHUNK_SIZE, named=False):
         """
         Get a tarball of an image. Similar to the ``docker save`` command.
 
         Args:
-            chunk_size (int): The number of bytes returned by each iteration
-                of the generator. If ``None``, data will be streamed as it is
-                received. Default: 2 MB
+            chunk_size (int): The generator will return up to that much data
+                per iteration, but may return less. If ``None``, data will be
+                streamed as it is received. Default: 2 MB
+            named (str or bool): If ``False`` (default), the tarball will not
+                retain repository and tag information for this image. If set
+                to ``True``, the first tag in the :py:attr:`~tags` list will
+                be used to identify the image. Alternatively, any element of
+                the :py:attr:`~tags` list can be used as an argument to use
+                that specific tag as the saved identifier.
 
         Returns:
             (generator): A stream of raw archive data.
@@ -78,12 +85,22 @@ class Image(Model):
         Example:
 
             >>> image = cli.get_image("busybox:latest")
-            >>> f = open('/tmp/busybox-latest.tar', 'w')
+            >>> f = open('/tmp/busybox-latest.tar', 'wb')
             >>> for chunk in image:
             >>>   f.write(chunk)
             >>> f.close()
         """
-        return self.client.api.get_image(self.id, chunk_size)
+        img = self.id
+        if named:
+            img = self.tags[0] if self.tags else img
+            if isinstance(named, six.string_types):
+                if named not in self.tags:
+                    raise InvalidArgument(
+                        "{} is not a valid tag for this image".format(named)
+                    )
+                img = named
+
+        return self.client.api.get_image(img, chunk_size)
 
     def tag(self, repository, tag=None, **kwargs):
         """
@@ -241,6 +258,10 @@ class ImageCollection(Collection):
             platform (str): Platform in the format ``os[/arch[/variant]]``.
             isolation (str): Isolation technology used during build.
                 Default: `None`.
+            use_config_proxy (bool): If ``True``, and if the docker client
+                configuration file (``~/.docker/config.json`` by default)
+                contains a proxy configuration, the corresponding environment
+                variables will be set in the container being built.
 
         Returns:
             (tuple): The first item is the :py:class:`Image` object for the
@@ -294,22 +315,26 @@ class ImageCollection(Collection):
         """
         return self.prepare_model(self.client.api.inspect_image(name))
 
-    def get_registry_data(self, name):
+    def get_registry_data(self, name, auth_config=None):
         """
         Gets the registry data for an image.
 
         Args:
             name (str): The name of the image.
+            auth_config (dict): Override the credentials that are found in the
+                config for this request.  ``auth_config`` should contain the
+                ``username`` and ``password`` keys to be valid.
 
         Returns:
             (:py:class:`RegistryData`): The data object.
+
         Raises:
             :py:class:`docker.errors.APIError`
                 If the server returns an error.
         """
         return RegistryData(
             image_name=name,
-            attrs=self.client.api.inspect_distribution(name),
+            attrs=self.client.api.inspect_distribution(name, auth_config),
             client=self.client,
             collection=self,
         )
@@ -383,10 +408,9 @@ class ImageCollection(Collection):
         Args:
             repository (str): The repository to pull
             tag (str): The tag to pull
-            auth_config (dict): Override the credentials that
-                :py:meth:`~docker.client.DockerClient.login` has set for
-                this request. ``auth_config`` should contain the ``username``
-                and ``password`` keys to be valid.
+            auth_config (dict): Override the credentials that are found in the
+                config for this request.  ``auth_config`` should contain the
+                ``username`` and ``password`` keys to be valid.
             platform (str): Platform in the format ``os[/arch[/variant]]``
 
         Returns:
@@ -409,7 +433,21 @@ class ImageCollection(Collection):
         if not tag:
             repository, tag = parse_repository_tag(repository)
 
-        self.client.api.pull(repository, tag=tag, **kwargs)
+        if 'stream' in kwargs:
+            warnings.warn(
+                '`stream` is not a valid parameter for this method'
+                ' and will be overridden'
+            )
+            del kwargs['stream']
+
+        pull_log = self.client.api.pull(
+            repository, tag=tag, stream=True, **kwargs
+        )
+        for _ in pull_log:
+            # We don't do anything with the logs, but we need
+            # to keep the connection alive and wait for the image
+            # to be pulled.
+            pass
         if tag:
             return self.get('{0}{2}{1}'.format(
                 repository, tag, '@' if tag.startswith('sha256:') else ':'
@@ -431,6 +469,10 @@ class ImageCollection(Collection):
     def prune(self, filters=None):
         return self.client.api.prune_images(filters=filters)
     prune.__doc__ = APIClient.prune_images.__doc__
+
+    def prune_builds(self, *args, **kwargs):
+        return self.client.api.prune_builds(*args, **kwargs)
+    prune_builds.__doc__ = APIClient.prune_builds.__doc__
 
 
 def normalize_platform(platform, engine_info):

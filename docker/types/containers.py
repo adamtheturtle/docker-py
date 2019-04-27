@@ -23,6 +23,35 @@ class LogConfigTypesEnum(object):
 
 
 class LogConfig(DictType):
+    """
+    Configure logging for a container, when provided as an argument to
+    :py:meth:`~docker.api.container.ContainerApiMixin.create_host_config`.
+    You may refer to the
+    `official logging driver documentation <https://docs.docker.com/config/containers/logging/configure/>`_
+    for more information.
+
+    Args:
+        type (str): Indicate which log driver to use. A set of valid drivers
+            is provided as part of the :py:attr:`LogConfig.types`
+            enum. Other values may be accepted depending on the engine version
+            and available logging plugins.
+        config (dict): A driver-dependent configuration dictionary. Please
+            refer to the driver's documentation for a list of valid config
+            keys.
+
+    Example:
+
+        >>> from docker.types import LogConfig
+        >>> lc = LogConfig(type=LogConfig.types.JSON, config={
+        ...   'max-size': '1g',
+        ...   'labels': 'production_status,geo'
+        ... })
+        >>> hc = client.create_host_config(log_config=lc)
+        >>> container = client.create_container('busybox', 'true',
+        ...    host_config=hc)
+        >>> client.inspect_container(container)['HostConfig']['LogConfig']
+        {'Type': 'json-file', 'Config': {'labels': 'production_status,geo', 'max-size': '1g'}}
+    """  # noqa: E501
     types = LogConfigTypesEnum
 
     def __init__(self, **kwargs):
@@ -50,14 +79,40 @@ class LogConfig(DictType):
         return self['Config']
 
     def set_config_value(self, key, value):
+        """ Set a the value for ``key`` to ``value`` inside the ``config``
+            dict.
+        """
         self.config[key] = value
 
     def unset_config(self, key):
+        """ Remove the ``key`` property from the ``config`` dict. """
         if key in self.config:
             del self.config[key]
 
 
 class Ulimit(DictType):
+    """
+    Create a ulimit declaration to be used with
+    :py:meth:`~docker.api.container.ContainerApiMixin.create_host_config`.
+
+    Args:
+
+        name (str): Which ulimit will this apply to. A list of valid names can
+            be found `here <http://tinyurl.me/ZWRkM2Ztwlykf>`_.
+        soft (int): The soft limit for this ulimit. Optional.
+        hard (int): The hard limit for this ulimit. Optional.
+
+    Example:
+
+        >>> nproc_limit = docker.types.Ulimit(name='nproc', soft=1024)
+        >>> hc = client.create_host_config(ulimits=[nproc_limit])
+        >>> container = client.create_container(
+                'busybox', 'true', host_config=hc
+            )
+        >>> client.inspect_container(container)['HostConfig']['Ulimits']
+        [{'Name': 'nproc', 'Hard': 0, 'Soft': 1024}]
+
+    """
     def __init__(self, **kwargs):
         name = kwargs.get('name', kwargs.get('Name'))
         soft = kwargs.get('soft', kwargs.get('Soft'))
@@ -115,11 +170,11 @@ class HostConfig(dict):
                  device_read_iops=None, device_write_iops=None,
                  oom_kill_disable=False, shm_size=None, sysctls=None,
                  tmpfs=None, oom_score_adj=None, dns_opt=None, cpu_shares=None,
-                 cpuset_cpus=None, userns_mode=None, pids_limit=None,
-                 isolation=None, auto_remove=False, storage_opt=None,
-                 init=None, init_path=None, volume_driver=None,
-                 cpu_count=None, cpu_percent=None, nano_cpus=None,
-                 cpuset_mems=None, runtime=None, mounts=None,
+                 cpuset_cpus=None, userns_mode=None, uts_mode=None,
+                 pids_limit=None, isolation=None, auto_remove=False,
+                 storage_opt=None, init=None, init_path=None,
+                 volume_driver=None, cpu_count=None, cpu_percent=None,
+                 nano_cpus=None, cpuset_mems=None, runtime=None, mounts=None,
                  cpu_rt_period=None, cpu_rt_runtime=None,
                  device_cgroup_rules=None):
 
@@ -264,10 +319,10 @@ class HostConfig(dict):
             if not isinstance(ulimits, list):
                 raise host_config_type_error('ulimits', ulimits, 'list')
             self['Ulimits'] = []
-            for l in ulimits:
-                if not isinstance(l, Ulimit):
-                    l = Ulimit(**l)
-                self['Ulimits'].append(l)
+            for lmt in ulimits:
+                if not isinstance(lmt, Ulimit):
+                    lmt = Ulimit(**lmt)
+                self['Ulimits'].append(lmt)
 
         if log_config is not None:
             if not isinstance(log_config, LogConfig):
@@ -391,6 +446,11 @@ class HostConfig(dict):
             if userns_mode != "host":
                 raise host_config_value_error("userns_mode", userns_mode)
             self['UsernsMode'] = userns_mode
+
+        if uts_mode:
+            if uts_mode != "host":
+                raise host_config_value_error("uts_mode", uts_mode)
+            self['UTSMode'] = uts_mode
 
         if pids_limit:
             if not isinstance(pids_limit, int):
@@ -573,7 +633,7 @@ class ContainerConfig(dict):
             'Hostname': hostname,
             'Domainname': domainname,
             'ExposedPorts': ports,
-            'User': six.text_type(user) if user else None,
+            'User': six.text_type(user) if user is not None else None,
             'Tty': tty,
             'OpenStdin': stdin_open,
             'StdinOnce': stdin_once,

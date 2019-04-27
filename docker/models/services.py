@@ -1,6 +1,6 @@
 import copy
 from docker.errors import create_unexpected_kwargs_error, InvalidArgument
-from docker.types import TaskTemplate, ContainerSpec, ServiceMode
+from docker.types import TaskTemplate, ContainerSpec, Placement, ServiceMode
 from .resource import Model, Collection
 
 
@@ -42,7 +42,7 @@ class Service(Model):
                 ``label``, and ``desired-state``.
 
         Returns:
-            (:py:class:`list`): List of task dictionaries.
+            :py:class:`list`: List of task dictionaries.
 
         Raises:
             :py:class:`docker.errors.APIError`
@@ -84,26 +84,27 @@ class Service(Model):
 
     def logs(self, **kwargs):
         """
-            Get log stream for the service.
-            Note: This method works only for services with the ``json-file``
-            or ``journald`` logging drivers.
+        Get log stream for the service.
+        Note: This method works only for services with the ``json-file``
+        or ``journald`` logging drivers.
 
-            Args:
-                details (bool): Show extra details provided to logs.
-                    Default: ``False``
-                follow (bool): Keep connection open to read logs as they are
-                    sent by the Engine. Default: ``False``
-                stdout (bool): Return logs from ``stdout``. Default: ``False``
-                stderr (bool): Return logs from ``stderr``. Default: ``False``
-                since (int): UNIX timestamp for the logs staring point.
-                    Default: 0
-                timestamps (bool): Add timestamps to every log line.
-                tail (string or int): Number of log lines to be returned,
-                    counting from the current end of the logs. Specify an
-                    integer or ``'all'`` to output all log lines.
-                    Default: ``all``
+        Args:
+            details (bool): Show extra details provided to logs.
+                Default: ``False``
+            follow (bool): Keep connection open to read logs as they are
+                sent by the Engine. Default: ``False``
+            stdout (bool): Return logs from ``stdout``. Default: ``False``
+            stderr (bool): Return logs from ``stderr``. Default: ``False``
+            since (int): UNIX timestamp for the logs staring point.
+                Default: 0
+            timestamps (bool): Add timestamps to every log line.
+            tail (string or int): Number of log lines to be returned,
+                counting from the current end of the logs. Specify an
+                integer or ``'all'`` to output all log lines.
+                Default: ``all``
 
-            Returns (generator): Logs for the service.
+        Returns:
+            generator: Logs for the service.
         """
         is_tty = self.attrs['Spec']['TaskTemplate']['ContainerSpec'].get(
             'TTY', False
@@ -118,7 +119,7 @@ class Service(Model):
             replicas (int): The number of containers that should be running.
 
         Returns:
-            ``True``if successful.
+            bool: ``True`` if successful.
         """
 
         if 'Global' in self.attrs['Spec']['Mode'].keys():
@@ -126,7 +127,7 @@ class Service(Model):
 
         service_mode = ServiceMode('replicated', replicas)
         return self.client.api.update_service(self.id, self.version,
-                                              service_mode,
+                                              mode=service_mode,
                                               fetch_current_spec=True)
 
     def force_update(self):
@@ -134,7 +135,7 @@ class Service(Model):
         Force update the service even if no changes require it.
 
         Returns:
-            ``True``if successful.
+            bool: ``True`` if successful.
         """
 
         return self.update(force_update=True, fetch_current_spec=True)
@@ -152,13 +153,20 @@ class ServiceCollection(Collection):
             image (str): The image name to use for the containers.
             command (list of str or str): Command to run.
             args (list of str): Arguments to the command.
-            constraints (list of str): Placement constraints.
+            constraints (list of str): :py:class:`~docker.types.Placement`
+                constraints.
+            preferences (list of tuple): :py:class:`~docker.types.Placement`
+                preferences.
+            platforms (list of tuple): A list of platform constraints
+                expressed as ``(arch, os)`` tuples.
             container_labels (dict): Labels to apply to the container.
             endpoint_spec (EndpointSpec): Properties that can be configured to
                 access and load balance a service. Default: ``None``.
             env (list of str): Environment variables, in the form
                 ``KEY=val``.
             hostname (string): Hostname to set on the container.
+            init (boolean): Run an init inside the container that forwards
+                signals and reaps processes
             isolation (string): Isolation technology used by the service's
                 containers. Only used for Windows containers.
             labels (dict): Labels to apply to the service.
@@ -180,6 +188,8 @@ class ServiceCollection(Collection):
                 containers to terminate before forcefully killing them.
             update_config (UpdateConfig): Specification for the update strategy
                 of the service. Default: ``None``
+            rollback_config (RollbackConfig): Specification for the rollback
+                strategy of the service. Default: ``None``
             user (str): User to run commands as.
             workdir (str): Working directory for commands to run.
             tty (boolean): Whether a pseudo-TTY should be allocated.
@@ -201,7 +211,7 @@ class ServiceCollection(Collection):
                 containers.
 
         Returns:
-            (:py:class:`Service`) The created service.
+            :py:class:`Service`: The created service.
 
         Raises:
             :py:class:`docker.errors.APIError`
@@ -223,7 +233,7 @@ class ServiceCollection(Collection):
                 into the output.
 
         Returns:
-            (:py:class:`Service`): The service.
+            :py:class:`Service`: The service.
 
         Raises:
             :py:class:`docker.errors.NotFound`
@@ -248,7 +258,7 @@ class ServiceCollection(Collection):
                 Default: ``None``.
 
         Returns:
-            (list of :py:class:`Service`): The services.
+            list of :py:class:`Service`: The services.
 
         Raises:
             :py:class:`docker.errors.APIError`
@@ -272,11 +282,12 @@ CONTAINER_SPEC_KWARGS = [
     'hostname',
     'hosts',
     'image',
+    'init',
     'isolation',
     'labels',
     'mounts',
     'open_stdin',
-    'privileges'
+    'privileges',
     'read_only',
     'secrets',
     'stop_grace_period',
@@ -302,6 +313,12 @@ CREATE_SERVICE_KWARGS = [
     'endpoint_spec',
 ]
 
+PLACEMENT_KWARGS = [
+    'constraints',
+    'preferences',
+    'platforms',
+]
+
 
 def _get_create_service_kwargs(func_name, kwargs):
     # Copy over things which can be copied directly
@@ -321,10 +338,12 @@ def _get_create_service_kwargs(func_name, kwargs):
     if 'container_labels' in kwargs:
         container_spec_kwargs['labels'] = kwargs.pop('container_labels')
 
-    if 'constraints' in kwargs:
-        task_template_kwargs['placement'] = {
-            'Constraints': kwargs.pop('constraints')
-        }
+    placement = {}
+    for key in copy.copy(kwargs):
+        if key in PLACEMENT_KWARGS:
+            placement[key] = kwargs.pop(key)
+    placement = Placement(**placement)
+    task_template_kwargs['placement'] = placement
 
     if 'log_driver' in kwargs:
         task_template_kwargs['log_driver'] = {

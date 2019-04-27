@@ -4,6 +4,7 @@ import shutil
 import tempfile
 
 from docker import errors
+from docker.utils.proxy import ProxyConfig
 
 import pytest
 import six
@@ -13,6 +14,48 @@ from ..helpers import random_name, requires_api_version, requires_experimental
 
 
 class BuildTest(BaseAPIIntegrationTest):
+    def test_build_with_proxy(self):
+        self.client._proxy_configs = ProxyConfig(
+            ftp='a', http='b', https='c', no_proxy='d'
+        )
+
+        script = io.BytesIO('\n'.join([
+            'FROM busybox',
+            'RUN env | grep "FTP_PROXY=a"',
+            'RUN env | grep "ftp_proxy=a"',
+            'RUN env | grep "HTTP_PROXY=b"',
+            'RUN env | grep "http_proxy=b"',
+            'RUN env | grep "HTTPS_PROXY=c"',
+            'RUN env | grep "https_proxy=c"',
+            'RUN env | grep "NO_PROXY=d"',
+            'RUN env | grep "no_proxy=d"',
+        ]).encode('ascii'))
+
+        self.client.build(fileobj=script, decode=True)
+
+    def test_build_with_proxy_and_buildargs(self):
+        self.client._proxy_configs = ProxyConfig(
+            ftp='a', http='b', https='c', no_proxy='d'
+        )
+
+        script = io.BytesIO('\n'.join([
+            'FROM busybox',
+            'RUN env | grep "FTP_PROXY=XXX"',
+            'RUN env | grep "ftp_proxy=xxx"',
+            'RUN env | grep "HTTP_PROXY=b"',
+            'RUN env | grep "http_proxy=b"',
+            'RUN env | grep "HTTPS_PROXY=c"',
+            'RUN env | grep "https_proxy=c"',
+            'RUN env | grep "NO_PROXY=d"',
+            'RUN env | grep "no_proxy=d"',
+        ]).encode('ascii'))
+
+        self.client.build(
+            fileobj=script,
+            decode=True,
+            buildargs={'FTP_PROXY': 'XXX', 'ftp_proxy': 'xxx'}
+        )
+
     def test_build_streaming(self):
         script = io.BytesIO('\n'.join([
             'FROM busybox',
@@ -415,18 +458,20 @@ class BuildTest(BaseAPIIntegrationTest):
             f.write('hello world')
         with open(os.path.join(base_dir, '.dockerignore'), 'w') as f:
             f.write('.dockerignore\n')
-        df = tempfile.NamedTemporaryFile()
-        self.addCleanup(df.close)
-        df.write(('\n'.join([
-            'FROM busybox',
-            'COPY . /src',
-            'WORKDIR /src',
-        ])).encode('utf-8'))
-        df.flush()
+        df_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, df_dir)
+        df_name = os.path.join(df_dir, 'Dockerfile')
+        with open(df_name, 'wb') as df:
+            df.write(('\n'.join([
+                'FROM busybox',
+                'COPY . /src',
+                'WORKDIR /src',
+            ])).encode('utf-8'))
+            df.flush()
         img_name = random_name()
         self.tmp_imgs.append(img_name)
         stream = self.client.build(
-            path=base_dir, dockerfile=df.name, tag=img_name,
+            path=base_dir, dockerfile=df_name, tag=img_name,
             decode=True
         )
         lines = []
@@ -472,6 +517,39 @@ class BuildTest(BaseAPIIntegrationTest):
             [b'.', b'..', b'file.txt', b'custom.dockerfile']
         ) == sorted(lsdata)
 
+    def test_build_in_context_nested_dockerfile(self):
+        base_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, base_dir)
+        with open(os.path.join(base_dir, 'file.txt'), 'w') as f:
+            f.write('hello world')
+        subdir = os.path.join(base_dir, 'hello', 'world')
+        os.makedirs(subdir)
+        with open(os.path.join(subdir, 'custom.dockerfile'), 'w') as df:
+            df.write('\n'.join([
+                'FROM busybox',
+                'COPY . /src',
+                'WORKDIR /src',
+            ]))
+        img_name = random_name()
+        self.tmp_imgs.append(img_name)
+        stream = self.client.build(
+            path=base_dir, dockerfile='hello/world/custom.dockerfile',
+            tag=img_name, decode=True
+        )
+        lines = []
+        for chunk in stream:
+            lines.append(chunk)
+        assert 'Successfully tagged' in lines[-1]['stream']
+
+        ctnr = self.client.create_container(img_name, 'ls -a')
+        self.tmp_containers.append(ctnr)
+        self.client.start(ctnr)
+        lsdata = self.client.logs(ctnr).strip().split(b'\n')
+        assert len(lsdata) == 4
+        assert sorted(
+            [b'.', b'..', b'file.txt', b'hello']
+        ) == sorted(lsdata)
+
     def test_build_in_context_abs_dockerfile(self):
         base_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, base_dir)
@@ -503,3 +581,14 @@ class BuildTest(BaseAPIIntegrationTest):
         assert sorted(
             [b'.', b'..', b'file.txt', b'custom.dockerfile']
         ) == sorted(lsdata)
+
+    @requires_api_version('1.31')
+    @pytest.mark.xfail(
+        True,
+        reason='Currently fails on 18.09: '
+               'https://github.com/moby/moby/issues/37920'
+    )
+    def test_prune_builds(self):
+        prune_result = self.client.prune_builds()
+        assert 'SpaceReclaimed' in prune_result
+        assert isinstance(prune_result['SpaceReclaimed'], int)

@@ -2,7 +2,8 @@ from .. import auth, errors, utils
 from ..types import ServiceMode
 
 
-def _check_api_features(version, task_template, update_config, endpoint_spec):
+def _check_api_features(version, task_template, update_config, endpoint_spec,
+                        rollback_config):
 
     def raise_version_error(param, min_version):
         raise errors.InvalidVersion(
@@ -18,9 +19,23 @@ def _check_api_features(version, task_template, update_config, endpoint_spec):
             if 'Monitor' in update_config:
                 raise_version_error('UpdateConfig.monitor', '1.25')
 
+        if utils.version_lt(version, '1.28'):
+            if update_config.get('FailureAction') == 'rollback':
+                raise_version_error(
+                    'UpdateConfig.failure_action rollback', '1.28'
+                )
+
         if utils.version_lt(version, '1.29'):
             if 'Order' in update_config:
                 raise_version_error('UpdateConfig.order', '1.29')
+
+    if rollback_config is not None:
+        if utils.version_lt(version, '1.28'):
+            raise_version_error('rollback_config', '1.28')
+
+        if utils.version_lt(version, '1.29'):
+            if 'Order' in update_config:
+                raise_version_error('RollbackConfig.order', '1.29')
 
     if endpoint_spec is not None:
         if utils.version_lt(version, '1.32') and 'Ports' in endpoint_spec:
@@ -73,6 +88,10 @@ def _check_api_features(version, task_template, update_config, endpoint_spec):
                 if container_spec.get('Isolation') is not None:
                     raise_version_error('ContainerSpec.isolation', '1.35')
 
+            if utils.version_lt(version, '1.38'):
+                if container_spec.get('Init') is not None:
+                    raise_version_error('ContainerSpec.init', '1.38')
+
         if task_template.get('Resources'):
             if utils.version_lt(version, '1.32'):
                 if task_template['Resources'].get('GenericResources'):
@@ -99,7 +118,7 @@ class ServiceApiMixin(object):
     def create_service(
             self, task_template, name=None, labels=None, mode=None,
             update_config=None, networks=None, endpoint_config=None,
-            endpoint_spec=None
+            endpoint_spec=None, rollback_config=None
     ):
         """
         Create a service.
@@ -114,6 +133,8 @@ class ServiceApiMixin(object):
                 or global). Defaults to replicated.
             update_config (UpdateConfig): Specification for the update strategy
                 of the service. Default: ``None``
+            rollback_config (RollbackConfig): Specification for the rollback
+                strategy of the service. Default: ``None``
             networks (:py:class:`list`): List of network names or IDs to attach
                 the service to. Default: ``None``.
             endpoint_spec (EndpointSpec): Properties that can be configured to
@@ -129,7 +150,8 @@ class ServiceApiMixin(object):
         """
 
         _check_api_features(
-            self._version, task_template, update_config, endpoint_spec
+            self._version, task_template, update_config, endpoint_spec,
+            rollback_config
         )
 
         url = self._url('/services/create')
@@ -160,6 +182,9 @@ class ServiceApiMixin(object):
         if update_config is not None:
             data['UpdateConfig'] = update_config
 
+        if rollback_config is not None:
+            data['RollbackConfig'] = rollback_config
+
         return self._result(
             self._post_json(url, data=data, headers=headers), True
         )
@@ -176,7 +201,8 @@ class ServiceApiMixin(object):
                 into the service inspect output.
 
         Returns:
-            ``True`` if successful.
+            (dict): A dictionary of the server-side representation of the
+                service, including all relevant properties.
 
         Raises:
             :py:class:`docker.errors.APIError`
@@ -336,7 +362,8 @@ class ServiceApiMixin(object):
     def update_service(self, service, version, task_template=None, name=None,
                        labels=None, mode=None, update_config=None,
                        networks=None, endpoint_config=None,
-                       endpoint_spec=None, fetch_current_spec=False):
+                       endpoint_spec=None, fetch_current_spec=False,
+                       rollback_config=None):
         """
         Update a service.
 
@@ -354,6 +381,8 @@ class ServiceApiMixin(object):
                 or global). Defaults to replicated.
             update_config (UpdateConfig): Specification for the update strategy
                 of the service. Default: ``None``.
+            rollback_config (RollbackConfig): Specification for the rollback
+                strategy of the service. Default: ``None``
             networks (:py:class:`list`): List of network names or IDs to attach
                 the service to. Default: ``None``.
             endpoint_spec (EndpointSpec): Properties that can be configured to
@@ -362,7 +391,7 @@ class ServiceApiMixin(object):
                 current specification of the service. Default: ``False``
 
         Returns:
-            ``True`` if successful.
+            A dictionary containing a ``Warnings`` key.
 
         Raises:
             :py:class:`docker.errors.APIError`
@@ -370,7 +399,8 @@ class ServiceApiMixin(object):
         """
 
         _check_api_features(
-            self._version, task_template, update_config, endpoint_spec
+            self._version, task_template, update_config, endpoint_spec,
+            rollback_config
         )
 
         if fetch_current_spec:
@@ -416,6 +446,11 @@ class ServiceApiMixin(object):
         else:
             data['UpdateConfig'] = current.get('UpdateConfig')
 
+        if rollback_config is not None:
+            data['RollbackConfig'] = rollback_config
+        else:
+            data['RollbackConfig'] = current.get('RollbackConfig')
+
         if networks is not None:
             converted_networks = utils.convert_service_networks(networks)
             if utils.version_lt(self._version, '1.25'):
@@ -440,5 +475,4 @@ class ServiceApiMixin(object):
         resp = self._post_json(
             url, data=data, params={'version': version}, headers=headers
         )
-        self._raise_for_status(resp)
-        return True
+        return self._result(resp, json=True)

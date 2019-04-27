@@ -15,6 +15,7 @@ from docker.api import APIClient
 import requests
 from requests.packages import urllib3
 import six
+import struct
 
 from . import fake_api
 
@@ -44,7 +45,7 @@ def response(status_code=200, content='', headers=None, reason=None, elapsed=0,
     return res
 
 
-def fake_resolve_authconfig(authconfig, registry=None):
+def fake_resolve_authconfig(authconfig, registry=None, *args, **kwargs):
     return None
 
 
@@ -83,7 +84,7 @@ def fake_delete(self, url, *args, **kwargs):
     return fake_request('DELETE', url, *args, **kwargs)
 
 
-def fake_read_from_socket(self, response, stream, tty=False):
+def fake_read_from_socket(self, response, stream, tty=False, demux=False):
     return six.binary_type()
 
 
@@ -105,8 +106,6 @@ class BaseAPIClientTest(unittest.TestCase):
         )
         self.patcher.start()
         self.client = APIClient()
-        # Force-clear authconfig to avoid tampering with the tests
-        self.client._cfg = {'Configs': {}}
 
     def tearDown(self):
         self.client.close()
@@ -221,13 +220,11 @@ class DockerApiTest(BaseAPIClientTest):
             'username': 'sakuya', 'password': 'izayoi'
         }
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
-        assert self.client._auth_configs['auths'] == {
-            'docker.io': {
-                'email': None,
-                'password': 'izayoi',
-                'username': 'sakuya',
-                'serveraddress': None,
-            }
+        assert self.client._auth_configs.auths['docker.io'] == {
+            'email': None,
+            'password': 'izayoi',
+            'username': 'sakuya',
+            'serveraddress': None,
         }
 
     def test_events(self):
@@ -365,7 +362,7 @@ class DockerApiTest(BaseAPIClientTest):
         assert result == content
 
 
-class StreamTest(unittest.TestCase):
+class UnixSocketStreamTest(unittest.TestCase):
     def setUp(self):
         socket_dir = tempfile.mkdtemp()
         self.build_context = tempfile.mkdtemp()
@@ -462,7 +459,129 @@ class StreamTest(unittest.TestCase):
                         raise e
 
             assert list(stream) == [
-                str(i).encode() for i in range(50)]
+                str(i).encode() for i in range(50)
+            ]
+
+
+class TCPSocketStreamTest(unittest.TestCase):
+    stdout_data = b'''
+    Now, those children out there, they're jumping through the
+    flames in the hope that the god of the fire will make them fruitful.
+    Really, you can't blame them. After all, what girl would not prefer the
+    child of a god to that of some acne-scarred artisan?
+    '''
+    stderr_data = b'''
+    And what of the true God? To whose glory churches and monasteries have been
+    built on these islands for generations past? Now shall what of Him?
+    '''
+
+    @classmethod
+    def setup_class(cls):
+        cls.server = six.moves.socketserver.ThreadingTCPServer(
+            ('', 0), cls.get_handler_class())
+        cls.thread = threading.Thread(target=cls.server.serve_forever)
+        cls.thread.setDaemon(True)
+        cls.thread.start()
+        cls.address = 'http://{}:{}'.format(
+            socket.gethostname(), cls.server.server_address[1])
+
+    @classmethod
+    def teardown_class(cls):
+        cls.server.shutdown()
+        cls.server.server_close()
+        cls.thread.join()
+
+    @classmethod
+    def get_handler_class(cls):
+        stdout_data = cls.stdout_data
+        stderr_data = cls.stderr_data
+
+        class Handler(six.moves.BaseHTTPServer.BaseHTTPRequestHandler, object):
+            def do_POST(self):
+                resp_data = self.get_resp_data()
+                self.send_response(101)
+                self.send_header(
+                    'Content-Type', 'application/vnd.docker.raw-stream')
+                self.send_header('Connection', 'Upgrade')
+                self.send_header('Upgrade', 'tcp')
+                self.end_headers()
+                self.wfile.flush()
+                time.sleep(0.2)
+                self.wfile.write(resp_data)
+                self.wfile.flush()
+
+            def get_resp_data(self):
+                path = self.path.split('/')[-1]
+                if path == 'tty':
+                    return stdout_data + stderr_data
+                elif path == 'no-tty':
+                    data = b''
+                    data += self.frame_header(1, stdout_data)
+                    data += stdout_data
+                    data += self.frame_header(2, stderr_data)
+                    data += stderr_data
+                    return data
+                else:
+                    raise Exception('Unknown path {0}'.format(path))
+
+            @staticmethod
+            def frame_header(stream, data):
+                return struct.pack('>BxxxL', stream, len(data))
+
+        return Handler
+
+    def request(self, stream=None, tty=None, demux=None):
+        assert stream is not None and tty is not None and demux is not None
+        with APIClient(base_url=self.address) as client:
+            if tty:
+                url = client._url('/tty')
+            else:
+                url = client._url('/no-tty')
+            resp = client._post(url, stream=True)
+            return client._read_from_socket(
+                resp, stream=stream, tty=tty, demux=demux)
+
+    def test_read_from_socket_tty(self):
+        res = self.request(stream=True, tty=True, demux=False)
+        assert next(res) == self.stdout_data + self.stderr_data
+        with self.assertRaises(StopIteration):
+            next(res)
+
+    def test_read_from_socket_tty_demux(self):
+        res = self.request(stream=True, tty=True, demux=True)
+        assert next(res) == (self.stdout_data + self.stderr_data, None)
+        with self.assertRaises(StopIteration):
+            next(res)
+
+    def test_read_from_socket_no_tty(self):
+        res = self.request(stream=True, tty=False, demux=False)
+        assert next(res) == self.stdout_data
+        assert next(res) == self.stderr_data
+        with self.assertRaises(StopIteration):
+            next(res)
+
+    def test_read_from_socket_no_tty_demux(self):
+        res = self.request(stream=True, tty=False, demux=True)
+        assert (self.stdout_data, None) == next(res)
+        assert (None, self.stderr_data) == next(res)
+        with self.assertRaises(StopIteration):
+            next(res)
+
+    def test_read_from_socket_no_stream_tty(self):
+        res = self.request(stream=False, tty=True, demux=False)
+        assert res == self.stdout_data + self.stderr_data
+
+    def test_read_from_socket_no_stream_tty_demux(self):
+        res = self.request(stream=False, tty=True, demux=True)
+        assert res == (self.stdout_data + self.stderr_data, None)
+
+    def test_read_from_socket_no_stream_no_tty(self):
+        res = self.request(stream=False, tty=False, demux=False)
+        res == self.stdout_data + self.stderr_data
+
+    def test_read_from_socket_no_stream_no_tty_demux(self):
+        res = self.request(stream=False, tty=False, demux=True)
+        assert res == (self.stdout_data, self.stderr_data)
 
 
 class UserAgentTest(unittest.TestCase):

@@ -140,14 +140,18 @@ Configuration types
 .. autoclass:: Healthcheck
 .. autoclass:: IPAMConfig
 .. autoclass:: IPAMPool
+.. autoclass:: LogConfig
 .. autoclass:: Mount
 .. autoclass:: Placement
+.. autoclass:: PlacementPreference
 .. autoclass:: Privileges
 .. autoclass:: Resources
 .. autoclass:: RestartPolicy
+.. autoclass:: RollbackConfig
 .. autoclass:: SecretReference
 .. autoclass:: ServiceMode
 .. autoclass:: SwarmExternalCA
 .. autoclass:: SwarmSpec(*args, **kwargs)
 .. autoclass:: TaskTemplate
+.. autoclass:: Ulimit
 .. autoclass:: UpdateConfig

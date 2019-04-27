@@ -14,7 +14,7 @@ from docker.types.services import convert_service_ports
 
 try:
     from unittest import mock
-except:
+except:  # noqa: E722
     import mock
 
 
@@ -84,6 +84,12 @@ class HostConfigTest(unittest.TestCase):
             create_host_config(version='1.22', userns_mode='host')
         with pytest.raises(ValueError):
             create_host_config(version='1.23', userns_mode='host12')
+
+    def test_create_host_config_with_uts(self):
+        config = create_host_config(version='1.15', uts_mode='host')
+        assert config.get('UTSMode') == 'host'
+        with pytest.raises(ValueError):
+            create_host_config(version='1.15', uts_mode='host12')
 
     def test_create_host_config_with_oom_score_adj(self):
         config = create_host_config(version='1.22', oom_score_adj=100)

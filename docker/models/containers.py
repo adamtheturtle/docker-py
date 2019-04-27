@@ -6,7 +6,7 @@ from ..api import APIClient
 from ..constants import DEFAULT_DATA_CHUNK_SIZE
 from ..errors import (
     ContainerError, DockerException, ImageNotFound,
-    create_unexpected_kwargs_error
+    NotFound, create_unexpected_kwargs_error
 )
 from ..types import HostConfig
 from ..utils import version_gte
@@ -15,7 +15,12 @@ from .resource import Collection, Model
 
 
 class Container(Model):
-
+    """ Local representation of a container object. Detailed configuration may
+        be accessed through the :py:attr:`attrs` attribute. Note that local
+        attributes are cached; users may call :py:meth:`reload` to
+        query the Docker daemon for the current properties, causing
+        :py:attr:`attrs` to be refreshed.
+    """
     @property
     def name(self):
         """
@@ -56,6 +61,13 @@ class Container(Model):
         if isinstance(self.attrs['State'], dict):
             return self.attrs['State']['Status']
         return self.attrs['State']
+
+    @property
+    def ports(self):
+        """
+        The ports that the container exposes as a dictionary.
+        """
+        return self.attrs.get('NetworkSettings', {}).get('Ports', {})
 
     def attach(self, **kwargs):
         """
@@ -139,7 +151,7 @@ class Container(Model):
 
     def exec_run(self, cmd, stdout=True, stderr=True, stdin=False, tty=False,
                  privileged=False, user='', detach=False, stream=False,
-                 socket=False, environment=None, workdir=None):
+                 socket=False, environment=None, workdir=None, demux=False):
         """
         Run a command inside this container. Similar to
         ``docker exec``.
@@ -161,16 +173,18 @@ class Container(Model):
                 the following format ``["PASSWORD=xxx"]`` or
                 ``{"PASSWORD": "xxx"}``.
             workdir (str): Path to working directory for this exec session
+            demux (bool): Return stdout and stderr separately
 
         Returns:
             (ExecResult): A tuple of (exit_code, output)
                 exit_code: (int):
                     Exit code for the executed command or ``None`` if
                     either ``stream```or ``socket`` is ``True``.
-                output: (generator or str):
+                output: (generator, bytes, or tuple):
                     If ``stream=True``, a generator yielding response chunks.
                     If ``socket=True``, a socket object for the connection.
-                    A string containing response data otherwise.
+                    If ``demux=True``, a tuple of two bytes: stdout and stderr.
+                    A bytestring containing response data otherwise.
 
         Raises:
             :py:class:`docker.errors.APIError`
@@ -179,10 +193,11 @@ class Container(Model):
         resp = self.client.api.exec_create(
             self.id, cmd, stdout=stdout, stderr=stderr, stdin=stdin, tty=tty,
             privileged=privileged, user=user, environment=environment,
-            workdir=workdir
+            workdir=workdir,
         )
         exec_output = self.client.api.exec_start(
-            resp['Id'], detach=detach, tty=tty, stream=stream, socket=socket
+            resp['Id'], detach=detach, tty=tty, stream=stream, socket=socket,
+            demux=demux
         )
         if socket or stream:
             return ExecResult(None, exec_output)
@@ -228,6 +243,17 @@ class Container(Model):
         Raises:
             :py:class:`docker.errors.APIError`
                 If the server returns an error.
+
+        Example:
+
+            >>> f = open('./sh_bin.tar', 'wb')
+            >>> bits, stat = container.get_archive('/bin/sh')
+            >>> print(stat)
+            {'name': 'sh', 'size': 1075464, 'mode': 493,
+             'mtime': '2018-10-01T15:37:48-07:00', 'linkTarget': ''}
+            >>> for chunk in bits:
+            ...    f.write(chunk)
+            >>> f.close()
         """
         return self.client.api.get_archive(self.id, path, chunk_size)
 
@@ -253,16 +279,16 @@ class Container(Model):
         generator you can iterate over to retrieve log output as it happens.
 
         Args:
-            stdout (bool): Get ``STDOUT``
-            stderr (bool): Get ``STDERR``
-            stream (bool): Stream the response
-            timestamps (bool): Show timestamps
+            stdout (bool): Get ``STDOUT``. Default ``True``
+            stderr (bool): Get ``STDERR``. Default ``True``
+            stream (bool): Stream the response. Default ``False``
+            timestamps (bool): Show timestamps. Default ``False``
             tail (str or int): Output specified number of lines at the end of
                 logs. Either an integer of number of lines or the string
                 ``all``. Default ``all``
             since (datetime or int): Show logs since a given datetime or
                 integer epoch (in seconds)
-            follow (bool): Follow log output
+            follow (bool): Follow log output. Default ``False``
             until (datetime or int): Show logs that occurred before the given
                 datetime or integer epoch (in seconds)
 
@@ -380,7 +406,8 @@ class Container(Model):
 
         Args:
             decode (bool): If set to true, stream will be decoded into dicts
-                on the fly. False by default.
+                on the fly. Only applicable if ``stream`` is True.
+                False by default.
             stream (bool): If set to false, only the current stats will be
                 returned instead of a stream. True by default.
 
@@ -521,12 +548,15 @@ class ContainerCollection(Collection):
             cap_add (list of str): Add kernel capabilities. For example,
                 ``["SYS_ADMIN", "MKNOD"]``.
             cap_drop (list of str): Drop kernel capabilities.
+            cgroup_parent (str): Override the default parent cgroup.
             cpu_count (int): Number of usable CPUs (Windows only).
             cpu_percent (int): Usable percentage of the available CPUs
                 (Windows only).
             cpu_period (int): The length of a CPU period in microseconds.
             cpu_quota (int): Microseconds of CPU time that the container can
                 get in a CPU period.
+            cpu_rt_period (int): Limit CPU real-time period in microseconds.
+            cpu_rt_runtime (int): Limit CPU real-time runtime in microseconds.
             cpu_shares (int): CPU shares (relative weight).
             cpuset_cpus (str): CPUs in which to allow execution (``0-3``,
                 ``0,1``).
@@ -558,7 +588,7 @@ class ContainerCollection(Collection):
             environment (dict or list): Environment variables to set inside
                 the container, as a dictionary or a list of strings in the
                 format ``["SOMEVARIABLE=xxx"]``.
-            extra_hosts (dict): Addtional hostnames to resolve inside the
+            extra_hosts (dict): Additional hostnames to resolve inside the
                 container, as a mapping of hostname to IP address.
             group_add (:py:class:`list`): List of additional group names and/or
                 IDs that the container process will run as.
@@ -570,19 +600,17 @@ class ContainerCollection(Collection):
             init_path (str): Path to the docker-init binary
             ipc_mode (str): Set the IPC mode for the container.
             isolation (str): Isolation technology to use. Default: `None`.
+            kernel_memory (int or str): Kernel memory limit
             labels (dict or list): A dictionary of name-value labels (e.g.
                 ``{"label1": "value1", "label2": "value2"}``) or a list of
                 names of labels to set with empty values (e.g.
                 ``["label1", "label2"]``)
-            links (dict or list of tuples): Either a dictionary mapping name
-                to alias or as a list of ``(name, alias)`` tuples.
-            log_config (dict): Logging configuration, as a dictionary with
-                keys:
-
-                - ``type`` The logging driver name.
-                - ``config`` A dictionary of configuration for the logging
-                  driver.
-
+            links (dict): Mapping of links using the
+                ``{'container': 'alias'}`` format. The alias is optional.
+                Containers declared in this dict will be linked to the new
+                container using the provided alias. Default: ``None``.
+            log_config (LogConfig): Logging configuration.
+            lxc_conf (dict): LXC config.
             mac_address (str): MAC address to assign to the container.
             mem_limit (int or str): Memory limit. Accepts float values
                 (which represent the memory limit of the created container in
@@ -590,6 +618,7 @@ class ContainerCollection(Collection):
                 (``100000b``, ``1000k``, ``128m``, ``1g``). If a string is
                 specified without a units character, bytes are assumed as an
                 intended unit.
+            mem_reservation (int or str): Memory soft limit
             mem_swappiness (int): Tune a container's memory swappiness
                 behavior. Accepts number between 0 and 100.
             memswap_limit (str or int): Maximum amount of memory + swap a
@@ -628,8 +657,8 @@ class ContainerCollection(Collection):
 
                 The keys of the dictionary are the ports to bind inside the
                 container, either as an integer or a string in the form
-                ``port/protocol``, where the protocol is either ``tcp`` or
-                ``udp``.
+                ``port/protocol``, where the protocol is either ``tcp``,
+                ``udp``, or ``sctp``.
 
                 The values of the dictionary are the corresponding ports to
                 open on the host, which can be either:
@@ -662,6 +691,7 @@ class ContainerCollection(Collection):
                 For example:
                 ``{"Name": "on-failure", "MaximumRetryCount": 5}``
 
+            runtime (str): Runtime to use with this container.
             security_opt (:py:class:`list`): A list of string values to
                 customize labels for MLS systems, such as SELinux.
             shm_size (str or int): Size of /dev/shm (e.g. ``1G``).
@@ -691,13 +721,21 @@ class ContainerCollection(Collection):
                     }
 
             tty (bool): Allocate a pseudo-TTY.
-            ulimits (:py:class:`list`): Ulimits to set inside the container, as
-                a list of dicts.
+            ulimits (:py:class:`list`): Ulimits to set inside the container,
+                as a list of :py:class:`docker.types.Ulimit` instances.
+            use_config_proxy (bool): If ``True``, and if the docker client
+                configuration file (``~/.docker/config.json`` by default)
+                contains a proxy configuration, the corresponding environment
+                variables will be set in the container being built.
             user (str or int): Username or UID to run commands as inside the
                 container.
             userns_mode (str): Sets the user namespace mode for the container
                 when user namespace remapping option is enabled. Supported
                 values are: ``host``
+            uts_mode (str): Sets the UTS namespace mode for the container.
+                Supported values are: ``host``
+            version (str): The version of the API to use. Set to ``auto`` to
+                automatically detect the server's version. Default: ``1.35``
             volume_driver (str): The name of a volume driver/plugin.
             volumes (dict or list): A dictionary to configure volumes mounted
                 inside the container. The key is either the host path or a
@@ -717,7 +755,6 @@ class ContainerCollection(Collection):
             volumes_from (:py:class:`list`): List of container names or IDs to
                 get volumes from.
             working_dir (str): Path to the working directory.
-            runtime (str): Runtime to use with this container.
 
         Returns:
             The container logs, either ``STDOUT``, ``STDERR``, or both,
@@ -844,7 +881,7 @@ class ContainerCollection(Collection):
         return self.prepare_model(resp)
 
     def list(self, all=False, before=None, filters=None, limit=-1, since=None,
-             sparse=False):
+             sparse=False, ignore_removed=False):
         """
         List containers. Similar to the ``docker ps`` command.
 
@@ -882,6 +919,10 @@ class ContainerCollection(Collection):
                 information, but guaranteed not to block. Use
                 :py:meth:`Container.reload` on resulting objects to retrieve
                 all attributes. Default: ``False``
+            ignore_removed (bool): Ignore failures due to missing containers
+                when attempting to inspect containers from the original list.
+                Set to ``True`` if race conditions are likely. Has no effect
+                if ``sparse=True``. Default: ``False``
 
         Returns:
             (list of :py:class:`Container`)
@@ -896,7 +937,15 @@ class ContainerCollection(Collection):
         if sparse:
             return [self.prepare_model(r) for r in resp]
         else:
-            return [self.get(r['Id']) for r in resp]
+            containers = []
+            for r in resp:
+                try:
+                    containers.append(self.get(r['Id']))
+                # a container may have been removed while iterating
+                except NotFound:
+                    if not ignore_removed:
+                        raise
+            return containers
 
     def prune(self, filters=None):
         return self.client.api.prune_containers(filters=filters)
@@ -920,8 +969,8 @@ RUN_CREATE_KWARGS = [
     'stdin_open',
     'stop_signal',
     'tty',
+    'use_config_proxy',
     'user',
-    'volume_driver',
     'working_dir',
 ]
 
@@ -983,7 +1032,9 @@ RUN_HOST_CONFIG_KWARGS = [
     'tmpfs',
     'ulimits',
     'userns_mode',
+    'uts_mode',
     'version',
+    'volume_driver',
     'volumes_from',
     'runtime'
 ]

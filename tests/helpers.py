@@ -10,6 +10,7 @@ import six
 import socket
 
 import docker
+import paramiko
 import pytest
 
 
@@ -121,9 +122,17 @@ def assert_cat_socket_detached_with_keys(sock, inputs):
     if getattr(sock, 'family', -9) == getattr(socket, 'AF_UNIX', -1):
         with pytest.raises(socket.error):
             sock.sendall(b'make sure the socket is closed\n')
+    elif isinstance(sock, paramiko.Channel):
+        with pytest.raises(OSError):
+            sock.sendall(b'make sure the socket is closed\n')
     else:
         sock.sendall(b"make sure the socket is closed\n")
-        assert sock.recv(32) == b''
+        data = sock.recv(128)
+        # New in 18.06: error message is broadcast over the socket when reading
+        # after detach
+        assert data == b'' or data.startswith(
+            b'exec attach failed: error on attach stdin: read escape sequence'
+        )
 
 
 def ctrl_with(char):

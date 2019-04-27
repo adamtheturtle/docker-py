@@ -1,11 +1,15 @@
 import gzip
 import io
+import shutil
 
 import docker
 from docker import auth
+from docker.api.build import process_dockerfile
 
-from .api_test import BaseAPIClientTest, fake_request, url_prefix
 import pytest
+
+from ..helpers import make_tree
+from .api_test import BaseAPIClientTest, fake_request, url_prefix
 
 
 class BuildTest(BaseAPIClientTest):
@@ -61,7 +65,7 @@ class BuildTest(BaseAPIClientTest):
         )
 
     def test_build_remote_with_registry_auth(self):
-        self.client._auth_configs = {
+        self.client._auth_configs = auth.AuthConfig({
             'auths': {
                 'https://example.com': {
                     'user': 'example',
@@ -69,7 +73,7 @@ class BuildTest(BaseAPIClientTest):
                     'email': 'example@example.com'
                 }
             }
-        }
+        })
 
         expected_params = {'t': None, 'q': False, 'dockerfile': None,
                            'rm': False, 'nocache': False, 'pull': False,
@@ -77,7 +81,7 @@ class BuildTest(BaseAPIClientTest):
                            'remote': 'https://github.com/docker-library/mongo'}
         expected_headers = {
             'X-Registry-Config': auth.encode_header(
-                self.client._auth_configs['auths']
+                self.client._auth_configs.auths
             )
         }
 
@@ -111,7 +115,7 @@ class BuildTest(BaseAPIClientTest):
             })
 
     def test_set_auth_headers_with_empty_dict_and_auth_configs(self):
-        self.client._auth_configs = {
+        self.client._auth_configs = auth.AuthConfig({
             'auths': {
                 'https://example.com': {
                     'user': 'example',
@@ -119,12 +123,12 @@ class BuildTest(BaseAPIClientTest):
                     'email': 'example@example.com'
                 }
             }
-        }
+        })
 
         headers = {}
         expected_headers = {
             'X-Registry-Config': auth.encode_header(
-                self.client._auth_configs['auths']
+                self.client._auth_configs.auths
             )
         }
 
@@ -132,7 +136,7 @@ class BuildTest(BaseAPIClientTest):
         assert headers == expected_headers
 
     def test_set_auth_headers_with_dict_and_auth_configs(self):
-        self.client._auth_configs = {
+        self.client._auth_configs = auth.AuthConfig({
             'auths': {
                 'https://example.com': {
                     'user': 'example',
@@ -140,12 +144,12 @@ class BuildTest(BaseAPIClientTest):
                     'email': 'example@example.com'
                 }
             }
-        }
+        })
 
         headers = {'foo': 'bar'}
         expected_headers = {
             'X-Registry-Config': auth.encode_header(
-                self.client._auth_configs['auths']
+                self.client._auth_configs.auths
             ),
             'foo': 'bar'
         }
@@ -161,3 +165,61 @@ class BuildTest(BaseAPIClientTest):
 
         self.client._set_auth_headers(headers)
         assert headers == expected_headers
+
+    @pytest.mark.skipif(
+        not docker.constants.IS_WINDOWS_PLATFORM,
+        reason='Windows-specific syntax')
+    def test_process_dockerfile_win_longpath_prefix(self):
+        dirs = [
+            'foo', 'foo/bar', 'baz',
+        ]
+
+        files = [
+            'Dockerfile', 'foo/Dockerfile.foo', 'foo/bar/Dockerfile.bar',
+            'baz/Dockerfile.baz',
+        ]
+
+        base = make_tree(dirs, files)
+        self.addCleanup(shutil.rmtree, base)
+
+        def pre(path):
+            return docker.constants.WINDOWS_LONGPATH_PREFIX + path
+
+        assert process_dockerfile(None, pre(base)) == (None, None)
+        assert process_dockerfile('Dockerfile', pre(base)) == (
+            'Dockerfile', None
+        )
+        assert process_dockerfile('foo/Dockerfile.foo', pre(base)) == (
+            'foo/Dockerfile.foo', None
+        )
+        assert process_dockerfile(
+            '../Dockerfile', pre(base + '\\foo')
+        )[1] is not None
+        assert process_dockerfile(
+            '../baz/Dockerfile.baz', pre(base + '/baz')
+        ) == ('../baz/Dockerfile.baz', None)
+
+    def test_process_dockerfile(self):
+        dirs = [
+            'foo', 'foo/bar', 'baz',
+        ]
+
+        files = [
+            'Dockerfile', 'foo/Dockerfile.foo', 'foo/bar/Dockerfile.bar',
+            'baz/Dockerfile.baz',
+        ]
+
+        base = make_tree(dirs, files)
+        self.addCleanup(shutil.rmtree, base)
+
+        assert process_dockerfile(None, base) == (None, None)
+        assert process_dockerfile('Dockerfile', base) == ('Dockerfile', None)
+        assert process_dockerfile('foo/Dockerfile.foo', base) == (
+            'foo/Dockerfile.foo', None
+        )
+        assert process_dockerfile(
+            '../Dockerfile', base + '/foo'
+        )[1] is not None
+        assert process_dockerfile('../baz/Dockerfile.baz', base + '/baz') == (
+            '../baz/Dockerfile.baz', None
+        )

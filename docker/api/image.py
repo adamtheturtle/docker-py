@@ -32,7 +32,7 @@ class ImageApiMixin(object):
         Example:
 
             >>> image = cli.get_image("busybox:latest")
-            >>> f = open('/tmp/busybox-latest.tar', 'w')
+            >>> f = open('/tmp/busybox-latest.tar', 'wb')
             >>> for chunk in image:
             >>>   f.write(chunk)
             >>> f.close()
@@ -247,12 +247,15 @@ class ImageApiMixin(object):
 
     @utils.minimum_version('1.30')
     @utils.check_resource('image')
-    def inspect_distribution(self, image):
+    def inspect_distribution(self, image, auth_config=None):
         """
         Get image digest and platform information by contacting the registry.
 
         Args:
             image (str): The image name to inspect
+            auth_config (dict): Override the credentials that are found in the
+                config for this request.  ``auth_config`` should contain the
+                ``username`` and ``password`` keys to be valid.
 
         Returns:
             (dict): A dict containing distribution data
@@ -261,9 +264,21 @@ class ImageApiMixin(object):
             :py:class:`docker.errors.APIError`
                 If the server returns an error.
         """
+        registry, _ = auth.resolve_repository_name(image)
+
+        headers = {}
+        if auth_config is None:
+            header = auth.get_config_header(self, registry)
+            if header:
+                headers['X-Registry-Auth'] = header
+        else:
+            log.debug('Sending supplied auth config')
+            headers['X-Registry-Auth'] = auth.encode_header(auth_config)
+
+        url = self._url("/distribution/{0}/json", image)
 
         return self._result(
-            self._get(self._url("/distribution/{0}/json", image)), True
+            self._get(url, headers=headers), True
         )
 
     def load_image(self, data, quiet=None):
@@ -334,11 +349,11 @@ class ImageApiMixin(object):
         Args:
             repository (str): The repository to pull
             tag (str): The tag to pull
-            stream (bool): Stream the output as a generator
-            auth_config (dict): Override the credentials that
-                :py:meth:`~docker.api.daemon.DaemonApiMixin.login` has set for
-                this request. ``auth_config`` should contain the ``username``
-                and ``password`` keys to be valid.
+            stream (bool): Stream the output as a generator. Make sure to
+                consume the generator, otherwise pull might get cancelled.
+            auth_config (dict): Override the credentials that are found in the
+                config for this request.  ``auth_config`` should contain the
+                ``username`` and ``password`` keys to be valid.
             decode (bool): Decode the JSON data from the server into dicts.
                 Only applies with ``stream=True``
             platform (str): Platform in the format ``os[/arch[/variant]]``
@@ -352,8 +367,8 @@ class ImageApiMixin(object):
 
         Example:
 
-            >>> for line in cli.pull('busybox', stream=True):
-            ...     print(json.dumps(json.loads(line), indent=4))
+            >>> for line in cli.pull('busybox', stream=True, decode=True):
+            ...     print(json.dumps(line, indent=4))
             {
                 "status": "Pulling image (latest) from busybox",
                 "progressDetail": {},
@@ -413,10 +428,9 @@ class ImageApiMixin(object):
             repository (str): The repository to push to
             tag (str): An optional tag to push
             stream (bool): Stream the output as a blocking generator
-            auth_config (dict): Override the credentials that
-                :py:meth:`~docker.api.daemon.DaemonApiMixin.login` has set for
-                this request. ``auth_config`` should contain the ``username``
-                and ``password`` keys to be valid.
+            auth_config (dict): Override the credentials that are found in the
+                config for this request.  ``auth_config`` should contain the
+                ``username`` and ``password`` keys to be valid.
             decode (bool): Decode the JSON data from the server into dicts.
                 Only applies with ``stream=True``
 
@@ -428,12 +442,12 @@ class ImageApiMixin(object):
                 If the server returns an error.
 
         Example:
-            >>> for line in cli.push('yourname/app', stream=True):
-            ...   print line
-            {"status":"Pushing repository yourname/app (1 tags)"}
-            {"status":"Pushing","progressDetail":{},"id":"511136ea3c5a"}
-            {"status":"Image already pushed, skipping","progressDetail":{},
-             "id":"511136ea3c5a"}
+            >>> for line in cli.push('yourname/app', stream=True, decode=True):
+            ...   print(line)
+            {'status': 'Pushing repository yourname/app (1 tags)'}
+            {'status': 'Pushing','progressDetail': {}, 'id': '511136ea3c5a'}
+            {'status': 'Image already pushed, skipping', 'progressDetail':{},
+             'id': '511136ea3c5a'}
             ...
 
         """

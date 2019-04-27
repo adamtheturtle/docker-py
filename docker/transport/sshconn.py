@@ -1,9 +1,9 @@
-import six
+import paramiko
 import requests.adapters
+import six
 
 from docker.transport.basehttpadapter import BaseHTTPAdapter
 from .. import constants
-from .npipesocket import NpipeSocket
 
 if six.PY3:
     import http.client as httplib
@@ -18,37 +18,37 @@ except ImportError:
 RecentlyUsedContainer = urllib3._collections.RecentlyUsedContainer
 
 
-class NpipeHTTPConnection(httplib.HTTPConnection, object):
-    def __init__(self, npipe_path, timeout=60):
-        super(NpipeHTTPConnection, self).__init__(
+class SSHConnection(httplib.HTTPConnection, object):
+    def __init__(self, ssh_transport, timeout=60):
+        super(SSHConnection, self).__init__(
             'localhost', timeout=timeout
         )
-        self.npipe_path = npipe_path
+        self.ssh_transport = ssh_transport
         self.timeout = timeout
 
     def connect(self):
-        sock = NpipeSocket()
+        sock = self.ssh_transport.open_session()
         sock.settimeout(self.timeout)
-        sock.connect(self.npipe_path)
+        sock.exec_command('docker system dial-stdio')
         self.sock = sock
 
 
-class NpipeHTTPConnectionPool(urllib3.connectionpool.HTTPConnectionPool):
-    def __init__(self, npipe_path, timeout=60, maxsize=10):
-        super(NpipeHTTPConnectionPool, self).__init__(
+class SSHConnectionPool(urllib3.connectionpool.HTTPConnectionPool):
+    scheme = 'ssh'
+
+    def __init__(self, ssh_client, timeout=60, maxsize=10):
+        super(SSHConnectionPool, self).__init__(
             'localhost', timeout=timeout, maxsize=maxsize
         )
-        self.npipe_path = npipe_path
+        self.ssh_transport = ssh_client.get_transport()
         self.timeout = timeout
 
     def _new_conn(self):
-        return NpipeHTTPConnection(
-            self.npipe_path, self.timeout
-        )
+        return SSHConnection(self.ssh_transport, self.timeout)
 
-    # When re-using connections, urllib3 tries to call select() on our
-    # NpipeSocket instance, causing a crash. To circumvent this, we override
-    # _get_conn, where that check happens.
+    # When re-using connections, urllib3 calls fileno() on our
+    # SSH channel instance, quickly overloading our fd limit. To avoid this,
+    # we override _get_conn
     def _get_conn(self, timeout):
         conn = None
         try:
@@ -69,20 +69,30 @@ class NpipeHTTPConnectionPool(urllib3.connectionpool.HTTPConnectionPool):
         return conn or self._new_conn()
 
 
-class NpipeHTTPAdapter(BaseHTTPAdapter):
+class SSHHTTPAdapter(BaseHTTPAdapter):
 
-    __attrs__ = requests.adapters.HTTPAdapter.__attrs__ + ['npipe_path',
-                                                           'pools',
-                                                           'timeout']
+    __attrs__ = requests.adapters.HTTPAdapter.__attrs__ + [
+        'pools', 'timeout', 'ssh_client',
+    ]
 
     def __init__(self, base_url, timeout=60,
                  pool_connections=constants.DEFAULT_NUM_POOLS):
-        self.npipe_path = base_url.replace('npipe://', '')
+        self.ssh_client = paramiko.SSHClient()
+        self.ssh_client.load_system_host_keys()
+
+        self.base_url = base_url
+        self._connect()
         self.timeout = timeout
         self.pools = RecentlyUsedContainer(
             pool_connections, dispose_func=lambda p: p.close()
         )
-        super(NpipeHTTPAdapter, self).__init__()
+        super(SSHHTTPAdapter, self).__init__()
+
+    def _connect(self):
+        parsed = six.moves.urllib_parse.urlparse(self.base_url)
+        self.ssh_client.connect(
+            parsed.hostname, parsed.port, parsed.username,
+        )
 
     def get_connection(self, url, proxies=None):
         with self.pools.lock:
@@ -90,17 +100,17 @@ class NpipeHTTPAdapter(BaseHTTPAdapter):
             if pool:
                 return pool
 
-            pool = NpipeHTTPConnectionPool(
-                self.npipe_path, self.timeout
+            # Connection is closed try a reconnect
+            if not self.ssh_client.get_transport():
+                self._connect()
+
+            pool = SSHConnectionPool(
+                self.ssh_client, self.timeout
             )
             self.pools[url] = pool
 
         return pool
 
-    def request_url(self, request, proxies):
-        # The select_proxy utility in requests errors out when the provided URL
-        # doesn't have a hostname, like is the case when using a UNIX socket.
-        # Since proxies are an irrelevant notion in the case of UNIX sockets
-        # anyway, we simply return the path URL directly.
-        # See also: https://github.com/docker/docker-sdk-python/issues/811
-        return request.path_url
+    def close(self):
+        super(SSHHTTPAdapter, self).close()
+        self.ssh_client.close()

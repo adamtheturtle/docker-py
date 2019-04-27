@@ -5,6 +5,8 @@ try:
 except ImportError:
     import urllib3
 
+from ..errors import DockerException
+
 
 class CancellableStream(object):
     """
@@ -13,7 +15,7 @@ class CancellableStream(object):
     Example:
         >>> events = client.events()
         >>> for event in events:
-        ...   print event
+        ...   print(event)
         >>> # and cancel from another thread
         >>> events.close()
     """
@@ -55,8 +57,18 @@ class CancellableStream(object):
                 elif hasattr(sock_raw, '_sock'):
                     sock = sock_raw._sock
 
+            elif hasattr(sock_fp, 'channel'):
+                # We're working with a paramiko (SSH) channel, which doesn't
+                # support cancelable streams with the current implementation
+                raise DockerException(
+                    'Cancellable streams not supported for the SSH protocol'
+                )
             else:
                 sock = sock_fp._sock
+
+            if hasattr(urllib3.contrib, 'pyopenssl') and isinstance(
+                    sock, urllib3.contrib.pyopenssl.WrappedSocket):
+                sock = sock.socket
 
             sock.shutdown(socket.SHUT_RDWR)
             sock.close()
