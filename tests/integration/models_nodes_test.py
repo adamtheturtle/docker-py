@@ -10,7 +10,7 @@ class NodesTest(unittest.TestCase):
     def setUp(self) -> None:
         helpers.force_leave_swarm(docker.from_env(version=TEST_API_VERSION))
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         helpers.force_leave_swarm(docker.from_env(version=TEST_API_VERSION))
 
     def test_list_get_update(self) -> None:

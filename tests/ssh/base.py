@@ -28,7 +28,7 @@ class BaseIntegrationTest(unittest.TestCase):
         self.tmp_secrets = []
         self.tmp_configs = []
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION, use_ssh_client=True)
         try:
             for img in self.tmp_imgs:
@@ -82,7 +82,7 @@ class BaseAPIIntegrationTest(BaseIntegrationTest):
         cls.client = cls.get_client_instance()
         cls.client.pull(TEST_IMG)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         super().tearDown()
         self.client.close()
 

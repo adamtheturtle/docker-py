@@ -22,7 +22,7 @@ class ServiceTest(BaseAPIIntegrationTest):
         client = cls.get_client_instance()
         force_leave_swarm(client)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         for service in self.client.services(filters={'name': 'dockerpytest_'}):
             try:
                 self.client.remove_service(service['ID'])
@@ -1385,7 +1385,7 @@ class ServiceTest(BaseAPIIntegrationTest):
         assert len(task_template['Networks']) > 0
         assert task_template['Networks'][0]['Target'] == net2['Id']
 
-    def _update_service(self, svc_id, *args, **kwargs):
+    def _update_service(self, svc_id, *args, **kwargs) -> None:
         # service update tests seem to be a bit flaky
         # give them a chance to retry the update with a new version index
         try:

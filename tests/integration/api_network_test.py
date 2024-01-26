@@ -7,7 +7,7 @@ from .base import BaseAPIIntegrationTest, TEST_IMG
 
 
 class TestNetworks(BaseAPIIntegrationTest):
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.client.leave_swarm(force=True)
         super().tearDown()
 

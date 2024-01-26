@@ -59,7 +59,7 @@ class KwargsFromEnvTest(unittest.TestCase):
     def setUp(self) -> None:
         self.os_environ = os.environ.copy()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         os.environ.clear()
         os.environ.update(self.os_environ)
 
@@ -632,7 +632,7 @@ class FormatEnvironmentTest(unittest.TestCase):
         assert sorted(format_environment(env_dict)) == ['BAR=', 'FOO']
 
 
-def test_compare_versions():
+def test_compare_versions() -> None:
     assert compare_version('1.0', '1.1') == 1
     assert compare_version('1.10', '1.1') == -1
     assert compare_version('1.10', '1.10') == 0

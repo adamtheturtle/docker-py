@@ -102,7 +102,7 @@ class BaseAPIClientTest(unittest.TestCase):
         self.patcher.start()
         self.client = APIClient(version=DEFAULT_DOCKER_API_VERSION)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.client.close()
         self.patcher.stop()
 
@@ -597,7 +597,7 @@ class UserAgentTest(unittest.TestCase):
         )
         self.mock_send = self.patcher.start()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.patcher.stop()
 
     def test_default_user_agent(self) -> None:

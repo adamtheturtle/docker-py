@@ -12,7 +12,7 @@ class SwarmTest(BaseAPIIntegrationTest):
         force_leave_swarm(self.client)
         self._unlock_key = None
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         try:
             if self._unlock_key:
                 self.client.unlock_swarm(self._unlock_key)

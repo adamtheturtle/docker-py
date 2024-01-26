@@ -26,7 +26,7 @@ class BaseIntegrationTest(unittest.TestCase):
         self.tmp_secrets = []
         self.tmp_configs = []
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         try:
             for img in self.tmp_imgs:
@@ -78,7 +78,7 @@ class BaseAPIIntegrationTest(BaseIntegrationTest):
         super().setUp()
         self.client = self.get_client_instance()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         super().tearDown()
         self.client.close()
 

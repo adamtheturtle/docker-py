@@ -89,7 +89,7 @@ def requires_experimental(until=None):
     return req_exp
 
 
-def wait_on_condition(condition, delay=0.1, timeout=40):
+def wait_on_condition(condition, delay: float = 0.1, timeout: float = 40) -> str:
     start_time = time.time()
     while not condition():
         if time.time() - start_time > timeout:
@@ -116,11 +116,11 @@ def force_leave_swarm(client: docker.DockerClient | docker.APIClient) -> None:
                 return
 
 
-def swarm_listen_addr():
+def swarm_listen_addr() -> str:
     return f'0.0.0.0:{random.randrange(10000, 25000)}'
 
 
-def assert_cat_socket_detached_with_keys(sock, inputs):
+def assert_cat_socket_detached_with_keys(sock, inputs) -> None:
     if hasattr(sock, '_sock'):
         sock = sock._sock
 

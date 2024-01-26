@@ -65,7 +65,7 @@ class ExcludePathsTest(unittest.TestCase):
     def setUp(self) -> None:
         self.base = make_tree(self.dirs, self.files)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         shutil.rmtree(self.base)
 
     def exclude(self, patterns, dockerfile=None):

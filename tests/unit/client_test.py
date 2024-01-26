@@ -152,7 +152,7 @@ class FromEnvTest(unittest.TestCase):
     def setUp(self) -> None:
         self.os_environ = os.environ.copy()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         os.environ.clear()
         os.environ.update(self.os_environ)
 
