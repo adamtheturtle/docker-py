@@ -74,11 +74,11 @@ def compare_version(v1, v2) -> Literal[1] | Literal[0] | Literal[-1]:
     return 0
 
 
-def version_lt(v1, v2):
+def version_lt(v1, v2) -> bool:
     return compare_version(v1, v2) > 0
 
 
-def version_gte(v1, v2):
+def version_gte(v1, v2) -> bool:
     return not version_lt(v1, v2)
 
 

@@ -158,7 +158,7 @@ class DockerClient:
         return SecretCollection(client=self)
 
     @property
-    def services(self):
+    def services(self) -> ServiceCollection:
         """
         An object for managing services on the server. See the
         :doc:`services documentation <services>` for full details.
@@ -174,7 +174,7 @@ class DockerClient:
         return Swarm(client=self)
 
     @property
-    def volumes(self):
+    def volumes(self) -> VolumeCollection:
         """
         An object for managing volumes on the server. See the
         :doc:`volumes documentation <volumes>` for full details.
@@ -182,7 +182,7 @@ class DockerClient:
         return VolumeCollection(client=self)
 
     # Top-level methods
-    def events(self, *args, **kwargs):
+    def events(self, *args, **kwargs) -> None:
         return self.api.events(*args, **kwargs)
     events.__doc__ = APIClient.events.__doc__
 
@@ -198,7 +198,7 @@ class DockerClient:
         return self.api.login(*args, **kwargs)
     login.__doc__ = APIClient.login.__doc__
 
-    def ping(self, *args, **kwargs):
+    def ping(self, *args, **kwargs) -> bool:
         return self.api.ping(*args, **kwargs)
     ping.__doc__ = APIClient.ping.__doc__
 

@@ -151,7 +151,7 @@ class DaemonApiMixin:
             self._auth_configs.add_auth(registry or auth.INDEX_NAME, req_data)
         return self._result(response, json=True)
 
-    def ping(self):
+    def ping(self) -> bool:
         """
         Checks the server is responsive. An exception will be raised if it
         isn't responding.

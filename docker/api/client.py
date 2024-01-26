@@ -228,15 +228,15 @@ class APIClient(
         return kwargs
 
     @update_headers
-    def _post(self, url, **kwargs):
+    def _post(self, url, **kwargs) -> requests.Response:
         return self.post(url, **self._set_request_timeout(kwargs))
 
     @update_headers
-    def _get(self, url, **kwargs):
+    def _get(self, url, **kwargs) -> requests.Response:
         return self.get(url, **self._set_request_timeout(kwargs))
 
     @update_headers
-    def _put(self, url, **kwargs):
+    def _put(self, url, **kwargs) -> requests.Response:
         return self.put(url, **self._set_request_timeout(kwargs))
 
     @update_headers
@@ -276,7 +276,7 @@ class APIClient(
             return response.content
         return response.text
 
-    def _post_json(self, url, data, **kwargs):
+    def _post_json(self, url, data, **kwargs) -> requests.Response:
         # Go <1.1 can't unserialize null to a string
         # so we do this disgusting thing here.
         data2 = {}
