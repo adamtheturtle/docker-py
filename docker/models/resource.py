@@ -1,3 +1,5 @@
+from typing import Never
+
 class Model:
     """
     A base class for representing a single object on the server.
@@ -26,14 +28,14 @@ class Model:
         return hash(f"{self.__class__.__name__}:{self.id}")
 
     @property
-    def id(self):
+    def id(self) -> str:
         """
         The ID of the object.
         """
         return self.attrs.get(self.id_attribute)
 
     @property
-    def short_id(self):
+    def short_id(self) -> str:
         """
         The ID of the object, truncated to 12 characters.
         """
@@ -62,7 +64,7 @@ class Collection:
         #: is on.
         self.client = client
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> Never:
         raise TypeError(
             f"'{self.__class__.__name__}' object is not callable. "
             "You might be trying to use the old (pre-2.0) API - "

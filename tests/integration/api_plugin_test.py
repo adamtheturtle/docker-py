@@ -12,7 +12,7 @@ SSHFS = 'vieux/sshfs:latest'
 @requires_api_version('1.25')
 class PluginTest(BaseAPIIntegrationTest):
     @classmethod
-    def teardown_class(cls):
+    def teardown_class(cls) -> None:
         client = cls.get_client_instance()
         try:
             client.remove_plugin(SSHFS, force=True)

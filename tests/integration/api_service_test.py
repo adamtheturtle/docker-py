@@ -12,13 +12,13 @@ from .base import BaseAPIIntegrationTest, TEST_IMG
 
 class ServiceTest(BaseAPIIntegrationTest):
     @classmethod
-    def setup_class(cls):
+    def setup_class(cls) -> None:
         client = cls.get_client_instance()
         force_leave_swarm(client)
         cls._init_swarm(client)
 
     @classmethod
-    def teardown_class(cls):
+    def teardown_class(cls) -> None:
         client = cls.get_client_instance()
         force_leave_swarm(client)
 

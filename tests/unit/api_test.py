@@ -478,7 +478,7 @@ class TCPSocketStreamTest(unittest.TestCase):
     '''
 
     @classmethod
-    def setup_class(cls):
+    def setup_class(cls) -> None:
         cls.server = socketserver.ThreadingTCPServer(
             ('', 0), cls.get_handler_class())
         cls.thread = threading.Thread(target=cls.server.serve_forever)
@@ -487,13 +487,13 @@ class TCPSocketStreamTest(unittest.TestCase):
         cls.address = f'http://{socket.gethostname()}:{cls.server.server_address[1]}'
 
     @classmethod
-    def teardown_class(cls):
+    def teardown_class(cls) -> None:
         cls.server.shutdown()
         cls.server.server_close()
         cls.thread.join()
 
     @classmethod
-    def get_handler_class(cls):
+    def get_handler_class(cls) -> None:
         stdout_data = cls.stdout_data
         stderr_data = cls.stderr_data
 
