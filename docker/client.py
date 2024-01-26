@@ -45,7 +45,8 @@ class DockerClient:
         self.api = APIClient(*args, **kwargs)
 
     @classmethod
-    def from_env(cls, **kwargs):
+    # In Python 3.11 this can be changed to: "-> typing.Self".
+    def from_env(cls, **kwargs) -> "DockerClient":
         """
         Return a client configured from environment variables.
 
