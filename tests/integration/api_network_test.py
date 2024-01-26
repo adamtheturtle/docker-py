@@ -17,7 +17,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         self.tmp_networks.append(net_id)
         return (net_name, net_id)
 
-    def test_list_networks(self):
+    def test_list_networks(self) -> None:
         networks = self.client.networks()
 
         net_name, net_id = self.create_network()
@@ -31,7 +31,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         networks_by_partial_id = self.client.networks(ids=[net_id[:8]])
         assert [n['Id'] for n in networks_by_partial_id] == [net_id]
 
-    def test_inspect_network(self):
+    def test_inspect_network(self) -> None:
         net_name, net_id = self.create_network()
 
         net = self.client.inspect_network(net_id)
@@ -41,7 +41,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         assert net['Scope'] == 'local'
         assert net['IPAM']['Driver'] == 'default'
 
-    def test_create_network_with_ipam_config(self):
+    def test_create_network_with_ipam_config(self) -> None:
         _, net_id = self.create_network(
             ipam=IPAMConfig(
                 driver='default',
@@ -78,18 +78,18 @@ class TestNetworks(BaseAPIIntegrationTest):
             },
         }]
 
-    def test_create_network_with_host_driver_fails(self):
+    def test_create_network_with_host_driver_fails(self) -> None:
         with pytest.raises(docker.errors.APIError):
             self.client.create_network(random_name(), driver='host')
 
-    def test_remove_network(self):
+    def test_remove_network(self) -> None:
         net_name, net_id = self.create_network()
         assert net_name in [n['Name'] for n in self.client.networks()]
 
         self.client.remove_network(net_id)
         assert net_name not in [n['Name'] for n in self.client.networks()]
 
-    def test_connect_and_disconnect_container(self):
+    def test_connect_and_disconnect_container(self) -> None:
         net_name, net_id = self.create_network()
 
         container = self.client.create_container(TEST_IMG, 'top')
@@ -116,7 +116,7 @@ class TestNetworks(BaseAPIIntegrationTest):
             self.client.disconnect_container_from_network(container, net_id)
 
     @requires_api_version('1.22')
-    def test_connect_and_force_disconnect_container(self):
+    def test_connect_and_force_disconnect_container(self) -> None:
         net_name, net_id = self.create_network()
 
         container = self.client.create_container(TEST_IMG, 'top')
@@ -141,7 +141,7 @@ class TestNetworks(BaseAPIIntegrationTest):
             )
 
     @requires_api_version('1.22')
-    def test_connect_with_aliases(self):
+    def test_connect_with_aliases(self) -> None:
         net_name, net_id = self.create_network()
 
         container = self.client.create_container(TEST_IMG, 'top')
@@ -157,7 +157,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         assert 'foo' in aliases
         assert 'bar' in aliases
 
-    def test_connect_on_container_create(self):
+    def test_connect_on_container_create(self) -> None:
         net_name, net_id = self.create_network()
 
         container = self.client.create_container(
@@ -177,7 +177,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         assert not network_data.get('Containers')
 
     @requires_api_version('1.22')
-    def test_create_with_aliases(self):
+    def test_create_with_aliases(self) -> None:
         net_name, net_id = self.create_network()
 
         container = self.client.create_container(
@@ -203,7 +203,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         assert 'bar' in aliases
 
     @requires_api_version('1.22')
-    def test_create_with_ipv4_address(self):
+    def test_create_with_ipv4_address(self) -> None:
         net_name, net_id = self.create_network(
             ipam=IPAMConfig(
                 driver='default',
@@ -229,7 +229,7 @@ class TestNetworks(BaseAPIIntegrationTest):
             == '132.124.0.23'
 
     @requires_api_version('1.22')
-    def test_create_with_ipv6_address(self):
+    def test_create_with_ipv6_address(self) -> None:
         net_name, net_id = self.create_network(
             ipam=IPAMConfig(
                 driver='default',
@@ -255,7 +255,7 @@ class TestNetworks(BaseAPIIntegrationTest):
             == '2001:389::f00d'
 
     @requires_api_version('1.24')
-    def test_create_with_linklocal_ips(self):
+    def test_create_with_linklocal_ips(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'top',
             networking_config=self.client.create_networking_config(
@@ -276,7 +276,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         assert net_cfg['IPAMConfig']['LinkLocalIPs'] == ['169.254.8.8']
 
     @requires_api_version('1.32')
-    def test_create_with_driveropt(self):
+    def test_create_with_driveropt(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'top',
             networking_config=self.client.create_networking_config(
@@ -297,7 +297,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         assert net_cfg['DriverOpts']['com.docker-py.setting'] == 'on'
 
     @requires_api_version('1.22')
-    def test_create_with_links(self):
+    def test_create_with_links(self) -> None:
         net_name, net_id = self.create_network()
 
         container = self.create_and_start(
@@ -323,13 +323,13 @@ class TestNetworks(BaseAPIIntegrationTest):
 
         self.execute(container, ['nslookup', 'bar'])
 
-    def test_create_check_duplicate(self):
+    def test_create_check_duplicate(self) -> None:
         net_name, net_id = self.create_network()
         with pytest.raises(docker.errors.APIError):
             self.client.create_network(net_name, check_duplicate=True)
 
     @requires_api_version('1.22')
-    def test_connect_with_links(self):
+    def test_connect_with_links(self) -> None:
         net_name, net_id = self.create_network()
 
         container = self.create_and_start(
@@ -355,7 +355,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         self.execute(container, ['nslookup', 'bar'])
 
     @requires_api_version('1.22')
-    def test_connect_with_ipv4_address(self):
+    def test_connect_with_ipv4_address(self) -> None:
         net_name, net_id = self.create_network(
             ipam=IPAMConfig(
                 driver='default',
@@ -381,7 +381,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         assert net_data['IPAMConfig']['IPv4Address'] == '172.28.5.24'
 
     @requires_api_version('1.22')
-    def test_connect_with_ipv6_address(self):
+    def test_connect_with_ipv6_address(self) -> None:
         net_name, net_id = self.create_network(
             ipam=IPAMConfig(
                 driver='default',
@@ -407,7 +407,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         assert net_data['IPAMConfig']['IPv6Address'] == '2001:389::f00d'
 
     @requires_api_version('1.25')
-    def test_connect_with_mac_address(self):
+    def test_connect_with_mac_address(self) -> None:
         net_name, net_id = self.create_network()
 
         container = self.client.create_container(TEST_IMG, 'top')
@@ -423,13 +423,13 @@ class TestNetworks(BaseAPIIntegrationTest):
         assert net_data['MacAddress'] == '02:42:ac:11:00:02'
 
     @requires_api_version('1.23')
-    def test_create_internal_networks(self):
+    def test_create_internal_networks(self) -> None:
         _, net_id = self.create_network(internal=True)
         net = self.client.inspect_network(net_id)
         assert net['Internal'] is True
 
     @requires_api_version('1.23')
-    def test_create_network_with_labels(self):
+    def test_create_network_with_labels(self) -> None:
         _, net_id = self.create_network(labels={
             'com.docker.py.test': 'label'
         })
@@ -442,12 +442,12 @@ class TestNetworks(BaseAPIIntegrationTest):
         }
 
     @requires_api_version('1.23')
-    def test_create_network_with_labels_wrong_type(self):
+    def test_create_network_with_labels_wrong_type(self) -> None:
         with pytest.raises(TypeError):
             self.create_network(labels=['com.docker.py.test=label', ])
 
     @requires_api_version('1.23')
-    def test_create_network_ipv6_enabled(self):
+    def test_create_network_ipv6_enabled(self) -> None:
         _, net_id = self.create_network(
             enable_ipv6=True, ipam=IPAMConfig(
                 driver='default',
@@ -463,14 +463,14 @@ class TestNetworks(BaseAPIIntegrationTest):
         assert net['EnableIPv6'] is True
 
     @requires_api_version('1.25')
-    def test_create_network_attachable(self):
+    def test_create_network_attachable(self) -> None:
         assert self.init_swarm()
         _, net_id = self.create_network(driver='overlay', attachable=True)
         net = self.client.inspect_network(net_id)
         assert net['Attachable'] is True
 
     @requires_api_version('1.29')
-    def test_create_network_ingress(self):
+    def test_create_network_ingress(self) -> None:
         assert self.init_swarm()
         self.client.remove_network('ingress')
         _, net_id = self.create_network(driver='overlay', ingress=True)
@@ -478,13 +478,13 @@ class TestNetworks(BaseAPIIntegrationTest):
         assert net['Ingress'] is True
 
     @requires_api_version('1.25')
-    def test_prune_networks(self):
+    def test_prune_networks(self) -> None:
         net_name, _ = self.create_network()
         result = self.client.prune_networks()
         assert net_name in result['NetworksDeleted']
 
     @requires_api_version('1.31')
-    def test_create_inspect_network_with_scope(self):
+    def test_create_inspect_network_with_scope(self) -> None:
         assert self.init_swarm()
         net_name_loc, net_id_loc = self.create_network(scope='local')
 
@@ -502,7 +502,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         with pytest.raises(docker.errors.NotFound):
             self.client.inspect_network(net_name_swarm, scope='local')
 
-    def test_create_remove_network_with_space_in_name(self):
+    def test_create_remove_network_with_space_in_name(self) -> None:
         net_id = self.client.create_network('test 01')
         self.tmp_networks.append(net_id)
         assert self.client.inspect_network('test 01')

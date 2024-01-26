@@ -10,7 +10,7 @@ from ..helpers import random_name
 
 class ImageCollectionTest(BaseIntegrationTest):
 
-    def test_build(self):
+    def test_build(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         image, _ = client.images.build(fileobj=io.BytesIO(
             b"FROM alpine\n"
@@ -20,7 +20,7 @@ class ImageCollectionTest(BaseIntegrationTest):
         assert client.containers.run(image) == b"hello world\n"
 
     # @pytest.mark.xfail(reason='Engine 1.13 responds with status 500')
-    def test_build_with_error(self):
+    def test_build_with_error(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         with pytest.raises(docker.errors.BuildError) as cm:
             client.images.build(fileobj=io.BytesIO(
@@ -32,7 +32,7 @@ class ImageCollectionTest(BaseIntegrationTest):
         ) in cm.exconly()
         assert cm.value.build_log
 
-    def test_build_with_multiple_success(self):
+    def test_build_with_multiple_success(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         image, _ = client.images.build(
             tag='some-tag', fileobj=io.BytesIO(
@@ -43,7 +43,7 @@ class ImageCollectionTest(BaseIntegrationTest):
         self.tmp_imgs.append(image.id)
         assert client.containers.run(image) == b"hello world\n"
 
-    def test_build_with_success_build_output(self):
+    def test_build_with_success_build_output(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         image, _ = client.images.build(
             tag='dup-txt-tag', fileobj=io.BytesIO(
@@ -54,28 +54,28 @@ class ImageCollectionTest(BaseIntegrationTest):
         self.tmp_imgs.append(image.id)
         assert client.containers.run(image) == b"Successfully built abcd1234\n"
 
-    def test_list(self):
+    def test_list(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         image = client.images.pull('alpine:latest')
         assert image.id in get_ids(client.images.list())
 
-    def test_list_with_repository(self):
+    def test_list_with_repository(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         image = client.images.pull('alpine:latest')
         assert image.id in get_ids(client.images.list('alpine'))
         assert image.id in get_ids(client.images.list('alpine:latest'))
 
-    def test_pull(self):
+    def test_pull(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         image = client.images.pull('alpine:latest')
         assert 'alpine:latest' in image.attrs['RepoTags']
 
-    def test_pull_with_tag(self):
+    def test_pull_with_tag(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         image = client.images.pull('alpine', tag='3.10')
         assert 'alpine:3.10' in image.attrs['RepoTags']
 
-    def test_pull_with_sha(self):
+    def test_pull_with_sha(self) -> None:
         image_ref = (
             'hello-world@sha256:083de497cff944f969d8499ab94f07134c50bcf5e6b95'
             '59b27182d3fa80ce3f7'
@@ -84,18 +84,18 @@ class ImageCollectionTest(BaseIntegrationTest):
         image = client.images.pull(image_ref)
         assert image_ref in image.attrs['RepoDigests']
 
-    def test_pull_multiple(self):
+    def test_pull_multiple(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         images = client.images.pull('hello-world', all_tags=True)
         assert len(images) >= 1
         assert any('hello-world:latest' in img.attrs['RepoTags'] for img in images)
 
-    def test_load_error(self):
+    def test_load_error(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         with pytest.raises(docker.errors.ImageLoadError):
             client.images.load('abc')
 
-    def test_save_and_load(self):
+    def test_save_and_load(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         image = client.images.get(TEST_IMG)
         with tempfile.TemporaryFile() as f:
@@ -109,7 +109,7 @@ class ImageCollectionTest(BaseIntegrationTest):
         assert len(result) == 1
         assert result[0].id == image.id
 
-    def test_save_and_load_repo_name(self):
+    def test_save_and_load_repo_name(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         image = client.images.get(TEST_IMG)
         additional_tag = random_name()
@@ -129,7 +129,7 @@ class ImageCollectionTest(BaseIntegrationTest):
         assert result[0].id == image.id
         assert f'{additional_tag}:latest' in result[0].tags
 
-    def test_save_name_error(self):
+    def test_save_name_error(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         image = client.images.get(TEST_IMG)
         with pytest.raises(docker.errors.InvalidArgument):
@@ -138,7 +138,7 @@ class ImageCollectionTest(BaseIntegrationTest):
 
 class ImageTest(BaseIntegrationTest):
 
-    def test_tag_and_remove(self):
+    def test_tag_and_remove(self) -> None:
         repo = 'dockersdk.tests.images.test_tag'
         tag = 'some-tag'
         identifier = f'{repo}:{tag}'

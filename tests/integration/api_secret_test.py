@@ -18,7 +18,7 @@ class SecretAPITest(BaseAPIIntegrationTest):
         client = cls.get_client_instance()
         force_leave_swarm(client)
 
-    def test_create_secret(self):
+    def test_create_secret(self) -> None:
         secret_id = self.client.create_secret(
             'favorite_character', 'sakuya izayoi'
         )
@@ -27,7 +27,7 @@ class SecretAPITest(BaseAPIIntegrationTest):
         data = self.client.inspect_secret(secret_id)
         assert data['Spec']['Name'] == 'favorite_character'
 
-    def test_create_secret_unicode_data(self):
+    def test_create_secret_unicode_data(self) -> None:
         secret_id = self.client.create_secret(
             'favorite_character', 'いざよいさくや'
         )
@@ -36,7 +36,7 @@ class SecretAPITest(BaseAPIIntegrationTest):
         data = self.client.inspect_secret(secret_id)
         assert data['Spec']['Name'] == 'favorite_character'
 
-    def test_inspect_secret(self):
+    def test_inspect_secret(self) -> None:
         secret_name = 'favorite_character'
         secret_id = self.client.create_secret(
             secret_name, 'sakuya izayoi'
@@ -47,7 +47,7 @@ class SecretAPITest(BaseAPIIntegrationTest):
         assert 'ID' in data
         assert 'Version' in data
 
-    def test_remove_secret(self):
+    def test_remove_secret(self) -> None:
         secret_name = 'favorite_character'
         secret_id = self.client.create_secret(
             secret_name, 'sakuya izayoi'
@@ -58,7 +58,7 @@ class SecretAPITest(BaseAPIIntegrationTest):
         with pytest.raises(docker.errors.NotFound):
             self.client.inspect_secret(secret_id)
 
-    def test_list_secrets(self):
+    def test_list_secrets(self) -> None:
         secret_name = 'favorite_character'
         secret_id = self.client.create_secret(
             secret_name, 'sakuya izayoi'

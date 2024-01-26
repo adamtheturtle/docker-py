@@ -9,7 +9,7 @@ import pytest
 
 class TestRegressions(BaseAPIIntegrationTest):
     @pytest.mark.xfail(True, reason='Docker API always returns chunked resp')
-    def test_443_handle_nonchunked_response_in_stream(self):
+    def test_443_handle_nonchunked_response_in_stream(self) -> None:
         dfile = io.BytesIO()
         with pytest.raises(docker.errors.APIError) as exc:
             for _line in self.client.build(fileobj=dfile, tag="a/b/c"):
@@ -17,24 +17,24 @@ class TestRegressions(BaseAPIIntegrationTest):
         assert exc.value.is_error()
         dfile.close()
 
-    def test_542_truncate_ids_client_side(self):
+    def test_542_truncate_ids_client_side(self) -> None:
         self.client.start(
             self.client.create_container(TEST_IMG, ['true'])
         )
         result = self.client.containers(all=True, trunc=True)
         assert len(result[0]['Id']) == 12
 
-    def test_647_support_doubleslash_in_image_names(self):
+    def test_647_support_doubleslash_in_image_names(self) -> None:
         with pytest.raises(docker.errors.APIError):
             self.client.inspect_image('gensokyo.jp//kirisame')
 
-    def test_649_handle_timeout_value_none(self):
+    def test_649_handle_timeout_value_none(self) -> None:
         self.client.timeout = None
         ctnr = self.client.create_container(TEST_IMG, ['sleep', '2'])
         self.client.start(ctnr)
         self.client.stop(ctnr)
 
-    def test_715_handle_user_param_as_int_value(self):
+    def test_715_handle_user_param_as_int_value(self) -> None:
         ctnr = self.client.create_container(TEST_IMG, ['id', '-u'], user=1000)
         self.client.start(ctnr)
         self.client.wait(ctnr)
@@ -42,7 +42,7 @@ class TestRegressions(BaseAPIIntegrationTest):
         logs = logs.decode('utf-8')
         assert logs == '1000\n'
 
-    def test_792_explicit_port_protocol(self):
+    def test_792_explicit_port_protocol(self) -> None:
 
         tcp_port, udp_port = random.sample(range(9999, 32000), 2)
         ctnr = self.client.create_container(

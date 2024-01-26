@@ -21,7 +21,7 @@ from docker.utils.socket import read_exactly
 
 
 class ListContainersTest(BaseAPIIntegrationTest):
-    def test_list_containers(self):
+    def test_list_containers(self) -> None:
         res0 = self.client.containers(all=True)
         size = len(res0)
         res1 = self.client.create_container(TEST_IMG, 'true')
@@ -42,12 +42,12 @@ class ListContainersTest(BaseAPIIntegrationTest):
 
 class CreateContainerTest(BaseAPIIntegrationTest):
 
-    def test_create(self):
+    def test_create(self) -> None:
         res = self.client.create_container(TEST_IMG, 'true')
         assert 'Id' in res
         self.tmp_containers.append(res['Id'])
 
-    def test_create_with_host_pid_mode(self):
+    def test_create_with_host_pid_mode(self) -> None:
         ctnr = self.client.create_container(
             TEST_IMG, 'true', host_config=self.client.create_host_config(
                 pid_mode='host', network_mode='none'
@@ -62,7 +62,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert 'PidMode' in host_config
         assert host_config['PidMode'] == 'host'
 
-    def test_create_with_links(self):
+    def test_create_with_links(self) -> None:
         res0 = self.client.create_container(
             TEST_IMG, 'cat',
             detach=True, stdin_open=True,
@@ -109,7 +109,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert f'{link_env_prefix2}_NAME=' in logs
         assert f'{link_env_prefix2}_ENV_FOO=1' in logs
 
-    def test_create_with_restart_policy(self):
+    def test_create_with_restart_policy(self) -> None:
         container = self.client.create_container(
             TEST_IMG, ['sleep', '2'],
             host_config=self.client.create_host_config(
@@ -126,7 +126,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert 'stop the container before' in err
         self.client.remove_container(id, force=True)
 
-    def test_create_container_with_volumes_from(self):
+    def test_create_container_with_volumes_from(self) -> None:
         vol_names = ['foobar_vol0', 'foobar_vol1']
 
         res0 = self.client.create_container(
@@ -202,7 +202,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         if 'Privileged' in inspect['Config']:
             assert inspect['Config']['Privileged'] is True
 
-    def test_create_with_mac_address(self):
+    def test_create_with_mac_address(self) -> None:
         mac_address_expected = "02:42:ac:11:00:0a"
         container = self.client.create_container(
             TEST_IMG, ['sleep', '60'], mac_address=mac_address_expected)
@@ -216,7 +216,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         self.client.kill(id)
 
     @requires_api_version('1.41')
-    def test_create_with_cgroupns(self):
+    def test_create_with_cgroupns(self) -> None:
         host_config = self.client.create_host_config(cgroupns='private')
 
         container = self.client.create_container(
@@ -229,7 +229,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         res = self.client.inspect_container(container)
         assert 'private' == res['HostConfig']['CgroupnsMode']
 
-    def test_group_id_ints(self):
+    def test_group_id_ints(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'id -G',
             host_config=self.client.create_host_config(group_add=[1000, 1001])
@@ -243,7 +243,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert '1000' in groups
         assert '1001' in groups
 
-    def test_group_id_strings(self):
+    def test_group_id_strings(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'id -G', host_config=self.client.create_host_config(
                 group_add=['1000', '1001']
@@ -259,7 +259,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert '1000' in groups
         assert '1001' in groups
 
-    def test_valid_log_driver_and_log_opt(self):
+    def test_valid_log_driver_and_log_opt(self) -> None:
         log_config = docker.types.LogConfig(
             type='json-file',
             config={'max-file': '100'}
@@ -278,7 +278,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert container_log_config['Type'] == log_config.type
         assert container_log_config['Config'] == log_config.config
 
-    def test_invalid_log_driver_raises_exception(self):
+    def test_invalid_log_driver_raises_exception(self) -> None:
         log_config = docker.types.LogConfig(
             type='asdf',
             config={}
@@ -299,7 +299,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
 
         assert excinfo.value.explanation in expected_msgs
 
-    def test_valid_no_log_driver_specified(self):
+    def test_valid_no_log_driver_specified(self) -> None:
         log_config = docker.types.LogConfig(
             type="",
             config={'max-file': '100'}
@@ -318,7 +318,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert container_log_config['Type'] == "json-file"
         assert container_log_config['Config'] == log_config.config
 
-    def test_valid_no_config_specified(self):
+    def test_valid_no_config_specified(self) -> None:
         log_config = docker.types.LogConfig(
             type="json-file",
             config=None
@@ -337,7 +337,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert container_log_config['Type'] == "json-file"
         assert container_log_config['Config'] == {}
 
-    def test_create_with_memory_constraints_with_str(self):
+    def test_create_with_memory_constraints_with_str(self) -> None:
         ctnr = self.client.create_container(
             TEST_IMG, 'true',
             host_config=self.client.create_host_config(
@@ -355,7 +355,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         for limit in ['Memory', 'MemorySwap']:
             assert limit in host_config
 
-    def test_create_with_memory_constraints_with_int(self):
+    def test_create_with_memory_constraints_with_int(self) -> None:
         ctnr = self.client.create_container(
             TEST_IMG, 'true',
             host_config=self.client.create_host_config(mem_swappiness=40)
@@ -369,7 +369,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         host_config = inspect['HostConfig']
         assert 'MemorySwappiness' in host_config
 
-    def test_create_with_environment_variable_no_value(self):
+    def test_create_with_environment_variable_no_value(self) -> None:
         container = self.client.create_container(
             TEST_IMG,
             ['echo'],
@@ -382,7 +382,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert 'Blank=' in config['Config']['Env']
 
     @requires_api_version('1.22')
-    def test_create_with_tmpfs(self):
+    def test_create_with_tmpfs(self) -> None:
         tmpfs = {
             '/tmp1': 'size=3M'
         }
@@ -398,7 +398,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert config['HostConfig']['Tmpfs'] == tmpfs
 
     @requires_api_version('1.24')
-    def test_create_with_isolation(self):
+    def test_create_with_isolation(self) -> None:
         container = self.client.create_container(
             TEST_IMG, ['echo'], host_config=self.client.create_host_config(
                 isolation='default'
@@ -409,7 +409,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert config['HostConfig']['Isolation'] == 'default'
 
     @requires_api_version('1.25')
-    def test_create_with_auto_remove(self):
+    def test_create_with_auto_remove(self) -> None:
         host_config = self.client.create_host_config(
             auto_remove=True
         )
@@ -421,7 +421,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert config['HostConfig']['AutoRemove'] is True
 
     @requires_api_version('1.25')
-    def test_create_with_stop_timeout(self):
+    def test_create_with_stop_timeout(self) -> None:
         container = self.client.create_container(
             TEST_IMG, ['echo', 'test'], stop_timeout=25
         )
@@ -431,7 +431,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
 
     @requires_api_version('1.24')
     @pytest.mark.xfail(True, reason='Not supported on most drivers')
-    def test_create_with_storage_opt(self):
+    def test_create_with_storage_opt(self) -> None:
         host_config = self.client.create_host_config(
             storage_opt={'size': '120G'}
         )
@@ -445,7 +445,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         }
 
     @requires_api_version('1.25')
-    def test_create_with_init(self):
+    def test_create_with_init(self) -> None:
         ctnr = self.client.create_container(
             TEST_IMG, 'true',
             host_config=self.client.create_host_config(
@@ -459,7 +459,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
     @requires_api_version('1.24')
     @pytest.mark.xfail(not os.path.exists('/sys/fs/cgroup/cpu.rt_runtime_us'),
                        reason='CONFIG_RT_GROUP_SCHED isn\'t enabled')
-    def test_create_with_cpu_rt_options(self):
+    def test_create_with_cpu_rt_options(self) -> None:
         ctnr = self.client.create_container(
             TEST_IMG, 'true', host_config=self.client.create_host_config(
                 cpu_rt_period=1000, cpu_rt_runtime=500
@@ -471,7 +471,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert config['HostConfig']['CpuRealtimePeriod'] == 1000
 
     @requires_api_version('1.28')
-    def test_create_with_device_cgroup_rules(self):
+    def test_create_with_device_cgroup_rules(self) -> None:
         rule = 'c 7:128 rwm'
         ctnr = self.client.create_container(
             TEST_IMG, 'true', host_config=self.client.create_host_config(
@@ -482,7 +482,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         config = self.client.inspect_container(ctnr)
         assert config['HostConfig']['DeviceCgroupRules'] == [rule]
 
-    def test_create_with_uts_mode(self):
+    def test_create_with_uts_mode(self) -> None:
         container = self.client.create_container(
             TEST_IMG, ['echo'], host_config=self.client.create_host_config(
                 uts_mode='host'
@@ -512,7 +512,7 @@ class VolumeBindTest(BaseAPIIntegrationTest):
             ['touch', os.path.join(self.mount_dest, self.filename)],
         )
 
-    def test_create_with_binds_rw(self):
+    def test_create_with_binds_rw(self) -> None:
 
         container = self.run_with_volume(
             False,
@@ -524,7 +524,7 @@ class VolumeBindTest(BaseAPIIntegrationTest):
         inspect_data = self.client.inspect_container(container)
         self.check_container_data(inspect_data, True)
 
-    def test_create_with_binds_ro(self):
+    def test_create_with_binds_ro(self) -> None:
         self.run_with_volume(
             False,
             TEST_IMG,
@@ -543,7 +543,7 @@ class VolumeBindTest(BaseAPIIntegrationTest):
         self.check_container_data(inspect_data, False)
 
     @skip_if_desktop()
-    def test_create_with_binds_rw_rshared(self):
+    def test_create_with_binds_rw_rshared(self) -> None:
         container = self.run_with_volume_propagation(
             False,
             'rshared',
@@ -564,7 +564,7 @@ class VolumeBindTest(BaseAPIIntegrationTest):
         self.check_container_data(inspect_data, False, 'rshared')
 
     @requires_api_version('1.30')
-    def test_create_with_mounts(self):
+    def test_create_with_mounts(self) -> None:
         mount = docker.types.Mount(
             type="bind", source=self.mount_origin, target=self.mount_dest
         )
@@ -580,7 +580,7 @@ class VolumeBindTest(BaseAPIIntegrationTest):
         self.check_container_data(inspect_data, True)
 
     @requires_api_version('1.30')
-    def test_create_with_mounts_ro(self):
+    def test_create_with_mounts_ro(self) -> None:
         mount = docker.types.Mount(
             type="bind", source=self.mount_origin, target=self.mount_dest,
             read_only=True
@@ -597,7 +597,7 @@ class VolumeBindTest(BaseAPIIntegrationTest):
         self.check_container_data(inspect_data, False)
 
     @requires_api_version('1.30')
-    def test_create_with_volume_mount(self):
+    def test_create_with_volume_mount(self) -> None:
         mount = docker.types.Mount(
             type="volume", source=helpers.random_name(),
             target=self.mount_dest, labels={'com.dockerpy.test': 'true'}
@@ -665,7 +665,7 @@ class VolumeBindTest(BaseAPIIntegrationTest):
 
 
 class ArchiveTest(BaseAPIIntegrationTest):
-    def test_get_file_archive_from_container(self):
+    def test_get_file_archive_from_container(self) -> None:
         data = 'The Maid and the Pocket Watch of Blood'
         ctnr = self.client.create_container(
             TEST_IMG, f'sh -c "echo {data} > /vol1/data.txt"',
@@ -683,7 +683,7 @@ class ArchiveTest(BaseAPIIntegrationTest):
                 .decode('utf-8')
             assert data == retrieved_data.strip()
 
-    def test_get_file_stat_from_container(self):
+    def test_get_file_stat_from_container(self) -> None:
         data = 'The Maid and the Pocket Watch of Blood'
         ctnr = self.client.create_container(
             TEST_IMG, f'sh -c "echo -n {data} > /vol1/data.txt"',
@@ -698,7 +698,7 @@ class ArchiveTest(BaseAPIIntegrationTest):
         assert 'size' in stat
         assert stat['size'] == len(data)
 
-    def test_copy_file_to_container(self):
+    def test_copy_file_to_container(self) -> None:
         data = b'Deaf To All But The Song'
         with tempfile.NamedTemporaryFile(delete=False) as test_file:
             test_file.write(data)
@@ -716,7 +716,7 @@ class ArchiveTest(BaseAPIIntegrationTest):
         logs = self.client.logs(ctnr)
         assert logs.strip() == data
 
-    def test_copy_directory_to_container(self):
+    def test_copy_directory_to_container(self) -> None:
         files = ['a.py', 'b.py', 'foo/b.py']
         dirs = ['foo', 'bar']
         base = helpers.make_tree(dirs, files)
@@ -737,7 +737,7 @@ class ArchiveTest(BaseAPIIntegrationTest):
 
 
 class RenameContainerTest(BaseAPIIntegrationTest):
-    def test_rename_container(self):
+    def test_rename_container(self) -> None:
         version = self.client.version()['Version']
         name = 'hong_meiling'
         res = self.client.create_container(TEST_IMG, 'true')
@@ -753,7 +753,7 @@ class RenameContainerTest(BaseAPIIntegrationTest):
 
 
 class StartContainerTest(BaseAPIIntegrationTest):
-    def test_start_container(self):
+    def test_start_container(self) -> None:
         res = self.client.create_container(TEST_IMG, 'true')
         assert 'Id' in res
         self.tmp_containers.append(res['Id'])
@@ -769,7 +769,7 @@ class StartContainerTest(BaseAPIIntegrationTest):
             assert 'ExitCode' in inspect['State']
             assert inspect['State']['ExitCode'] == 0
 
-    def test_start_container_with_dict_instead_of_id(self):
+    def test_start_container_with_dict_instead_of_id(self) -> None:
         res = self.client.create_container(TEST_IMG, 'true')
         assert 'Id' in res
         self.tmp_containers.append(res['Id'])
@@ -785,7 +785,7 @@ class StartContainerTest(BaseAPIIntegrationTest):
             assert 'ExitCode' in inspect['State']
             assert inspect['State']['ExitCode'] == 0
 
-    def test_run_shlex_commands(self):
+    def test_run_shlex_commands(self) -> None:
         commands = [
             'true',
             'echo "The Young Descendant of Tepes & Septette for the '
@@ -807,7 +807,7 @@ class StartContainerTest(BaseAPIIntegrationTest):
 
 
 class WaitTest(BaseAPIIntegrationTest):
-    def test_wait(self):
+    def test_wait(self) -> None:
         res = self.client.create_container(TEST_IMG, ['sleep', '3'])
         id = res['Id']
         self.tmp_containers.append(id)
@@ -820,7 +820,7 @@ class WaitTest(BaseAPIIntegrationTest):
         assert 'ExitCode' in inspect['State']
         assert inspect['State']['ExitCode'] == exitcode
 
-    def test_wait_with_dict_instead_of_id(self):
+    def test_wait_with_dict_instead_of_id(self) -> None:
         res = self.client.create_container(TEST_IMG, ['sleep', '3'])
         id = res['Id']
         self.tmp_containers.append(id)
@@ -834,7 +834,7 @@ class WaitTest(BaseAPIIntegrationTest):
         assert inspect['State']['ExitCode'] == exitcode
 
     @requires_api_version('1.30')
-    def test_wait_with_condition(self):
+    def test_wait_with_condition(self) -> None:
         ctnr = self.client.create_container(TEST_IMG, 'true')
         self.tmp_containers.append(ctnr)
         with pytest.raises(requests.exceptions.ConnectionError):
@@ -852,7 +852,7 @@ class WaitTest(BaseAPIIntegrationTest):
 
 
 class LogsTest(BaseAPIIntegrationTest):
-    def test_logs(self):
+    def test_logs(self) -> None:
         snippet = 'Flowering Nights (Sakuya Iyazoi)'
         container = self.client.create_container(
             TEST_IMG, f'echo {snippet}'
@@ -865,7 +865,7 @@ class LogsTest(BaseAPIIntegrationTest):
         logs = self.client.logs(id)
         assert logs == f"{snippet}\n".encode(encoding='ascii')
 
-    def test_logs_tail_option(self):
+    def test_logs_tail_option(self) -> None:
         snippet = '''Line1
 Line2'''
         container = self.client.create_container(
@@ -879,7 +879,7 @@ Line2'''
         logs = self.client.logs(id, tail=1)
         assert logs == 'Line2\n'.encode(encoding='ascii')
 
-    def test_logs_streaming_and_follow(self):
+    def test_logs_streaming_and_follow(self) -> None:
         snippet = 'Flowering Nights (Sakuya Iyazoi)'
         container = self.client.create_container(
             TEST_IMG, f'echo {snippet}'
@@ -899,7 +899,7 @@ Line2'''
     @pytest.mark.timeout(5)
     @pytest.mark.skipif(os.environ.get('DOCKER_HOST', '').startswith('ssh://'),
                         reason='No cancellable streams over SSH')
-    def test_logs_streaming_and_follow_and_cancel(self):
+    def test_logs_streaming_and_follow_and_cancel(self) -> None:
         snippet = 'Flowering Nights (Sakuya Iyazoi)'
         container = self.client.create_container(
             TEST_IMG, f'sh -c "echo \\"{snippet}\\" && sleep 3"'
@@ -917,7 +917,7 @@ Line2'''
 
         assert logs == f"{snippet}\n".encode(encoding='ascii')
 
-    def test_logs_with_dict_instead_of_id(self):
+    def test_logs_with_dict_instead_of_id(self) -> None:
         snippet = 'Flowering Nights (Sakuya Iyazoi)'
         container = self.client.create_container(
             TEST_IMG, f'echo {snippet}'
@@ -930,7 +930,7 @@ Line2'''
         logs = self.client.logs(container)
         assert logs == f"{snippet}\n".encode(encoding='ascii')
 
-    def test_logs_with_tail_0(self):
+    def test_logs_with_tail_0(self) -> None:
         snippet = 'Flowering Nights (Sakuya Iyazoi)'
         container = self.client.create_container(
             TEST_IMG, f'echo "{snippet}"'
@@ -944,7 +944,7 @@ Line2'''
         assert logs == ''.encode(encoding='ascii')
 
     @requires_api_version('1.35')
-    def test_logs_with_until(self):
+    def test_logs_with_until(self) -> None:
         snippet = 'Shanghai Teahouse (Hong Meiling)'
         container = self.client.create_container(
             TEST_IMG, f'echo "{snippet}"'
@@ -961,7 +961,7 @@ Line2'''
 
 
 class DiffTest(BaseAPIIntegrationTest):
-    def test_diff(self):
+    def test_diff(self) -> None:
         container = self.client.create_container(TEST_IMG, ['touch', '/test'])
         id = container['Id']
         self.client.start(id)
@@ -974,7 +974,7 @@ class DiffTest(BaseAPIIntegrationTest):
         assert 'Kind' in test_diff[0]
         assert test_diff[0]['Kind'] == 1
 
-    def test_diff_with_dict_instead_of_id(self):
+    def test_diff_with_dict_instead_of_id(self) -> None:
         container = self.client.create_container(TEST_IMG, ['touch', '/test'])
         id = container['Id']
         self.client.start(id)
@@ -989,7 +989,7 @@ class DiffTest(BaseAPIIntegrationTest):
 
 
 class StopTest(BaseAPIIntegrationTest):
-    def test_stop(self):
+    def test_stop(self) -> None:
         container = self.client.create_container(TEST_IMG, ['sleep', '9999'])
         id = container['Id']
         self.client.start(id)
@@ -1001,7 +1001,7 @@ class StopTest(BaseAPIIntegrationTest):
         assert 'Running' in state
         assert state['Running'] is False
 
-    def test_stop_with_dict_instead_of_id(self):
+    def test_stop_with_dict_instead_of_id(self) -> None:
         container = self.client.create_container(TEST_IMG, ['sleep', '9999'])
         assert 'Id' in container
         id = container['Id']
@@ -1016,7 +1016,7 @@ class StopTest(BaseAPIIntegrationTest):
 
 
 class KillTest(BaseAPIIntegrationTest):
-    def test_kill(self):
+    def test_kill(self) -> None:
         container = self.client.create_container(TEST_IMG, ['sleep', '9999'])
         id = container['Id']
         self.client.start(id)
@@ -1030,7 +1030,7 @@ class KillTest(BaseAPIIntegrationTest):
         assert 'Running' in state
         assert state['Running'] is False
 
-    def test_kill_with_dict_instead_of_id(self):
+    def test_kill_with_dict_instead_of_id(self) -> None:
         container = self.client.create_container(TEST_IMG, ['sleep', '9999'])
         id = container['Id']
         self.client.start(id)
@@ -1044,7 +1044,7 @@ class KillTest(BaseAPIIntegrationTest):
         assert 'Running' in state
         assert state['Running'] is False
 
-    def test_kill_with_signal(self):
+    def test_kill_with_signal(self) -> None:
         id = self.client.create_container(TEST_IMG, ['sleep', '60'])
         self.tmp_containers.append(id)
         self.client.start(id)
@@ -1061,7 +1061,7 @@ class KillTest(BaseAPIIntegrationTest):
         assert 'Running' in state
         assert state['Running'] is False, state
 
-    def test_kill_with_signal_name(self):
+    def test_kill_with_signal_name(self) -> None:
         id = self.client.create_container(TEST_IMG, ['sleep', '60'])
         self.client.start(id)
         self.tmp_containers.append(id)
@@ -1076,7 +1076,7 @@ class KillTest(BaseAPIIntegrationTest):
         assert 'Running' in state
         assert state['Running'] is False, state
 
-    def test_kill_with_signal_integer(self):
+    def test_kill_with_signal_integer(self) -> None:
         id = self.client.create_container(TEST_IMG, ['sleep', '60'])
         self.client.start(id)
         self.tmp_containers.append(id)
@@ -1093,7 +1093,7 @@ class KillTest(BaseAPIIntegrationTest):
 
 
 class PortTest(BaseAPIIntegrationTest):
-    def test_port(self):
+    def test_port(self) -> None:
         port_bindings = {
             '1111': ('127.0.0.1', '4567'),
             '2222': ('127.0.0.1', '4568'),
@@ -1133,7 +1133,7 @@ class PortTest(BaseAPIIntegrationTest):
 class ContainerTopTest(BaseAPIIntegrationTest):
     @pytest.mark.xfail(reason='Output of docker top depends on host distro, '
                               'and is not formalized.')
-    def test_top(self):
+    def test_top(self) -> None:
         container = self.client.create_container(
             TEST_IMG, ['sleep', '60']
         )
@@ -1153,7 +1153,7 @@ class ContainerTopTest(BaseAPIIntegrationTest):
     )
     @pytest.mark.xfail(reason='Output of docker top depends on host distro, '
                               'and is not formalized.')
-    def test_top_with_psargs(self):
+    def test_top_with_psargs(self) -> None:
         container = self.client.create_container(
             TEST_IMG, ['sleep', '60'])
 
@@ -1167,7 +1167,7 @@ class ContainerTopTest(BaseAPIIntegrationTest):
 
 
 class RestartContainerTest(BaseAPIIntegrationTest):
-    def test_restart(self):
+    def test_restart(self) -> None:
         container = self.client.create_container(TEST_IMG, ['sleep', '9999'])
         id = container['Id']
         self.client.start(id)
@@ -1186,7 +1186,7 @@ class RestartContainerTest(BaseAPIIntegrationTest):
         assert info2['State']['Running'] is True
         self.client.kill(id)
 
-    def test_restart_with_low_timeout(self):
+    def test_restart_with_low_timeout(self) -> None:
         container = self.client.create_container(TEST_IMG, ['sleep', '9999'])
         self.client.start(container)
         self.client.timeout = 3
@@ -1195,7 +1195,7 @@ class RestartContainerTest(BaseAPIIntegrationTest):
         self.client.restart(container, timeout=1)
         self.client.kill(container)
 
-    def test_restart_with_dict_instead_of_id(self):
+    def test_restart_with_dict_instead_of_id(self) -> None:
         container = self.client.create_container(TEST_IMG, ['sleep', '9999'])
         assert 'Id' in container
         id = container['Id']
@@ -1217,7 +1217,7 @@ class RestartContainerTest(BaseAPIIntegrationTest):
 
 
 class RemoveContainerTest(BaseAPIIntegrationTest):
-    def test_remove(self):
+    def test_remove(self) -> None:
         container = self.client.create_container(TEST_IMG, ['true'])
         id = container['Id']
         self.client.start(id)
@@ -1227,7 +1227,7 @@ class RemoveContainerTest(BaseAPIIntegrationTest):
         res = [x for x in containers if 'Id' in x and x['Id'].startswith(id)]
         assert len(res) == 0
 
-    def test_remove_with_dict_instead_of_id(self):
+    def test_remove_with_dict_instead_of_id(self) -> None:
         container = self.client.create_container(TEST_IMG, ['true'])
         id = container['Id']
         self.client.start(id)
@@ -1239,7 +1239,7 @@ class RemoveContainerTest(BaseAPIIntegrationTest):
 
 
 class AttachContainerTest(BaseAPIIntegrationTest):
-    def test_run_container_streaming(self):
+    def test_run_container_streaming(self) -> None:
         container = self.client.create_container(TEST_IMG, '/bin/sh',
                                                  detach=True, stdin_open=True)
         id = container['Id']
@@ -1248,7 +1248,7 @@ class AttachContainerTest(BaseAPIIntegrationTest):
         sock = self.client.attach_socket(container, ws=False)
         assert sock.fileno() > -1
 
-    def test_run_container_reading_socket_http(self):
+    def test_run_container_reading_socket_http(self) -> None:
         line = 'hi there and stuff and things, words!'
         # `echo` appends CRLF, `printf` doesn't
         command = f"printf '{line}'"
@@ -1270,7 +1270,7 @@ class AttachContainerTest(BaseAPIIntegrationTest):
 
     @pytest.mark.xfail(condition=bool(os.environ.get('DOCKER_CERT_PATH', '')),
                        reason='DOCKER_CERT_PATH not respected for websockets')
-    def test_run_container_reading_socket_ws(self):
+    def test_run_container_reading_socket_ws(self) -> None:
         line = 'hi there and stuff and things, words!'
         # `echo` appends CRLF, `printf` doesn't
         command = f"printf '{line}'"
@@ -1288,7 +1288,7 @@ class AttachContainerTest(BaseAPIIntegrationTest):
         assert data.decode('utf-8') == line
 
     @pytest.mark.timeout(10)
-    def test_attach_no_stream(self):
+    def test_attach_no_stream(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'echo hello'
         )
@@ -1304,7 +1304,7 @@ class AttachContainerTest(BaseAPIIntegrationTest):
     @pytest.mark.xfail(condition=os.environ.get('DOCKER_TLS_VERIFY') or
                        os.environ.get('DOCKER_CERT_PATH'),
                        reason='Flaky test on TLS')
-    def test_attach_stream_and_cancel(self):
+    def test_attach_stream_and_cancel(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'sh -c "sleep 2 && echo hello && sleep 60"',
             tty=True
@@ -1322,7 +1322,7 @@ class AttachContainerTest(BaseAPIIntegrationTest):
         assert len(lines) == 1
         assert lines[0] == 'hello\r\n'.encode(encoding='ascii')
 
-    def test_detach_with_default(self):
+    def test_detach_with_default(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'cat',
             detach=True, stdin_open=True, tty=True
@@ -1339,7 +1339,7 @@ class AttachContainerTest(BaseAPIIntegrationTest):
             sock, [ctrl_with('p'), ctrl_with('q')]
         )
 
-    def test_detach_with_config_file(self):
+    def test_detach_with_config_file(self) -> None:
         self.client._general_configs['detachKeys'] = 'ctrl-p'
 
         container = self.client.create_container(
@@ -1356,7 +1356,7 @@ class AttachContainerTest(BaseAPIIntegrationTest):
 
         assert_cat_socket_detached_with_keys(sock, [ctrl_with('p')])
 
-    def test_detach_with_arg(self):
+    def test_detach_with_arg(self) -> None:
         self.client._general_configs['detachKeys'] = 'ctrl-p'
 
         container = self.client.create_container(
@@ -1375,7 +1375,7 @@ class AttachContainerTest(BaseAPIIntegrationTest):
 
 
 class PauseTest(BaseAPIIntegrationTest):
-    def test_pause_unpause(self):
+    def test_pause_unpause(self) -> None:
         container = self.client.create_container(TEST_IMG, ['sleep', '9999'])
         id = container['Id']
         self.tmp_containers.append(id)
@@ -1405,7 +1405,7 @@ class PauseTest(BaseAPIIntegrationTest):
 
 class PruneTest(BaseAPIIntegrationTest):
     @requires_api_version('1.25')
-    def test_prune_containers(self):
+    def test_prune_containers(self) -> None:
         container1 = self.client.create_container(
             TEST_IMG, ['sh', '-c', 'echo hello > /data.txt']
         )
@@ -1420,7 +1420,7 @@ class PruneTest(BaseAPIIntegrationTest):
 
 
 class GetContainerStatsTest(BaseAPIIntegrationTest):
-    def test_get_container_stats_no_stream(self):
+    def test_get_container_stats_no_stream(self) -> None:
         container = self.client.create_container(
             TEST_IMG, ['sleep', '60'],
         )
@@ -1434,7 +1434,7 @@ class GetContainerStatsTest(BaseAPIIntegrationTest):
                     'memory_stats', 'blkio_stats']:
             assert key in response
 
-        def test_get_container_stats_stream(self):
+        def test_get_container_stats_stream(self) -> None:
             container = self.client.create_container(
                 TEST_IMG, ['sleep', '60'],
             )
@@ -1450,7 +1450,7 @@ class GetContainerStatsTest(BaseAPIIntegrationTest):
 
 class ContainerUpdateTest(BaseAPIIntegrationTest):
     @requires_api_version('1.22')
-    def test_update_container(self):
+    def test_update_container(self) -> None:
         old_mem_limit = 400 * 1024 * 1024
         new_mem_limit = 300 * 1024 * 1024
         container = self.client.create_container(
@@ -1465,7 +1465,7 @@ class ContainerUpdateTest(BaseAPIIntegrationTest):
         assert inspect_data['HostConfig']['Memory'] == new_mem_limit
 
     @requires_api_version('1.23')
-    def test_restart_policy_update(self):
+    def test_restart_policy_update(self) -> None:
         old_restart_policy = {
             'MaximumRetryCount': 0,
             'Name': 'always'
@@ -1496,7 +1496,7 @@ class ContainerUpdateTest(BaseAPIIntegrationTest):
 
 
 class ContainerCPUTest(BaseAPIIntegrationTest):
-    def test_container_cpu_shares(self):
+    def test_container_cpu_shares(self) -> None:
         cpu_shares = 512
         container = self.client.create_container(
             TEST_IMG, 'ls', host_config=self.client.create_host_config(
@@ -1508,7 +1508,7 @@ class ContainerCPUTest(BaseAPIIntegrationTest):
         inspect_data = self.client.inspect_container(container)
         assert inspect_data['HostConfig']['CpuShares'] == 512
 
-    def test_container_cpuset(self):
+    def test_container_cpuset(self) -> None:
         cpuset_cpus = "0,1"
         container = self.client.create_container(
             TEST_IMG, 'ls', host_config=self.client.create_host_config(
@@ -1521,7 +1521,7 @@ class ContainerCPUTest(BaseAPIIntegrationTest):
         assert inspect_data['HostConfig']['CpusetCpus'] == cpuset_cpus
 
     @requires_api_version('1.25')
-    def test_create_with_runtime(self):
+    def test_create_with_runtime(self) -> None:
         container = self.client.create_container(
             TEST_IMG, ['echo', 'test'], runtime='runc'
         )
@@ -1531,7 +1531,7 @@ class ContainerCPUTest(BaseAPIIntegrationTest):
 
 
 class LinkTest(BaseAPIIntegrationTest):
-    def test_remove_link(self):
+    def test_remove_link(self) -> None:
         # Create containers
         container1 = self.client.create_container(
             TEST_IMG, 'cat', detach=True, stdin_open=True

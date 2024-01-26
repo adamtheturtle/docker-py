@@ -48,7 +48,7 @@ class ClientTest(unittest.TestCase):
         assert client.version() == mock_func.return_value
         mock_func.assert_called_with()
 
-    def test_call_api_client_method(self):
+    def test_call_api_client_method(self) -> None:
         client = docker.from_env(version=DEFAULT_DOCKER_API_VERSION)
         with pytest.raises(AttributeError) as cm:
             client.create_container()
@@ -62,7 +62,7 @@ class ClientTest(unittest.TestCase):
         assert "'DockerClient' object has no attribute 'abcdef'" in s
         assert "this method is now on the object APIClient" not in s
 
-    def test_call_containers(self):
+    def test_call_containers(self) -> None:
         client = docker.DockerClient(
             version=DEFAULT_DOCKER_API_VERSION,
             **kwargs_from_env())
@@ -156,7 +156,7 @@ class FromEnvTest(unittest.TestCase):
         os.environ.clear()
         os.environ.update(self.os_environ)
 
-    def test_from_env(self):
+    def test_from_env(self) -> None:
         """Test that environment variables are passed through to
         utils.kwargs_from_env(). KwargsFromEnvTest tests that environment
         variables are parsed correctly."""
@@ -166,7 +166,7 @@ class FromEnvTest(unittest.TestCase):
         client = docker.from_env(version=DEFAULT_DOCKER_API_VERSION)
         assert client.api.base_url == "https://192.168.59.103:2376"
 
-    def test_from_env_with_version(self):
+    def test_from_env_with_version(self) -> None:
         os.environ.update(DOCKER_HOST='tcp://192.168.59.103:2376',
                           DOCKER_CERT_PATH=TEST_CERT_DIR,
                           DOCKER_TLS_VERIFY='1')
@@ -174,12 +174,12 @@ class FromEnvTest(unittest.TestCase):
         assert client.api.base_url == "https://192.168.59.103:2376"
         assert client.api._version == '2.32'
 
-    def test_from_env_without_version_uses_default(self):
+    def test_from_env_without_version_uses_default(self) -> None:
         client = docker.from_env(version=DEFAULT_DOCKER_API_VERSION)
 
         assert client.api._version == DEFAULT_DOCKER_API_VERSION
 
-    def test_from_env_without_timeout_uses_default(self):
+    def test_from_env_without_timeout_uses_default(self) -> None:
         client = docker.from_env(version=DEFAULT_DOCKER_API_VERSION)
 
         assert client.api.timeout == DEFAULT_TIMEOUT_SECONDS

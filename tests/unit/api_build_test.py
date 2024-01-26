@@ -13,7 +13,7 @@ from .api_test import BaseAPIClientTest, fake_request, url_prefix
 
 
 class BuildTest(BaseAPIClientTest):
-    def test_build_container(self):
+    def test_build_container(self) -> None:
         script = io.BytesIO(
             "\n".join(
                 [
@@ -28,7 +28,7 @@ class BuildTest(BaseAPIClientTest):
 
         self.client.build(fileobj=script)
 
-    def test_build_container_pull(self):
+    def test_build_container_pull(self) -> None:
         script = io.BytesIO(
             "\n".join(
                 [
@@ -43,7 +43,7 @@ class BuildTest(BaseAPIClientTest):
 
         self.client.build(fileobj=script, pull=True)
 
-    def test_build_container_custom_context(self):
+    def test_build_container_custom_context(self) -> None:
         script = io.BytesIO(
             "\n".join(
                 [
@@ -59,7 +59,7 @@ class BuildTest(BaseAPIClientTest):
 
         self.client.build(fileobj=context, custom_context=True)
 
-    def test_build_container_custom_context_gzip(self):
+    def test_build_container_custom_context_gzip(self) -> None:
         script = io.BytesIO(
             "\n".join(
                 [
@@ -76,7 +76,7 @@ class BuildTest(BaseAPIClientTest):
 
         self.client.build(fileobj=gz_context, custom_context=True, encoding="gzip")
 
-    def test_build_remote_with_registry_auth(self):
+    def test_build_remote_with_registry_auth(self) -> None:
         self.client._auth_configs = auth.AuthConfig(
             {
                 "auths": {
@@ -115,14 +115,14 @@ class BuildTest(BaseAPIClientTest):
             timeout=None,
         )
 
-    def test_build_container_with_named_dockerfile(self):
+    def test_build_container_with_named_dockerfile(self) -> None:
         self.client.build(".", dockerfile="nameddockerfile")
 
-    def test_build_with_invalid_tag(self):
+    def test_build_with_invalid_tag(self) -> None:
         with pytest.raises(errors.DockerException):
             self.client.build(".", tag="https://example.com")
 
-    def test_build_container_with_container_limits(self):
+    def test_build_container_with_container_limits(self) -> None:
         self.client.build(
             ".",
             container_limits={
@@ -133,11 +133,11 @@ class BuildTest(BaseAPIClientTest):
             },
         )
 
-    def test_build_container_invalid_container_limits(self):
+    def test_build_container_invalid_container_limits(self) -> None:
         with pytest.raises(docker.errors.DockerException):
             self.client.build(".", container_limits={"foo": "bar"})
 
-    def test_set_auth_headers_with_empty_dict_and_auth_configs(self):
+    def test_set_auth_headers_with_empty_dict_and_auth_configs(self) -> None:
         self.client._auth_configs = auth.AuthConfig(
             {
                 "auths": {
@@ -158,7 +158,7 @@ class BuildTest(BaseAPIClientTest):
         self.client._set_auth_headers(headers)
         assert headers == expected_headers
 
-    def test_set_auth_headers_with_dict_and_auth_configs(self):
+    def test_set_auth_headers_with_dict_and_auth_configs(self) -> None:
         self.client._auth_configs = auth.AuthConfig(
             {
                 "auths": {
@@ -180,7 +180,7 @@ class BuildTest(BaseAPIClientTest):
         self.client._set_auth_headers(headers)
         assert headers == expected_headers
 
-    def test_set_auth_headers_with_dict_and_no_auth_configs(self):
+    def test_set_auth_headers_with_dict_and_no_auth_configs(self) -> None:
         headers = {"foo": "bar"}
         expected_headers = {"foo": "bar"}
 
@@ -190,7 +190,7 @@ class BuildTest(BaseAPIClientTest):
     @pytest.mark.skipif(
         not docker.constants.IS_WINDOWS_PLATFORM, reason="Windows-specific syntax"
     )
-    def test_process_dockerfile_win_longpath_prefix(self):
+    def test_process_dockerfile_win_longpath_prefix(self) -> None:
         dirs = [
             "foo",
             "foo/bar",
@@ -222,7 +222,7 @@ class BuildTest(BaseAPIClientTest):
             None,
         )
 
-    def test_process_dockerfile(self):
+    def test_process_dockerfile(self) -> None:
         dirs = [
             "foo",
             "foo/bar",

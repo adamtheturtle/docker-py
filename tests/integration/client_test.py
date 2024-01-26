@@ -12,19 +12,19 @@ from .base import TEST_API_VERSION
 class ClientTest(unittest.TestCase):
     client = docker.from_env(version=TEST_API_VERSION)
 
-    def test_info(self):
+    def test_info(self) -> None:
         info = self.client.info()
         assert 'ID' in info
         assert 'Name' in info
 
-    def test_ping(self):
+    def test_ping(self) -> None:
         assert self.client.ping() is True
 
-    def test_version(self):
+    def test_version(self) -> None:
         assert 'Version' in self.client.version()
 
     @requires_api_version('1.25')
-    def test_df(self):
+    def test_df(self) -> None:
         data = self.client.df()
         assert 'LayersSize' in data
         assert 'Containers' in data
@@ -35,7 +35,7 @@ class ClientTest(unittest.TestCase):
 class CancellableEventsTest(unittest.TestCase):
     client = docker.from_env(version=TEST_API_VERSION)
 
-    def test_cancel_events(self):
+    def test_cancel_events(self) -> None:
         start = datetime.now()
 
         events = self.client.events(until=start + timedelta(seconds=5))

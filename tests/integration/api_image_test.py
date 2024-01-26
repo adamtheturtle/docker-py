@@ -18,7 +18,7 @@ from .base import BaseAPIIntegrationTest, TEST_IMG
 
 
 class ListImagesTest(BaseAPIIntegrationTest):
-    def test_images(self):
+    def test_images(self) -> None:
         res1 = self.client.images(all=True)
         assert 'Id' in res1[0]
         res10 = res1[0]
@@ -30,13 +30,13 @@ class ListImagesTest(BaseAPIIntegrationTest):
                 distinct.append(img['Id'])
         assert len(distinct) == self.client.info()['Images']
 
-    def test_images_quiet(self):
+    def test_images_quiet(self) -> None:
         res1 = self.client.images(quiet=True)
         assert isinstance(res1[0], str)
 
 
 class PullImageTest(BaseAPIIntegrationTest):
-    def test_pull(self):
+    def test_pull(self) -> None:
         try:
             self.client.remove_image('hello-world')
         except docker.errors.APIError:
@@ -48,7 +48,7 @@ class PullImageTest(BaseAPIIntegrationTest):
         img_info = self.client.inspect_image('hello-world')
         assert 'Id' in img_info
 
-    def test_pull_streaming(self):
+    def test_pull_streaming(self) -> None:
         try:
             self.client.remove_image('hello-world')
         except docker.errors.APIError:
@@ -64,7 +64,7 @@ class PullImageTest(BaseAPIIntegrationTest):
 
     @requires_api_version('1.32')
     @requires_experimental(until=None)
-    def test_pull_invalid_platform(self):
+    def test_pull_invalid_platform(self) -> None:
         with pytest.raises(docker.errors.APIError) as excinfo:
             self.client.pull('hello-world', platform='foobar')
 
@@ -75,7 +75,7 @@ class PullImageTest(BaseAPIIntegrationTest):
 
 
 class CommitTest(BaseAPIIntegrationTest):
-    def test_commit(self):
+    def test_commit(self) -> None:
         container = self.client.create_container(TEST_IMG, ['touch', '/test'])
         id = container['Id']
         self.client.start(id)
@@ -89,7 +89,7 @@ class CommitTest(BaseAPIIntegrationTest):
         busybox_id = self.client.inspect_image(TEST_IMG)['Id']
         assert img['Parent'] == busybox_id
 
-    def test_commit_with_changes(self):
+    def test_commit_with_changes(self) -> None:
         cid = self.client.create_container(TEST_IMG, ['touch', '/test'])
         self.tmp_containers.append(cid)
         self.client.start(cid)
@@ -103,7 +103,7 @@ class CommitTest(BaseAPIIntegrationTest):
 
 
 class RemoveImageTest(BaseAPIIntegrationTest):
-    def test_remove(self):
+    def test_remove(self) -> None:
         container = self.client.create_container(TEST_IMG, ['touch', '/test'])
         id = container['Id']
         self.client.start(id)
@@ -155,7 +155,7 @@ class ImportImageTest(BaseAPIIntegrationTest):
             tar_file.seek(0)
             yield tar_file.name
 
-    def test_import_from_bytes(self):
+    def test_import_from_bytes(self) -> None:
         with self.dummy_tar_stream(n_bytes=500) as f:
             content = f.read()
 
@@ -175,7 +175,7 @@ class ImportImageTest(BaseAPIIntegrationTest):
         img_id = result['status']
         self.tmp_imgs.append(img_id)
 
-    def test_import_from_file(self):
+    def test_import_from_file(self) -> None:
         with self.dummy_tar_file(n_bytes=self.TAR_SIZE) as tar_filename:
             # statuses = self.client.import_image(
             #     src=tar_filename, repository='test/import-from-file')
@@ -191,7 +191,7 @@ class ImportImageTest(BaseAPIIntegrationTest):
         img_id = result['status']
         self.tmp_imgs.append(img_id)
 
-    def test_import_from_stream(self):
+    def test_import_from_stream(self) -> None:
         with self.dummy_tar_stream(n_bytes=self.TAR_SIZE) as tar_stream:
             statuses = self.client.import_image(
                 src=tar_stream, repository='test/import-from-stream')
@@ -206,7 +206,7 @@ class ImportImageTest(BaseAPIIntegrationTest):
         img_id = result['status']
         self.tmp_imgs.append(img_id)
 
-    def test_import_image_from_data_with_changes(self):
+    def test_import_image_from_data_with_changes(self) -> None:
         with self.dummy_tar_stream(n_bytes=500) as f:
             content = f.read()
 
@@ -228,7 +228,7 @@ class ImportImageTest(BaseAPIIntegrationTest):
         assert img_data['Config']['Cmd'] == ['echo']
         assert img_data['Config']['User'] == 'foobar'
 
-    def test_import_image_with_changes(self):
+    def test_import_image_with_changes(self) -> None:
         with self.dummy_tar_file(n_bytes=self.TAR_SIZE) as tar_filename:
             statuses = self.client.import_image(
                 src=tar_filename, repository='test/import-from-file',
@@ -250,7 +250,7 @@ class ImportImageTest(BaseAPIIntegrationTest):
 
     # Docs say output is available in 1.23, but this test fails on 1.12.0
     @requires_api_version('1.24')
-    def test_get_load_image(self):
+    def test_get_load_image(self) -> None:
         test_img = 'hello-world:latest'
         self.client.pull(test_img)
         data = self.client.get_image(test_img)
@@ -280,7 +280,7 @@ class ImportImageTest(BaseAPIIntegrationTest):
         server.shutdown()
 
     @pytest.mark.skipif(True, reason="Doesn't work inside a container - FIXME")
-    def test_import_from_url(self):
+    def test_import_from_url(self) -> None:
         # The crappy test HTTP server doesn't handle large files well, so use
         # a small file.
         tar_size = 10240
@@ -302,7 +302,7 @@ class ImportImageTest(BaseAPIIntegrationTest):
 
 @requires_api_version('1.25')
 class PruneImagesTest(BaseAPIIntegrationTest):
-    def test_prune_images(self):
+    def test_prune_images(self) -> None:
         try:
             self.client.remove_image('hello-world')
         except docker.errors.APIError:
@@ -331,7 +331,7 @@ class PruneImagesTest(BaseAPIIntegrationTest):
 
 class SaveLoadImagesTest(BaseAPIIntegrationTest):
     @requires_api_version('1.23')
-    def test_get_image_load_image(self):
+    def test_get_image_load_image(self) -> None:
         with tempfile.TemporaryFile() as f:
             stream = self.client.get_image(TEST_IMG)
             for chunk in stream:
@@ -353,7 +353,7 @@ class SaveLoadImagesTest(BaseAPIIntegrationTest):
 
 @requires_api_version('1.30')
 class InspectDistributionTest(BaseAPIIntegrationTest):
-    def test_inspect_distribution(self):
+    def test_inspect_distribution(self) -> None:
         data = self.client.inspect_distribution('busybox:latest')
         assert data is not None
         assert 'Platforms' in data

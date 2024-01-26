@@ -9,12 +9,12 @@ from .base import BaseAPIIntegrationTest
 
 
 class InformationTest(BaseAPIIntegrationTest):
-    def test_version(self):
+    def test_version(self) -> None:
         res = self.client.version()
         assert 'GoVersion' in res
         assert 'Version' in res
 
-    def test_info(self):
+    def test_info(self) -> None:
         res = self.client.info()
         assert 'Containers' in res
         assert 'Images' in res
@@ -22,7 +22,7 @@ class InformationTest(BaseAPIIntegrationTest):
 
 
 class AutoDetectVersionTest(unittest.TestCase):
-    def test_client_init(self):
+    def test_client_init(self) -> None:
         client = docker.APIClient(version='auto', **kwargs_from_env())
         client_version = client._version
         api_version = client.version(api_version=False)['ApiVersion']
@@ -41,7 +41,7 @@ class ConnectionTimeoutTest(unittest.TestCase):
             timeout=self.timeout
         )
 
-    def test_timeout(self):
+    def test_timeout(self) -> None:
         start = time.time()
         res = None
         # This call isn't supposed to complete, and it should fail fast.
@@ -59,7 +59,7 @@ class UnixconnTest(unittest.TestCase):
     Test UNIX socket connection adapter.
     """
 
-    def test_resource_warnings(self):
+    def test_resource_warnings(self) -> None:
         """
         Test no warnings are produced when using the client.
         """

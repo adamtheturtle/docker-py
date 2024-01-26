@@ -36,7 +36,7 @@ class TestStore:
         self.tmp_keys.append(res)
         return res
 
-    def test_store_and_get(self):
+    def test_store_and_get(self) -> None:
         key = self.get_random_servername()
         self.store.store(server=key, username='user', secret='pass')
         data = self.store.get(key)
@@ -46,19 +46,19 @@ class TestStore:
             'Secret': 'pass'
         }
 
-    def test_get_nonexistent(self):
+    def test_get_nonexistent(self) -> None:
         key = self.get_random_servername()
         with pytest.raises(CredentialsNotFound):
             self.store.get(key)
 
-    def test_store_and_erase(self):
+    def test_store_and_erase(self) -> None:
         key = self.get_random_servername()
         self.store.store(server=key, username='user', secret='pass')
         self.store.erase(key)
         with pytest.raises(CredentialsNotFound):
             self.store.get(key)
 
-    def test_unicode_strings(self):
+    def test_unicode_strings(self) -> None:
         key = self.get_random_servername()
         key = key
         self.store.store(server=key, username='user', secret='pass')
@@ -68,7 +68,7 @@ class TestStore:
         with pytest.raises(CredentialsNotFound):
             self.store.get(key)
 
-    def test_list(self):
+    def test_list(self) -> None:
         names = (self.get_random_servername(), self.get_random_servername())
         self.store.store(names[0], username='sakuya', secret='izayoi')
         self.store.store(names[1], username='reimu', secret='hakurei')
@@ -78,14 +78,14 @@ class TestStore:
         assert names[1] in data
         assert data[names[1]] == 'reimu'
 
-    def test_execute_with_env_override(self):
+    def test_execute_with_env_override(self) -> None:
         self.store.exe = 'env'
         self.store.environment = {'FOO': 'bar'}
         data = self.store._execute('--null', '')
         assert b'\0FOO=bar\0' in data
         assert 'FOO' not in os.environ
 
-    def test_unavailable_store(self):
+    def test_unavailable_store(self) -> None:
         some_unavailable_store = None
         with pytest.warns(UserWarning):
             some_unavailable_store = Store('that-does-not-exist')

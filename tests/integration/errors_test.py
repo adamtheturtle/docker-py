@@ -4,7 +4,7 @@ import pytest
 
 
 class ErrorsTest(BaseAPIIntegrationTest):
-    def test_api_error_parses_json(self):
+    def test_api_error_parses_json(self) -> None:
         container = self.client.create_container(TEST_IMG, ['sleep', '10'])
         self.client.start(container['Id'])
         with pytest.raises(APIError) as cm:

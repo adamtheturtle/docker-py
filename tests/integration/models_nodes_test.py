@@ -13,7 +13,7 @@ class NodesTest(unittest.TestCase):
     def tearDown(self):
         helpers.force_leave_swarm(docker.from_env(version=TEST_API_VERSION))
 
-    def test_list_get_update(self):
+    def test_list_get_update(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         client.swarm.init('127.0.0.1', listen_addr=helpers.swarm_listen_addr())
         nodes = client.nodes.list()

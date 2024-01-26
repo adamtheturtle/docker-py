@@ -6,7 +6,7 @@ from unittest import mock
 
 
 class NetworkTest(BaseAPIClientTest):
-    def test_list_networks(self):
+    def test_list_networks(self) -> None:
         networks = [
             {
                 "name": "none",
@@ -41,7 +41,7 @@ class NetworkTest(BaseAPIClientTest):
             filters = json.loads(get.call_args[1]['params']['filters'])
             assert filters == {'id': ['123']}
 
-    def test_create_network(self):
+    def test_create_network(self) -> None:
         network_data = {
             "id": 'abc12345',
             "warning": "",
@@ -89,7 +89,7 @@ class NetworkTest(BaseAPIClientTest):
                 }
             }
 
-    def test_remove_network(self):
+    def test_remove_network(self) -> None:
         network_id = 'abc12345'
         delete = mock.Mock(return_value=response(status_code=200))
 
@@ -99,7 +99,7 @@ class NetworkTest(BaseAPIClientTest):
         args = delete.call_args
         assert args[0][0] == f"{url_prefix}networks/{network_id}"
 
-    def test_inspect_network(self):
+    def test_inspect_network(self) -> None:
         network_id = 'abc12345'
         network_name = 'foo'
         network_data = {
@@ -119,7 +119,7 @@ class NetworkTest(BaseAPIClientTest):
         args = get.call_args
         assert args[0][0] == f"{url_prefix}networks/{network_id}"
 
-    def test_connect_container_to_network(self):
+    def test_connect_container_to_network(self) -> None:
         network_id = 'abc12345'
         container_id = 'def45678'
 
@@ -147,7 +147,7 @@ class NetworkTest(BaseAPIClientTest):
             },
         }
 
-    def test_disconnect_container_from_network(self):
+    def test_disconnect_container_from_network(self) -> None:
         network_id = 'abc12345'
         container_id = 'def45678'
 

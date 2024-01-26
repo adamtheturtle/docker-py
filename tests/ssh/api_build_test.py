@@ -13,7 +13,7 @@ from ..helpers import random_name, requires_api_version, requires_experimental
 
 
 class BuildTest(BaseAPIIntegrationTest):
-    def test_build_with_proxy(self):
+    def test_build_with_proxy(self) -> None:
         self.client._proxy_configs = ProxyConfig(
             ftp='a', http='b', https='c', no_proxy='d'
         )
@@ -32,7 +32,7 @@ class BuildTest(BaseAPIIntegrationTest):
 
         self.client.build(fileobj=script, decode=True)
 
-    def test_build_with_proxy_and_buildargs(self):
+    def test_build_with_proxy_and_buildargs(self) -> None:
         self.client._proxy_configs = ProxyConfig(
             ftp='a', http='b', https='c', no_proxy='d'
         )
@@ -55,7 +55,7 @@ class BuildTest(BaseAPIIntegrationTest):
             buildargs={'FTP_PROXY': 'XXX', 'ftp_proxy': 'xxx'}
         )
 
-    def test_build_streaming(self):
+    def test_build_streaming(self) -> None:
         script = io.BytesIO('\n'.join([
             'FROM busybox',
             'RUN mkdir -p /tmp/test',
@@ -69,7 +69,7 @@ class BuildTest(BaseAPIIntegrationTest):
             logs.append(chunk)
         assert len(logs) > 0
 
-    def test_build_from_stringio(self):
+    def test_build_from_stringio(self) -> None:
         return
         script = io.StringIO('\n'.join([
             'FROM busybox',
@@ -85,7 +85,7 @@ class BuildTest(BaseAPIIntegrationTest):
             logs += chunk
         assert logs != ''
 
-    def test_build_with_dockerignore(self):
+    def test_build_with_dockerignore(self) -> None:
         base_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, base_dir)
 
@@ -140,7 +140,7 @@ class BuildTest(BaseAPIIntegrationTest):
             '/test/not-ignored'
         ])
 
-    def test_build_with_buildargs(self):
+    def test_build_with_buildargs(self) -> None:
         script = io.BytesIO('\n'.join([
             'FROM scratch',
             'ARG test',
@@ -158,7 +158,7 @@ class BuildTest(BaseAPIIntegrationTest):
         assert info['Config']['User'] == 'OK'
 
     @requires_api_version('1.22')
-    def test_build_shmsize(self):
+    def test_build_shmsize(self) -> None:
         script = io.BytesIO('\n'.join([
             'FROM scratch',
             'CMD sh -c "echo \'Hello, World!\'"',
@@ -178,7 +178,7 @@ class BuildTest(BaseAPIIntegrationTest):
         # that was used to build the image
 
     @requires_api_version('1.24')
-    def test_build_isolation(self):
+    def test_build_isolation(self) -> None:
         script = io.BytesIO('\n'.join([
             'FROM scratch',
             'CMD sh -c "echo \'Deaf To All But The Song\''
@@ -193,7 +193,7 @@ class BuildTest(BaseAPIIntegrationTest):
             pass
 
     @requires_api_version('1.23')
-    def test_build_labels(self):
+    def test_build_labels(self) -> None:
         script = io.BytesIO('\n'.join([
             'FROM scratch',
         ]).encode('ascii'))
@@ -211,7 +211,7 @@ class BuildTest(BaseAPIIntegrationTest):
         assert info['Config']['Labels'] == labels
 
     @requires_api_version('1.25')
-    def test_build_with_cache_from(self):
+    def test_build_with_cache_from(self) -> None:
         script = io.BytesIO('\n'.join([
             'FROM busybox',
             'ENV FOO=bar',
@@ -247,7 +247,7 @@ class BuildTest(BaseAPIIntegrationTest):
         assert counter == 0
 
     @requires_api_version('1.29')
-    def test_build_container_with_target(self):
+    def test_build_container_with_target(self) -> None:
         script = io.BytesIO('\n'.join([
             'FROM busybox as first',
             'RUN mkdir -p /tmp/test',
@@ -269,7 +269,7 @@ class BuildTest(BaseAPIIntegrationTest):
         assert not info['Config']['OnBuild']
 
     @requires_api_version('1.25')
-    def test_build_with_network_mode(self):
+    def test_build_with_network_mode(self) -> None:
         # Set up pingable endpoint on custom network
         network = self.client.create_network(random_name())['Id']
         self.tmp_networks.append(network)
@@ -311,7 +311,7 @@ class BuildTest(BaseAPIIntegrationTest):
             self.client.inspect_image('dockerpytest_nonebuild')
 
     @requires_api_version('1.27')
-    def test_build_with_extra_hosts(self):
+    def test_build_with_extra_hosts(self) -> None:
         img_name = 'dockerpytest_extrahost_build'
         self.tmp_imgs.append(img_name)
 
@@ -342,7 +342,7 @@ class BuildTest(BaseAPIIntegrationTest):
 
     @requires_experimental(until=None)
     @requires_api_version('1.25')
-    def test_build_squash(self):
+    def test_build_squash(self) -> None:
         script = io.BytesIO('\n'.join([
             'FROM busybox',
             'RUN echo blah > /file_1',
@@ -366,7 +366,7 @@ class BuildTest(BaseAPIIntegrationTest):
         assert len(non_squashed['RootFS']['Layers']) == 4
         assert len(squashed['RootFS']['Layers']) == 2
 
-    def test_build_stderr_data(self):
+    def test_build_stderr_data(self) -> None:
         control_chars = ['\x1b[91m', '\x1b[0m']
         snippet = 'Ancient Temple (Mystic Oriental Dream ~ Ancient Temple)'
         script = io.BytesIO(b'\n'.join([
@@ -383,7 +383,7 @@ class BuildTest(BaseAPIIntegrationTest):
         expected = f'{control_chars[0]}{snippet}\n{control_chars[1]}'
         assert any(line == expected for line in lines)
 
-    def test_build_gzip_encoding(self):
+    def test_build_gzip_encoding(self) -> None:
         base_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, base_dir)
 
@@ -404,7 +404,7 @@ class BuildTest(BaseAPIIntegrationTest):
 
         assert 'Successfully built' in lines[-1]['stream']
 
-    def test_build_with_dockerfile_empty_lines(self):
+    def test_build_with_dockerfile_empty_lines(self) -> None:
         base_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, base_dir)
         with open(os.path.join(base_dir, 'Dockerfile'), 'w') as f:
@@ -426,13 +426,13 @@ class BuildTest(BaseAPIIntegrationTest):
             lines.append(chunk)
         assert 'Successfully built' in lines[-1]['stream']
 
-    def test_build_gzip_custom_encoding(self):
+    def test_build_gzip_custom_encoding(self) -> None:
         with pytest.raises(errors.DockerException):
             self.client.build(path='.', gzip=True, encoding='text/html')
 
     @requires_api_version('1.32')
     @requires_experimental(until=None)
-    def test_build_invalid_platform(self):
+    def test_build_invalid_platform(self) -> None:
         script = io.BytesIO(b'FROM busybox\n')
 
         with pytest.raises(errors.APIError) as excinfo:
@@ -445,7 +445,7 @@ class BuildTest(BaseAPIIntegrationTest):
         assert 'unknown operating system' in excinfo.exconly() \
                or 'invalid platform' in excinfo.exconly()
 
-    def test_build_out_of_context_dockerfile(self):
+    def test_build_out_of_context_dockerfile(self) -> None:
         base_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, base_dir)
         with open(os.path.join(base_dir, 'file.txt'), 'w') as f:
@@ -480,7 +480,7 @@ class BuildTest(BaseAPIIntegrationTest):
         assert len(lsdata) == 3
         assert sorted([b'.', b'..', b'file.txt']) == sorted(lsdata)
 
-    def test_build_in_context_dockerfile(self):
+    def test_build_in_context_dockerfile(self) -> None:
         base_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, base_dir)
         with open(os.path.join(base_dir, 'file.txt'), 'w') as f:
@@ -511,7 +511,7 @@ class BuildTest(BaseAPIIntegrationTest):
             [b'.', b'..', b'file.txt', b'custom.dockerfile']
         ) == sorted(lsdata)
 
-    def test_build_in_context_nested_dockerfile(self):
+    def test_build_in_context_nested_dockerfile(self) -> None:
         base_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, base_dir)
         with open(os.path.join(base_dir, 'file.txt'), 'w') as f:
@@ -544,7 +544,7 @@ class BuildTest(BaseAPIIntegrationTest):
             [b'.', b'..', b'file.txt', b'hello']
         ) == sorted(lsdata)
 
-    def test_build_in_context_abs_dockerfile(self):
+    def test_build_in_context_abs_dockerfile(self) -> None:
         base_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, base_dir)
         abs_dockerfile_path = os.path.join(base_dir, 'custom.dockerfile')
@@ -582,7 +582,7 @@ class BuildTest(BaseAPIIntegrationTest):
         reason='Currently fails on 18.09: '
                'https://github.com/moby/moby/issues/37920'
     )
-    def test_prune_builds(self):
+    def test_prune_builds(self) -> None:
         prune_result = self.client.prune_builds()
         assert 'SpaceReclaimed' in prune_result
         assert isinstance(prune_result['SpaceReclaimed'], int)

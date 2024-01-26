@@ -17,11 +17,11 @@ def create_host_config(*args, **kwargs):
 
 
 class HostConfigTest(unittest.TestCase):
-    def test_create_host_config_no_options_newer_api_version(self):
+    def test_create_host_config_no_options_newer_api_version(self) -> None:
         config = create_host_config(version='1.21')
         assert config['NetworkMode'] == 'default'
 
-    def test_create_host_config_invalid_cpu_cfs_types(self):
+    def test_create_host_config_invalid_cpu_cfs_types(self) -> None:
         with pytest.raises(TypeError):
             create_host_config(version='1.21', cpu_quota='0')
 
@@ -34,15 +34,15 @@ class HostConfigTest(unittest.TestCase):
         with pytest.raises(TypeError):
             create_host_config(version='1.21', cpu_period=1999.0)
 
-    def test_create_host_config_with_cpu_quota(self):
+    def test_create_host_config_with_cpu_quota(self) -> None:
         config = create_host_config(version='1.21', cpu_quota=1999)
         assert config.get('CpuQuota') == 1999
 
-    def test_create_host_config_with_cpu_period(self):
+    def test_create_host_config_with_cpu_period(self) -> None:
         config = create_host_config(version='1.21', cpu_period=1999)
         assert config.get('CpuPeriod') == 1999
 
-    def test_create_host_config_with_blkio_constraints(self):
+    def test_create_host_config_with_blkio_constraints(self) -> None:
         blkio_rate = [{"Path": "/dev/sda", "Rate": 1000}]
         config = create_host_config(
             version='1.22', blkio_weight=1999, blkio_weight_device=blkio_rate,
@@ -59,19 +59,19 @@ class HostConfigTest(unittest.TestCase):
         assert blkio_rate[0]['Path'] == "/dev/sda"
         assert blkio_rate[0]['Rate'] == 1000
 
-    def test_create_host_config_with_shm_size(self):
+    def test_create_host_config_with_shm_size(self) -> None:
         config = create_host_config(version='1.22', shm_size=67108864)
         assert config.get('ShmSize') == 67108864
 
-    def test_create_host_config_with_shm_size_in_mb(self):
+    def test_create_host_config_with_shm_size_in_mb(self) -> None:
         config = create_host_config(version='1.22', shm_size='64M')
         assert config.get('ShmSize') == 67108864
 
-    def test_create_host_config_with_oom_kill_disable(self):
+    def test_create_host_config_with_oom_kill_disable(self) -> None:
         config = create_host_config(version='1.21', oom_kill_disable=True)
         assert config.get('OomKillDisable') is True
 
-    def test_create_host_config_with_userns_mode(self):
+    def test_create_host_config_with_userns_mode(self) -> None:
         config = create_host_config(version='1.23', userns_mode='host')
         assert config.get('UsernsMode') == 'host'
         with pytest.raises(InvalidVersion):
@@ -79,13 +79,13 @@ class HostConfigTest(unittest.TestCase):
         with pytest.raises(ValueError):
             create_host_config(version='1.23', userns_mode='host12')
 
-    def test_create_host_config_with_uts(self):
+    def test_create_host_config_with_uts(self) -> None:
         config = create_host_config(version='1.15', uts_mode='host')
         assert config.get('UTSMode') == 'host'
         with pytest.raises(ValueError):
             create_host_config(version='1.15', uts_mode='host12')
 
-    def test_create_host_config_with_oom_score_adj(self):
+    def test_create_host_config_with_oom_score_adj(self) -> None:
         config = create_host_config(version='1.22', oom_score_adj=100)
         assert config.get('OomScoreAdj') == 100
         with pytest.raises(InvalidVersion):
@@ -93,7 +93,7 @@ class HostConfigTest(unittest.TestCase):
         with pytest.raises(TypeError):
             create_host_config(version='1.22', oom_score_adj='100')
 
-    def test_create_host_config_with_dns_opt(self):
+    def test_create_host_config_with_dns_opt(self) -> None:
 
         tested_opts = ['use-vc', 'no-tld-query']
         config = create_host_config(version='1.21', dns_opt=tested_opts)
@@ -102,15 +102,15 @@ class HostConfigTest(unittest.TestCase):
         assert 'use-vc' in dns_opts
         assert 'no-tld-query' in dns_opts
 
-    def test_create_host_config_with_mem_reservation(self):
+    def test_create_host_config_with_mem_reservation(self) -> None:
         config = create_host_config(version='1.21', mem_reservation=67108864)
         assert config.get('MemoryReservation') == 67108864
 
-    def test_create_host_config_with_kernel_memory(self):
+    def test_create_host_config_with_kernel_memory(self) -> None:
         config = create_host_config(version='1.21', kernel_memory=67108864)
         assert config.get('KernelMemory') == 67108864
 
-    def test_create_host_config_with_pids_limit(self):
+    def test_create_host_config_with_pids_limit(self) -> None:
         config = create_host_config(version='1.23', pids_limit=1024)
         assert config.get('PidsLimit') == 1024
 
@@ -119,7 +119,7 @@ class HostConfigTest(unittest.TestCase):
         with pytest.raises(TypeError):
             create_host_config(version='1.23', pids_limit='1024')
 
-    def test_create_host_config_with_isolation(self):
+    def test_create_host_config_with_isolation(self) -> None:
         config = create_host_config(version='1.24', isolation='hyperv')
         assert config.get('Isolation') == 'hyperv'
 
@@ -130,7 +130,7 @@ class HostConfigTest(unittest.TestCase):
                 version='1.24', isolation={'isolation': 'hyperv'}
             )
 
-    def test_create_host_config_pid_mode(self):
+    def test_create_host_config_pid_mode(self) -> None:
         with pytest.raises(ValueError):
             create_host_config(version='1.23', pid_mode='baccab125')
 
@@ -139,59 +139,59 @@ class HostConfigTest(unittest.TestCase):
         config = create_host_config(version='1.24', pid_mode='baccab125')
         assert config.get('PidMode') == 'baccab125'
 
-    def test_create_host_config_invalid_mem_swappiness(self):
+    def test_create_host_config_invalid_mem_swappiness(self) -> None:
         with pytest.raises(TypeError):
             create_host_config(version='1.24', mem_swappiness='40')
 
-    def test_create_host_config_with_volume_driver(self):
+    def test_create_host_config_with_volume_driver(self) -> None:
         config = create_host_config(version='1.21', volume_driver='local')
         assert config.get('VolumeDriver') == 'local'
 
-    def test_create_host_config_invalid_cpu_count_types(self):
+    def test_create_host_config_invalid_cpu_count_types(self) -> None:
         with pytest.raises(TypeError):
             create_host_config(version='1.25', cpu_count='1')
 
-    def test_create_host_config_with_cpu_count(self):
+    def test_create_host_config_with_cpu_count(self) -> None:
         config = create_host_config(version='1.25', cpu_count=2)
         assert config.get('CpuCount') == 2
         with pytest.raises(InvalidVersion):
             create_host_config(version='1.24', cpu_count=1)
 
-    def test_create_host_config_invalid_cpu_percent_types(self):
+    def test_create_host_config_invalid_cpu_percent_types(self) -> None:
         with pytest.raises(TypeError):
             create_host_config(version='1.25', cpu_percent='1')
 
-    def test_create_host_config_with_cpu_percent(self):
+    def test_create_host_config_with_cpu_percent(self) -> None:
         config = create_host_config(version='1.25', cpu_percent=15)
         assert config.get('CpuPercent') == 15
         with pytest.raises(InvalidVersion):
             create_host_config(version='1.24', cpu_percent=10)
 
-    def test_create_host_config_invalid_nano_cpus_types(self):
+    def test_create_host_config_invalid_nano_cpus_types(self) -> None:
         with pytest.raises(TypeError):
             create_host_config(version='1.25', nano_cpus='0')
 
-    def test_create_host_config_with_nano_cpus(self):
+    def test_create_host_config_with_nano_cpus(self) -> None:
         config = create_host_config(version='1.25', nano_cpus=1000)
         assert config.get('NanoCpus') == 1000
         with pytest.raises(InvalidVersion):
             create_host_config(version='1.24', nano_cpus=1)
 
-    def test_create_host_config_with_cpu_rt_period_types(self):
+    def test_create_host_config_with_cpu_rt_period_types(self) -> None:
         with pytest.raises(TypeError):
             create_host_config(version='1.25', cpu_rt_period='1000')
 
-    def test_create_host_config_with_cpu_rt_period(self):
+    def test_create_host_config_with_cpu_rt_period(self) -> None:
         config = create_host_config(version='1.25', cpu_rt_period=1000)
         assert config.get('CPURealtimePeriod') == 1000
         with pytest.raises(InvalidVersion):
             create_host_config(version='1.24', cpu_rt_period=1000)
 
-    def test_ctrate_host_config_with_cpu_rt_runtime_types(self):
+    def test_ctrate_host_config_with_cpu_rt_runtime_types(self) -> None:
         with pytest.raises(TypeError):
             create_host_config(version='1.25', cpu_rt_runtime='1000')
 
-    def test_create_host_config_with_cpu_rt_runtime(self):
+    def test_create_host_config_with_cpu_rt_runtime(self) -> None:
         config = create_host_config(version='1.25', cpu_rt_runtime=1000)
         assert config.get('CPURealtimeRuntime') == 1000
         with pytest.raises(InvalidVersion):
@@ -199,7 +199,7 @@ class HostConfigTest(unittest.TestCase):
 
 
 class ContainerSpecTest(unittest.TestCase):
-    def test_parse_mounts(self):
+    def test_parse_mounts(self) -> None:
         spec = ContainerSpec(
             image='scratch', mounts=[
                 '/local:/container',
@@ -215,7 +215,7 @@ class ContainerSpecTest(unittest.TestCase):
 
 
 class UlimitTest(unittest.TestCase):
-    def test_create_host_config_dict_ulimit(self):
+    def test_create_host_config_dict_ulimit(self) -> None:
         ulimit_dct = {'name': 'nofile', 'soft': 8096}
         config = create_host_config(
             ulimits=[ulimit_dct], version=DEFAULT_DOCKER_API_VERSION
@@ -228,7 +228,7 @@ class UlimitTest(unittest.TestCase):
         assert ulimit_obj.soft == ulimit_dct['soft']
         assert ulimit_obj['Soft'] == ulimit_obj.soft
 
-    def test_create_host_config_dict_ulimit_capitals(self):
+    def test_create_host_config_dict_ulimit_capitals(self) -> None:
         ulimit_dct = {'Name': 'nofile', 'Soft': 8096, 'Hard': 8096 * 4}
         config = create_host_config(
             ulimits=[ulimit_dct], version=DEFAULT_DOCKER_API_VERSION
@@ -242,7 +242,7 @@ class UlimitTest(unittest.TestCase):
         assert ulimit_obj.hard == ulimit_dct['Hard']
         assert ulimit_obj['Soft'] == ulimit_obj.soft
 
-    def test_create_host_config_obj_ulimit(self):
+    def test_create_host_config_obj_ulimit(self) -> None:
         ulimit_dct = Ulimit(name='nofile', soft=8096)
         config = create_host_config(
             ulimits=[ulimit_dct], version=DEFAULT_DOCKER_API_VERSION
@@ -253,7 +253,7 @@ class UlimitTest(unittest.TestCase):
         assert isinstance(ulimit_obj, Ulimit)
         assert ulimit_obj == ulimit_dct
 
-    def test_ulimit_invalid_type(self):
+    def test_ulimit_invalid_type(self) -> None:
         with pytest.raises(ValueError):
             Ulimit(name=None)
         with pytest.raises(ValueError):
@@ -263,7 +263,7 @@ class UlimitTest(unittest.TestCase):
 
 
 class LogConfigTest(unittest.TestCase):
-    def test_create_host_config_dict_logconfig(self):
+    def test_create_host_config_dict_logconfig(self) -> None:
         dct = {'type': LogConfig.types.SYSLOG, 'config': {'key1': 'val1'}}
         config = create_host_config(
             version=DEFAULT_DOCKER_API_VERSION, log_config=dct
@@ -272,7 +272,7 @@ class LogConfigTest(unittest.TestCase):
         assert isinstance(config['LogConfig'], LogConfig)
         assert dct['type'] == config['LogConfig'].type
 
-    def test_create_host_config_obj_logconfig(self):
+    def test_create_host_config_obj_logconfig(self) -> None:
         obj = LogConfig(type=LogConfig.types.SYSLOG, config={'key1': 'val1'})
         config = create_host_config(
             version=DEFAULT_DOCKER_API_VERSION, log_config=obj
@@ -281,13 +281,13 @@ class LogConfigTest(unittest.TestCase):
         assert isinstance(config['LogConfig'], LogConfig)
         assert obj == config['LogConfig']
 
-    def test_logconfig_invalid_config_type(self):
+    def test_logconfig_invalid_config_type(self) -> None:
         with pytest.raises(ValueError):
             LogConfig(type=LogConfig.types.JSON, config='helloworld')
 
 
 class EndpointConfigTest(unittest.TestCase):
-    def test_create_endpoint_config_with_aliases(self):
+    def test_create_endpoint_config_with_aliases(self) -> None:
         config = EndpointConfig(version='1.22', aliases=['foo', 'bar'])
         assert config == {'Aliases': ['foo', 'bar']}
 
@@ -296,7 +296,7 @@ class EndpointConfigTest(unittest.TestCase):
 
 
 class IPAMConfigTest(unittest.TestCase):
-    def test_create_ipam_config(self):
+    def test_create_ipam_config(self) -> None:
         ipam_pool = IPAMPool(subnet='192.168.52.0/24',
                              gateway='192.168.52.254')
 
@@ -313,98 +313,98 @@ class IPAMConfigTest(unittest.TestCase):
 
 
 class ServiceModeTest(unittest.TestCase):
-    def test_replicated_simple(self):
+    def test_replicated_simple(self) -> None:
         mode = ServiceMode('replicated')
         assert mode == {'replicated': {}}
         assert mode.mode == 'replicated'
         assert mode.replicas is None
 
-    def test_global_simple(self):
+    def test_global_simple(self) -> None:
         mode = ServiceMode('global')
         assert mode == {'global': {}}
         assert mode.mode == 'global'
         assert mode.replicas is None
 
-    def test_replicated_job_simple(self):
+    def test_replicated_job_simple(self) -> None:
         mode = ServiceMode('replicated-job')
         assert mode == {'ReplicatedJob': {}}
         assert mode.mode == 'ReplicatedJob'
         assert mode.replicas is None
 
-    def test_global_job_simple(self):
+    def test_global_job_simple(self) -> None:
         mode = ServiceMode('global-job')
         assert mode == {'GlobalJob': {}}
         assert mode.mode == 'GlobalJob'
         assert mode.replicas is None
 
-    def test_global_replicas_error(self):
+    def test_global_replicas_error(self) -> None:
         with pytest.raises(InvalidArgument):
             ServiceMode('global', 21)
 
-    def test_global_job_replicas_simple(self):
+    def test_global_job_replicas_simple(self) -> None:
         with pytest.raises(InvalidArgument):
             ServiceMode('global-job', 21)
 
-    def test_replicated_replicas(self):
+    def test_replicated_replicas(self) -> None:
         mode = ServiceMode('replicated', 21)
         assert mode == {'replicated': {'Replicas': 21}}
         assert mode.mode == 'replicated'
         assert mode.replicas == 21
 
-    def test_replicated_replicas_0(self):
+    def test_replicated_replicas_0(self) -> None:
         mode = ServiceMode('replicated', 0)
         assert mode == {'replicated': {'Replicas': 0}}
         assert mode.mode == 'replicated'
         assert mode.replicas == 0
 
-    def test_invalid_mode(self):
+    def test_invalid_mode(self) -> None:
         with pytest.raises(InvalidArgument):
             ServiceMode('foobar')
 
 
 class MountTest(unittest.TestCase):
-    def test_parse_mount_string_ro(self):
+    def test_parse_mount_string_ro(self) -> None:
         mount = Mount.parse_mount_string("/foo/bar:/baz:ro")
         assert mount['Source'] == "/foo/bar"
         assert mount['Target'] == "/baz"
         assert mount['ReadOnly'] is True
 
-    def test_parse_mount_string_rw(self):
+    def test_parse_mount_string_rw(self) -> None:
         mount = Mount.parse_mount_string("/foo/bar:/baz:rw")
         assert mount['Source'] == "/foo/bar"
         assert mount['Target'] == "/baz"
         assert not mount['ReadOnly']
 
-    def test_parse_mount_string_short_form(self):
+    def test_parse_mount_string_short_form(self) -> None:
         mount = Mount.parse_mount_string("/foo/bar:/baz")
         assert mount['Source'] == "/foo/bar"
         assert mount['Target'] == "/baz"
         assert not mount['ReadOnly']
 
-    def test_parse_mount_string_no_source(self):
+    def test_parse_mount_string_no_source(self) -> None:
         mount = Mount.parse_mount_string("foo/bar")
         assert mount['Source'] is None
         assert mount['Target'] == "foo/bar"
         assert not mount['ReadOnly']
 
-    def test_parse_mount_string_invalid(self):
+    def test_parse_mount_string_invalid(self) -> None:
         with pytest.raises(InvalidArgument):
             Mount.parse_mount_string("foo:bar:baz:rw")
 
-    def test_parse_mount_named_volume(self):
+    def test_parse_mount_named_volume(self) -> None:
         mount = Mount.parse_mount_string("foobar:/baz")
         assert mount['Source'] == 'foobar'
         assert mount['Target'] == '/baz'
         assert mount['Type'] == 'volume'
 
-    def test_parse_mount_bind(self):
+    def test_parse_mount_bind(self) -> None:
         mount = Mount.parse_mount_string('/foo/bar:/baz')
         assert mount['Source'] == "/foo/bar"
         assert mount['Target'] == "/baz"
         assert mount['Type'] == 'bind'
 
     @pytest.mark.xfail
-    def test_parse_mount_bind_windows(self):
+    def test_parse_mount_bind_windows(self) -> None:
         with mock.patch('docker.types.services.IS_WINDOWS_PLATFORM', True):
             mount = Mount.parse_mount_string('C:/foo/bar:/baz')
         assert mount['Source'] == "C:/foo/bar"
@@ -413,7 +413,7 @@ class MountTest(unittest.TestCase):
 
 
 class ServicePortsTest(unittest.TestCase):
-    def test_convert_service_ports_simple(self):
+    def test_convert_service_ports_simple(self) -> None:
         ports = {8080: 80}
         assert convert_service_ports(ports) == [{
             'Protocol': 'tcp',
@@ -421,7 +421,7 @@ class ServicePortsTest(unittest.TestCase):
             'TargetPort': 80,
         }]
 
-    def test_convert_service_ports_with_protocol(self):
+    def test_convert_service_ports_with_protocol(self) -> None:
         ports = {8080: (80, 'udp')}
 
         assert convert_service_ports(ports) == [{
@@ -430,7 +430,7 @@ class ServicePortsTest(unittest.TestCase):
             'TargetPort': 80,
         }]
 
-    def test_convert_service_ports_with_protocol_and_mode(self):
+    def test_convert_service_ports_with_protocol_and_mode(self) -> None:
         ports = {8080: (80, 'udp', 'ingress')}
 
         assert convert_service_ports(ports) == [{
@@ -440,13 +440,13 @@ class ServicePortsTest(unittest.TestCase):
             'PublishMode': 'ingress',
         }]
 
-    def test_convert_service_ports_invalid(self):
+    def test_convert_service_ports_invalid(self) -> None:
         ports = {8080: ('way', 'too', 'many', 'items', 'here')}
 
         with pytest.raises(ValueError):
             convert_service_ports(ports)
 
-    def test_convert_service_ports_no_protocol_and_mode(self):
+    def test_convert_service_ports_no_protocol_and_mode(self) -> None:
         ports = {8080: (80, None, 'host')}
 
         assert convert_service_ports(ports) == [{
@@ -456,7 +456,7 @@ class ServicePortsTest(unittest.TestCase):
             'PublishMode': 'host',
         }]
 
-    def test_convert_service_ports_multiple(self):
+    def test_convert_service_ports_multiple(self) -> None:
         ports = {
             8080: (80, None, 'host'),
             9999: 99,

@@ -3,7 +3,7 @@ from .base import BaseIntegrationTest, TEST_API_VERSION
 
 
 class VolumesTest(BaseIntegrationTest):
-    def test_create_get(self):
+    def test_create_get(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         volume = client.volumes.create(
             'dockerpytest_1',
@@ -18,7 +18,7 @@ class VolumesTest(BaseIntegrationTest):
         volume = client.volumes.get(volume.id)
         assert volume.name == 'dockerpytest_1'
 
-    def test_list_remove(self):
+    def test_list_remove(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         volume = client.volumes.create('dockerpytest_1')
         self.tmp_volumes.append(volume.id)

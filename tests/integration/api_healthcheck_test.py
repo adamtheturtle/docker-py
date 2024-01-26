@@ -14,7 +14,7 @@ def wait_on_health_status(client, container, status):
 class HealthcheckTest(BaseAPIIntegrationTest):
 
     @helpers.requires_api_version('1.24')
-    def test_healthcheck_shell_command(self):
+    def test_healthcheck_shell_command(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'top', healthcheck={'test': 'echo "hello world"'})
         self.tmp_containers.append(container)
@@ -25,7 +25,7 @@ class HealthcheckTest(BaseAPIIntegrationTest):
         ]
 
     @helpers.requires_api_version('1.24')
-    def test_healthcheck_passes(self):
+    def test_healthcheck_passes(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'top', healthcheck={
                 'test': "true",
@@ -38,7 +38,7 @@ class HealthcheckTest(BaseAPIIntegrationTest):
         wait_on_health_status(self.client, container, "healthy")
 
     @helpers.requires_api_version('1.24')
-    def test_healthcheck_fails(self):
+    def test_healthcheck_fails(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'top', healthcheck={
                 'test': "false",
@@ -51,7 +51,7 @@ class HealthcheckTest(BaseAPIIntegrationTest):
         wait_on_health_status(self.client, container, "unhealthy")
 
     @helpers.requires_api_version('1.29')
-    def test_healthcheck_start_period(self):
+    def test_healthcheck_start_period(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'top', healthcheck={
                 'test': "echo 'x' >> /counter.txt && "

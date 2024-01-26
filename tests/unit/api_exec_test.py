@@ -7,7 +7,7 @@ from .api_test import (
 
 
 class ExecTest(BaseAPIClientTest):
-    def test_exec_create(self):
+    def test_exec_create(self) -> None:
         self.client.exec_create(fake_api.FAKE_CONTAINER_ID, ['ls', '-1'])
 
         args = fake_request.call_args
@@ -28,7 +28,7 @@ class ExecTest(BaseAPIClientTest):
 
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_exec_start(self):
+    def test_exec_start(self) -> None:
         self.client.exec_start(fake_api.FAKE_EXEC_ID)
 
         args = fake_request.call_args
@@ -45,7 +45,7 @@ class ExecTest(BaseAPIClientTest):
             'Upgrade': 'tcp'
         }
 
-    def test_exec_start_detached(self):
+    def test_exec_start_detached(self) -> None:
         self.client.exec_start(fake_api.FAKE_EXEC_ID, detach=True)
 
         args = fake_request.call_args
@@ -60,13 +60,13 @@ class ExecTest(BaseAPIClientTest):
             'Content-Type': 'application/json'
         }
 
-    def test_exec_inspect(self):
+    def test_exec_inspect(self) -> None:
         self.client.exec_inspect(fake_api.FAKE_EXEC_ID)
 
         args = fake_request.call_args
         assert args[0][1] == f"{url_prefix}exec/{fake_api.FAKE_EXEC_ID}/json"
 
-    def test_exec_resize(self):
+    def test_exec_resize(self) -> None:
         self.client.exec_resize(fake_api.FAKE_EXEC_ID, height=20, width=60)
 
         fake_request.assert_called_with(

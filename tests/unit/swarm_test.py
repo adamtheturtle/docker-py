@@ -7,7 +7,7 @@ from .api_test import BaseAPIClientTest, url_prefix, fake_request
 
 class SwarmTest(BaseAPIClientTest):
     @requires_api_version('1.24')
-    def test_node_update(self):
+    def test_node_update(self) -> None:
         node_spec = {
             'Availability': 'active',
             'Name': 'node-name',
@@ -26,7 +26,7 @@ class SwarmTest(BaseAPIClientTest):
         assert args[1]['headers']['Content-Type'] == 'application/json'
 
     @requires_api_version('1.24')
-    def test_join_swarm(self):
+    def test_join_swarm(self) -> None:
         remote_addr = ['1.2.3.4:2377']
         listen_addr = '2.3.4.5:2377'
         join_token = 'A_BEAUTIFUL_JOIN_TOKEN'
@@ -50,7 +50,7 @@ class SwarmTest(BaseAPIClientTest):
         assert (args[1]['headers']['Content-Type'] == 'application/json')
 
     @requires_api_version('1.24')
-    def test_join_swarm_no_listen_address_takes_default(self):
+    def test_join_swarm_no_listen_address_takes_default(self) -> None:
         remote_addr = ['1.2.3.4:2377']
         join_token = 'A_BEAUTIFUL_JOIN_TOKEN'
 

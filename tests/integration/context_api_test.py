@@ -8,7 +8,7 @@ from .base import BaseAPIIntegrationTest
 
 
 class ContextLifecycleTest(BaseAPIIntegrationTest):
-    def test_lifecycle(self):
+    def test_lifecycle(self) -> None:
         assert ContextAPI.get_context().Name == "default"
         assert not ContextAPI.get_context("test")
         assert ContextAPI.get_current_context().Name == "default"
@@ -43,7 +43,7 @@ class ContextLifecycleTest(BaseAPIIntegrationTest):
         key.close()
         cert.close()
 
-    def test_context_remove(self):
+    def test_context_remove(self) -> None:
         ContextAPI.create_context("test")
         assert ContextAPI.inspect_context("test")["Name"] == "test"
 
@@ -51,7 +51,7 @@ class ContextLifecycleTest(BaseAPIIntegrationTest):
         with pytest.raises(errors.ContextNotFound):
             ContextAPI.inspect_context("test")
 
-    def test_load_context_without_orchestrator(self):
+    def test_load_context_without_orchestrator(self) -> None:
         ContextAPI.create_context("test")
         ctx = ContextAPI.get_context("test")
         assert ctx

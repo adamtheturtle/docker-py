@@ -13,20 +13,20 @@ from ..helpers import requires_api_version
 
 class ContainerCollectionTest(BaseIntegrationTest):
 
-    def test_run(self):
+    def test_run(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         assert client.containers.run(
             "alpine", "echo hello world", remove=True
         ) == b'hello world\n'
 
-    def test_run_detach(self):
+    def test_run_detach(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "sleep 300", detach=True)
         self.tmp_containers.append(container.id)
         assert container.attrs['Config']['Image'] == "alpine"
         assert container.attrs['Config']['Cmd'] == ['sleep', '300']
 
-    def test_run_with_error(self):
+    def test_run_with_error(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         with pytest.raises(docker.errors.ContainerError) as cm:
             client.containers.run("alpine", "cat /test", remove=True)
@@ -35,7 +35,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         assert "alpine" in cm.exconly()
         assert "No such file or directory" in cm.exconly()
 
-    def test_run_with_image_that_does_not_exist(self):
+    def test_run_with_image_that_does_not_exist(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         with pytest.raises(docker.errors.ImageNotFound):
             client.containers.run("dockerpytest_does_not_exist")
@@ -43,7 +43,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
     @pytest.mark.skipif(
         docker.constants.IS_WINDOWS_PLATFORM, reason="host mounts on Windows"
     )
-    def test_run_with_volume(self):
+    def test_run_with_volume(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         path = tempfile.mkdtemp()
 
@@ -64,7 +64,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         self.tmp_containers.append(name)
         assert out == b'hello\n'
 
-    def test_run_with_named_volume(self):
+    def test_run_with_named_volume(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         volume = client.volumes.create(name="somevolume")
         self.tmp_volumes.append(volume.id)
@@ -86,7 +86,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         self.tmp_containers.append(name)
         assert out == b'hello\n'
 
-    def test_run_with_network(self):
+    def test_run_with_network(self) -> None:
         net_name = random_name()
         client = docker.from_env(version=TEST_API_VERSION)
         client.networks.create(net_name)
@@ -104,7 +104,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         assert 'Networks' in attrs['NetworkSettings']
         assert list(attrs['NetworkSettings']['Networks'].keys()) == [net_name]
 
-    def test_run_with_networking_config(self):
+    def test_run_with_networking_config(self) -> None:
         net_name = random_name()
         client = docker.from_env(version=TEST_API_VERSION)
         client.networks.create(net_name)
@@ -137,7 +137,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         assert attrs['NetworkSettings']['Networks'][net_name]['DriverOpts'] \
                == test_driver_opt
 
-    def test_run_with_networking_config_with_undeclared_network(self):
+    def test_run_with_networking_config_with_undeclared_network(self) -> None:
         net_name = random_name()
         client = docker.from_env(version=TEST_API_VERSION)
         client.networks.create(net_name)
@@ -165,7 +165,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
             )
             self.tmp_containers.append(container.id)
 
-    def test_run_with_networking_config_only_undeclared_network(self):
+    def test_run_with_networking_config_only_undeclared_network(self) -> None:
         net_name = random_name()
         client = docker.from_env(version=TEST_API_VERSION)
         client.networks.create(net_name)
@@ -194,7 +194,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         assert (attrs['NetworkSettings']['Networks'][net_name]['DriverOpts']
                 is None)
 
-    def test_run_with_none_driver(self):
+    def test_run_with_none_driver(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
 
         out = client.containers.run(
@@ -203,7 +203,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         )
         assert out is None
 
-    def test_run_with_json_file_driver(self):
+    def test_run_with_json_file_driver(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
 
         out = client.containers.run(
@@ -213,7 +213,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         assert out == b'hello\n'
 
     @requires_api_version('1.25')
-    def test_run_with_auto_remove(self):
+    def test_run_with_auto_remove(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         out = client.containers.run(
             # sleep(2) to allow any communication with the container
@@ -223,7 +223,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         assert out == b'hello\n'
 
     @requires_api_version('1.25')
-    def test_run_with_auto_remove_error(self):
+    def test_run_with_auto_remove_error(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         with pytest.raises(docker.errors.ContainerError) as e:
             client.containers.run(
@@ -235,7 +235,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         assert e.value.exit_status == 1
         assert e.value.stderr is None
 
-    def test_run_with_streamed_logs(self):
+    def test_run_with_streamed_logs(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         out = client.containers.run(
             'alpine', 'sh -c "echo hello && echo world"', stream=True
@@ -247,7 +247,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
     @pytest.mark.timeout(5)
     @pytest.mark.skipif(os.environ.get('DOCKER_HOST', '').startswith('ssh://'),
                         reason='No cancellable streams over SSH')
-    def test_run_with_streamed_logs_and_cancel(self):
+    def test_run_with_streamed_logs_and_cancel(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         out = client.containers.run(
             'alpine', 'sh -c "echo hello && echo world"', stream=True
@@ -261,7 +261,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         assert logs[0] == b'hello\n'
         assert logs[1] == b'world\n'
 
-    def test_run_with_proxy_config(self):
+    def test_run_with_proxy_config(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         client.api._proxy_configs = docker.utils.proxy.ProxyConfig(
             ftp='sakuya.jp:4967'
@@ -272,14 +272,14 @@ class ContainerCollectionTest(BaseIntegrationTest):
         assert b'FTP_PROXY=sakuya.jp:4967\n' in out
         assert b'ftp_proxy=sakuya.jp:4967\n' in out
 
-    def test_get(self):
+    def test_get(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "sleep 300", detach=True)
         self.tmp_containers.append(container.id)
         assert client.containers.get(container.id).attrs[
                    'Config']['Image'] == "alpine"
 
-    def test_list(self):
+    def test_list(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container_id = client.containers.run(
             "alpine", "sleep 300", detach=True).id
@@ -297,7 +297,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         container.remove()
         assert container_id not in [c.id for c in client.containers.list()]
 
-    def test_list_sparse(self):
+    def test_list_sparse(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container_id = client.containers.run(
             "alpine", "sleep 300", detach=True).id
@@ -320,7 +320,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
 
 class ContainerTest(BaseIntegrationTest):
 
-    def test_commit(self):
+    def test_commit(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run(
             "alpine", "sh -c 'echo \"hello\" > /test'",
@@ -333,14 +333,14 @@ class ContainerTest(BaseIntegrationTest):
             image.id, "cat /test", remove=True
         ) == b"hello\n"
 
-    def test_diff(self):
+    def test_diff(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "touch /test", detach=True)
         self.tmp_containers.append(container.id)
         container.wait()
         assert container.diff() == [{'Path': '/test', 'Kind': 1}]
 
-    def test_exec_run_success(self):
+    def test_exec_run_success(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run(
             "alpine", "sh -c 'echo \"hello\" > /test; sleep 60'", detach=True
@@ -350,7 +350,7 @@ class ContainerTest(BaseIntegrationTest):
         assert exec_output[0] == 0
         assert exec_output[1] == b"hello\n"
 
-    def test_exec_run_failed(self):
+    def test_exec_run_failed(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run(
             "alpine", "sh -c 'sleep 60'", detach=True
@@ -359,7 +359,7 @@ class ContainerTest(BaseIntegrationTest):
         exec_output = container.exec_run("docker ps")
         assert exec_output[0] == 126
 
-    def test_kill(self):
+    def test_kill(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "sleep 300", detach=True)
         self.tmp_containers.append(container.id)
@@ -370,7 +370,7 @@ class ContainerTest(BaseIntegrationTest):
         container.reload()
         assert container.status == 'exited'
 
-    def test_logs(self):
+    def test_logs(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "echo hello world",
                                           detach=True)
@@ -378,7 +378,7 @@ class ContainerTest(BaseIntegrationTest):
         container.wait()
         assert container.logs() == b"hello world\n"
 
-    def test_pause(self):
+    def test_pause(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "sleep 300", detach=True)
         self.tmp_containers.append(container.id)
@@ -389,7 +389,7 @@ class ContainerTest(BaseIntegrationTest):
         container.reload()
         assert container.status == "running"
 
-    def test_remove(self):
+    def test_remove(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "echo hello", detach=True)
         self.tmp_containers.append(container.id)
@@ -399,7 +399,7 @@ class ContainerTest(BaseIntegrationTest):
         containers = client.containers.list(all=True)
         assert container.id not in [c.id for c in containers]
 
-    def test_rename(self):
+    def test_rename(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "echo hello", name="test1",
                                           detach=True)
@@ -409,7 +409,7 @@ class ContainerTest(BaseIntegrationTest):
         container.reload()
         assert container.name == "test2"
 
-    def test_restart(self):
+    def test_restart(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "sleep 100", detach=True)
         self.tmp_containers.append(container.id)
@@ -419,7 +419,7 @@ class ContainerTest(BaseIntegrationTest):
         second_started_at = container.attrs['State']['StartedAt']
         assert first_started_at != second_started_at
 
-    def test_start(self):
+    def test_start(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.create("alpine", "sleep 50", detach=True)
         self.tmp_containers.append(container.id)
@@ -428,7 +428,7 @@ class ContainerTest(BaseIntegrationTest):
         container.reload()
         assert container.status == "running"
 
-    def test_stats(self):
+    def test_stats(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "sleep 100", detach=True)
         self.tmp_containers.append(container.id)
@@ -437,7 +437,7 @@ class ContainerTest(BaseIntegrationTest):
                     'memory_stats', 'blkio_stats']:
             assert key in stats
 
-    def test_ports_target_none(self):
+    def test_ports_target_none(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         ports = None
         target_ports = {'2222/tcp': ports}
@@ -457,7 +457,7 @@ class ContainerTest(BaseIntegrationTest):
                 assert int(actual_port['HostPort']) > 0
         client.close()
 
-    def test_ports_target_tuple(self):
+    def test_ports_target_tuple(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         ports = ('127.0.0.1', 1111)
         target_ports = {'2222/tcp': ports}
@@ -477,7 +477,7 @@ class ContainerTest(BaseIntegrationTest):
                 assert int(actual_port['HostPort']) > 0
         client.close()
 
-    def test_ports_target_list(self):
+    def test_ports_target_list(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         ports = [1234, 4567]
         target_ports = {'2222/tcp': ports}
@@ -497,7 +497,7 @@ class ContainerTest(BaseIntegrationTest):
                 assert int(actual_port['HostPort']) > 0
         client.close()
 
-    def test_stop(self):
+    def test_stop(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "top", detach=True)
         self.tmp_containers.append(container.id)
@@ -506,7 +506,7 @@ class ContainerTest(BaseIntegrationTest):
         container.reload()
         assert container.status == "exited"
 
-    def test_top(self):
+    def test_top(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "sleep 60", detach=True)
         self.tmp_containers.append(container.id)
@@ -514,7 +514,7 @@ class ContainerTest(BaseIntegrationTest):
         assert len(top['Processes']) == 1
         assert 'sleep 60' in top['Processes'][0]
 
-    def test_update(self):
+    def test_update(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "sleep 60", detach=True,
                                           cpu_shares=2)
@@ -524,7 +524,7 @@ class ContainerTest(BaseIntegrationTest):
         container.reload()
         assert container.attrs['HostConfig']['CpuShares'] == 3
 
-    def test_wait(self):
+    def test_wait(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "sh -c 'exit 0'",
                                           detach=True)
@@ -535,7 +535,7 @@ class ContainerTest(BaseIntegrationTest):
         self.tmp_containers.append(container.id)
         assert container.wait()['StatusCode'] == 1
 
-    def test_create_with_volume_driver(self):
+    def test_create_with_volume_driver(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.create(
             'alpine',

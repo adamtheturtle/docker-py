@@ -20,7 +20,7 @@ class ServiceTest(unittest.TestCase):
     def tearDownClass(cls):
         helpers.force_leave_swarm(docker.from_env(version=TEST_API_VERSION))
 
-    def test_create(self):
+    def test_create(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         name = helpers.random_name()
         service = client.services.create(
@@ -43,7 +43,7 @@ class ServiceTest(unittest.TestCase):
         assert ('Order' in spec_rollback and
                spec_rollback['Order'] == 'start-first')
 
-    def test_create_with_network(self):
+    def test_create_with_network(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         name = helpers.random_name()
         network = client.networks.create(
@@ -62,7 +62,7 @@ class ServiceTest(unittest.TestCase):
         assert len(networks) == 1
         assert networks[0]['Target'] == network.id
 
-    def test_get(self):
+    def test_get(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         name = helpers.random_name()
         service = client.services.create(
@@ -73,7 +73,7 @@ class ServiceTest(unittest.TestCase):
         service = client.services.get(service.id)
         assert service.name == name
 
-    def test_list_remove(self):
+    def test_list_remove(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         service = client.services.create(
             name=helpers.random_name(),
@@ -84,7 +84,7 @@ class ServiceTest(unittest.TestCase):
         service.remove()
         assert service not in client.services.list()
 
-    def test_tasks(self):
+    def test_tasks(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         service1 = client.services.create(
             name=helpers.random_name(),
@@ -108,7 +108,7 @@ class ServiceTest(unittest.TestCase):
         assert len(tasks) == 1
         assert tasks[0]['ServiceID'] == service2.id
 
-    def test_update(self):
+    def test_update(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         service = client.services.create(
             # create arguments
@@ -127,7 +127,7 @@ class ServiceTest(unittest.TestCase):
         container_spec = service.attrs['Spec']['TaskTemplate']['ContainerSpec']
         assert container_spec['Command'] == ["sleep", "600"]
 
-    def test_update_retains_service_labels(self):
+    def test_update_retains_service_labels(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         service = client.services.create(
             # create arguments
@@ -147,7 +147,7 @@ class ServiceTest(unittest.TestCase):
         labels = service.attrs['Spec']['Labels']
         assert labels == {'service.label': 'SampleLabel'}
 
-    def test_update_retains_container_labels(self):
+    def test_update_retains_container_labels(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         service = client.services.create(
             # create arguments
@@ -167,7 +167,7 @@ class ServiceTest(unittest.TestCase):
         container_spec = service.attrs['Spec']['TaskTemplate']['ContainerSpec']
         assert container_spec['Labels'] == {'container.label': 'SampleLabel'}
 
-    def test_update_remove_service_labels(self):
+    def test_update_remove_service_labels(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         service = client.services.create(
             # create arguments
@@ -188,7 +188,7 @@ class ServiceTest(unittest.TestCase):
         assert not service.attrs['Spec'].get('Labels')
 
     @pytest.mark.xfail(reason='Flaky test')
-    def test_update_retains_networks(self):
+    def test_update_retains_networks(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         network_name = helpers.random_name()
         network = client.networks.create(
@@ -213,7 +213,7 @@ class ServiceTest(unittest.TestCase):
         networks = service.attrs['Spec']['TaskTemplate']['Networks']
         assert networks == [{'Target': network.id}]
 
-    def test_scale_service(self):
+    def test_scale_service(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         service = client.services.create(
             # create arguments
@@ -237,7 +237,7 @@ class ServiceTest(unittest.TestCase):
         spec = service.attrs['Spec']['TaskTemplate']['ContainerSpec']
         assert spec.get('Command') == ['sleep', '300']
 
-    def test_scale_method_service(self):
+    def test_scale_method_service(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         service = client.services.create(
             # create arguments
@@ -259,7 +259,7 @@ class ServiceTest(unittest.TestCase):
         spec = service.attrs['Spec']['TaskTemplate']['ContainerSpec']
         assert spec.get('Command') == ['sleep', '300']
 
-    def test_scale_method_global_service(self):
+    def test_scale_method_global_service(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         mode = ServiceMode('global')
         service = client.services.create(
@@ -281,7 +281,7 @@ class ServiceTest(unittest.TestCase):
         assert spec.get('Command') == ['sleep', '300']
 
     @helpers.requires_api_version('1.25')
-    def test_force_update_service(self):
+    def test_force_update_service(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         service = client.services.create(
             # create arguments
@@ -303,7 +303,7 @@ class ServiceTest(unittest.TestCase):
         assert service.version > initial_version
 
     @helpers.requires_api_version('1.25')
-    def test_force_update_service_using_bool(self):
+    def test_force_update_service_using_bool(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         service = client.services.create(
             # create arguments
@@ -325,7 +325,7 @@ class ServiceTest(unittest.TestCase):
         assert service.version > initial_version
 
     @helpers.requires_api_version('1.25')
-    def test_force_update_service_using_shorthand_method(self):
+    def test_force_update_service_using_shorthand_method(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         service = client.services.create(
             # create arguments
@@ -340,7 +340,7 @@ class ServiceTest(unittest.TestCase):
         assert service.version > initial_version
 
     @helpers.requires_api_version('1.41')
-    def test_create_cap_add(self):
+    def test_create_cap_add(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         name = helpers.random_name()
         service = client.services.create(
@@ -359,7 +359,7 @@ class ServiceTest(unittest.TestCase):
         assert "CAP_SYSLOG" in container_spec["CapabilityAdd"]
 
     @helpers.requires_api_version('1.41')
-    def test_create_cap_drop(self):
+    def test_create_cap_drop(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         name = helpers.random_name()
         service = client.services.create(

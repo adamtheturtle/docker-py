@@ -118,7 +118,7 @@ class BaseAPIClientTest(unittest.TestCase):
 
 
 class DockerApiTest(BaseAPIClientTest):
-    def test_ctor(self):
+    def test_ctor(self) -> None:
         with pytest.raises(docker.errors.DockerException) as excinfo:
             APIClient(version=1.12)
 
@@ -126,7 +126,7 @@ class DockerApiTest(BaseAPIClientTest):
             excinfo.value
         ) == 'Version parameter must be a string or None. Found float'
 
-    def test_url_valid_resource(self):
+    def test_url_valid_resource(self) -> None:
         url = self.client._url('/hello/{0}/world', 'somename')
         assert url == f"{url_prefix}hello/somename/world"
 
@@ -141,21 +141,21 @@ class DockerApiTest(BaseAPIClientTest):
         url = self.client._url("/images/{0}/push", "localhost:5000/image")
         assert url == f"{url_prefix}images/localhost:5000/image/push"
 
-    def test_url_invalid_resource(self):
+    def test_url_invalid_resource(self) -> None:
         with pytest.raises(ValueError):
             self.client._url('/hello/{0}/world', ['sakuya', 'izayoi'])
 
-    def test_url_no_resource(self):
+    def test_url_no_resource(self) -> None:
         url = self.client._url('/simple')
         assert url == f"{url_prefix}simple"
 
-    def test_url_unversioned_api(self):
+    def test_url_unversioned_api(self) -> None:
         url = self.client._url(
             '/hello/{0}/world', 'somename', versioned_api=False
         )
         assert url == f"{url_base}hello/somename/world"
 
-    def test_version(self):
+    def test_version(self) -> None:
         self.client.version()
 
         fake_request.assert_called_with(
@@ -164,7 +164,7 @@ class DockerApiTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_version_no_api_version(self):
+    def test_version_no_api_version(self) -> None:
         self.client.version(False)
 
         fake_request.assert_called_with(
@@ -173,17 +173,17 @@ class DockerApiTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_retrieve_server_version(self):
+    def test_retrieve_server_version(self) -> None:
         client = APIClient(version="auto")
         assert isinstance(client._version, str)
         assert not (client._version == "auto")
         client.close()
 
-    def test_auto_retrieve_server_version(self):
+    def test_auto_retrieve_server_version(self) -> None:
         version = self.client._retrieve_server_version()
         assert isinstance(version, str)
 
-    def test_info(self):
+    def test_info(self) -> None:
         self.client.info()
 
         fake_request.assert_called_with(
@@ -192,7 +192,7 @@ class DockerApiTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_search(self):
+    def test_search(self) -> None:
         self.client.search('busybox')
 
         fake_request.assert_called_with(
@@ -202,7 +202,7 @@ class DockerApiTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.client.login('sakuya', 'izayoi')
         args = fake_request.call_args
         assert args[0][0] == 'POST'
@@ -218,7 +218,7 @@ class DockerApiTest(BaseAPIClientTest):
             'serveraddress': None,
         }
 
-    def test_events(self):
+    def test_events(self) -> None:
         self.client.events()
 
         fake_request.assert_called_with(
@@ -229,7 +229,7 @@ class DockerApiTest(BaseAPIClientTest):
             timeout=None
         )
 
-    def test_events_with_since_until(self):
+    def test_events_with_since_until(self) -> None:
         ts = 1356048000
         now = datetime.datetime.utcfromtimestamp(ts)
         since = now - datetime.timedelta(seconds=10)
@@ -249,7 +249,7 @@ class DockerApiTest(BaseAPIClientTest):
             timeout=None
         )
 
-    def test_events_with_filters(self):
+    def test_events_with_filters(self) -> None:
         filters = {'event': ['die', 'stop'],
                    'container': fake_api.FAKE_CONTAINER_ID}
 
@@ -272,42 +272,42 @@ class DockerApiTest(BaseAPIClientTest):
         socket_adapter = client.get_adapter('http+docker://')
         return socket_adapter.socket_path
 
-    def test_url_compatibility_unix(self):
+    def test_url_compatibility_unix(self) -> None:
         c = APIClient(
             base_url="unix://socket",
             version=DEFAULT_DOCKER_API_VERSION)
 
         assert self._socket_path_for_client_session(c) == '/socket'
 
-    def test_url_compatibility_unix_triple_slash(self):
+    def test_url_compatibility_unix_triple_slash(self) -> None:
         c = APIClient(
             base_url="unix:///socket",
             version=DEFAULT_DOCKER_API_VERSION)
 
         assert self._socket_path_for_client_session(c) == '/socket'
 
-    def test_url_compatibility_http_unix_triple_slash(self):
+    def test_url_compatibility_http_unix_triple_slash(self) -> None:
         c = APIClient(
             base_url="http+unix:///socket",
             version=DEFAULT_DOCKER_API_VERSION)
 
         assert self._socket_path_for_client_session(c) == '/socket'
 
-    def test_url_compatibility_http(self):
+    def test_url_compatibility_http(self) -> None:
         c = APIClient(
             base_url="http://hostname:1234",
             version=DEFAULT_DOCKER_API_VERSION)
 
         assert c.base_url == "http://hostname:1234"
 
-    def test_url_compatibility_tcp(self):
+    def test_url_compatibility_tcp(self) -> None:
         c = APIClient(
             base_url="tcp://hostname:1234",
             version=DEFAULT_DOCKER_API_VERSION)
 
         assert c.base_url == "http://hostname:1234"
 
-    def test_remove_link(self):
+    def test_remove_link(self) -> None:
         self.client.remove_container(fake_api.FAKE_CONTAINER_ID, link=True)
 
         fake_request.assert_called_with(
@@ -317,7 +317,7 @@ class DockerApiTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_create_host_config_secopt(self):
+    def test_create_host_config_secopt(self) -> None:
         security_opt = ['apparmor:test_profile']
         result = self.client.create_host_config(security_opt=security_opt)
         assert 'SecurityOpt' in result
@@ -325,7 +325,7 @@ class DockerApiTest(BaseAPIClientTest):
         with pytest.raises(TypeError):
             self.client.create_host_config(security_opt='wrong')
 
-    def test_stream_helper_decoding(self):
+    def test_stream_helper_decoding(self) -> None:
         status_code, content = fake_api.fake_responses[f"{url_prefix}events"]()
         content_str = json.dumps(content)
         content_str = content_str.encode('utf-8')
@@ -432,7 +432,7 @@ class UnixSocketStreamTest(unittest.TestCase):
     @pytest.mark.skipif(
         docker.constants.IS_WINDOWS_PLATFORM, reason='Unix only'
     )
-    def test_early_stream_response(self):
+    def test_early_stream_response(self) -> None:
         self.request_handler = self.early_response_sending_handler
         lines = []
         for i in range(0, 50):
@@ -545,45 +545,45 @@ class TCPSocketStreamTest(unittest.TestCase):
             return client._read_from_socket(
                 resp, stream=stream, tty=tty, demux=demux)
 
-    def test_read_from_socket_tty(self):
+    def test_read_from_socket_tty(self) -> None:
         res = self.request(stream=True, tty=True, demux=False)
         assert next(res) == self.stdout_data + self.stderr_data
         with self.assertRaises(StopIteration):
             next(res)
 
-    def test_read_from_socket_tty_demux(self):
+    def test_read_from_socket_tty_demux(self) -> None:
         res = self.request(stream=True, tty=True, demux=True)
         assert next(res) == (self.stdout_data + self.stderr_data, None)
         with self.assertRaises(StopIteration):
             next(res)
 
-    def test_read_from_socket_no_tty(self):
+    def test_read_from_socket_no_tty(self) -> None:
         res = self.request(stream=True, tty=False, demux=False)
         assert next(res) == self.stdout_data
         assert next(res) == self.stderr_data
         with self.assertRaises(StopIteration):
             next(res)
 
-    def test_read_from_socket_no_tty_demux(self):
+    def test_read_from_socket_no_tty_demux(self) -> None:
         res = self.request(stream=True, tty=False, demux=True)
         assert (self.stdout_data, None) == next(res)
         assert (None, self.stderr_data) == next(res)
         with self.assertRaises(StopIteration):
             next(res)
 
-    def test_read_from_socket_no_stream_tty(self):
+    def test_read_from_socket_no_stream_tty(self) -> None:
         res = self.request(stream=False, tty=True, demux=False)
         assert res == self.stdout_data + self.stderr_data
 
-    def test_read_from_socket_no_stream_tty_demux(self):
+    def test_read_from_socket_no_stream_tty_demux(self) -> None:
         res = self.request(stream=False, tty=True, demux=True)
         assert res == (self.stdout_data + self.stderr_data, None)
 
-    def test_read_from_socket_no_stream_no_tty(self):
+    def test_read_from_socket_no_stream_no_tty(self) -> None:
         res = self.request(stream=False, tty=False, demux=False)
         assert res == self.stdout_data + self.stderr_data
 
-    def test_read_from_socket_no_stream_no_tty_demux(self):
+    def test_read_from_socket_no_stream_no_tty_demux(self) -> None:
         res = self.request(stream=False, tty=False, demux=True)
         assert res == (self.stdout_data, self.stderr_data)
 
@@ -600,7 +600,7 @@ class UserAgentTest(unittest.TestCase):
     def tearDown(self):
         self.patcher.stop()
 
-    def test_default_user_agent(self):
+    def test_default_user_agent(self) -> None:
         client = APIClient(version=DEFAULT_DOCKER_API_VERSION)
         client.version()
 
@@ -609,7 +609,7 @@ class UserAgentTest(unittest.TestCase):
         expected = f'docker-sdk-python/{docker.__version__}'
         assert headers['User-Agent'] == expected
 
-    def test_custom_user_agent(self):
+    def test_custom_user_agent(self) -> None:
         client = APIClient(
             user_agent='foo/bar',
             version=DEFAULT_DOCKER_API_VERSION)
@@ -634,7 +634,7 @@ class DisableSocketTest(unittest.TestCase):
     def setUp(self):
         self.client = APIClient(version=DEFAULT_DOCKER_API_VERSION)
 
-    def test_disable_socket_timeout(self):
+    def test_disable_socket_timeout(self) -> None:
         """Test that the timeout is disabled on a generic socket object."""
         socket = self.DummySocket()
 
@@ -642,7 +642,7 @@ class DisableSocketTest(unittest.TestCase):
 
         assert socket.timeout is None
 
-    def test_disable_socket_timeout2(self):
+    def test_disable_socket_timeout2(self) -> None:
         """Test that the timeouts are disabled on a generic socket object
         and it's _sock object if present."""
         socket = self.DummySocket()
@@ -653,7 +653,7 @@ class DisableSocketTest(unittest.TestCase):
         assert socket.timeout is None
         assert socket._sock.timeout is None
 
-    def test_disable_socket_timout_non_blocking(self):
+    def test_disable_socket_timout_non_blocking(self) -> None:
         """Test that a non-blocking socket does not get set to blocking."""
         socket = self.DummySocket()
         socket._sock = self.DummySocket(0.0)

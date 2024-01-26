@@ -4,7 +4,7 @@ from .base import BaseIntegrationTest, TEST_API_VERSION
 
 class ModelTest(BaseIntegrationTest):
 
-    def test_reload(self):
+    def test_reload(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         container = client.containers.run("alpine", "sleep 300", detach=True)
         self.tmp_containers.append(container.id)

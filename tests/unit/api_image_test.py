@@ -11,12 +11,12 @@ from .api_test import (
 
 
 class ImageTest(BaseAPIClientTest):
-    def test_image_viz(self):
+    def test_image_viz(self) -> None:
         with pytest.raises(Exception):  # noqa: B017
             self.client.images('busybox', viz=True)
             self.fail('Viz output should not be supported!')
 
-    def test_images(self):
+    def test_images(self) -> None:
         self.client.images(all=True)
 
         fake_request.assert_called_with(
@@ -26,7 +26,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_images_name(self):
+    def test_images_name(self) -> None:
         self.client.images('foo:bar')
 
         fake_request.assert_called_with(
@@ -37,7 +37,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_images_quiet(self):
+    def test_images_quiet(self) -> None:
         self.client.images(all=True, quiet=True)
 
         fake_request.assert_called_with(
@@ -47,7 +47,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_image_ids(self):
+    def test_image_ids(self) -> None:
         self.client.images(quiet=True)
 
         fake_request.assert_called_with(
@@ -57,7 +57,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_images_filters(self):
+    def test_images_filters(self) -> None:
         self.client.images(filters={'dangling': True})
 
         fake_request.assert_called_with(
@@ -68,7 +68,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_pull(self):
+    def test_pull(self) -> None:
         self.client.pull('joffrey/test001')
 
         args = fake_request.call_args
@@ -78,7 +78,7 @@ class ImageTest(BaseAPIClientTest):
         }
         assert not args[1]['stream']
 
-    def test_pull_stream(self):
+    def test_pull_stream(self) -> None:
         self.client.pull('joffrey/test001', stream=True)
 
         args = fake_request.call_args
@@ -88,7 +88,7 @@ class ImageTest(BaseAPIClientTest):
         }
         assert args[1]['stream']
 
-    def test_commit(self):
+    def test_commit(self) -> None:
         self.client.commit(fake_api.FAKE_CONTAINER_ID)
 
         fake_request.assert_called_with(
@@ -108,7 +108,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_remove_image(self):
+    def test_remove_image(self) -> None:
         self.client.remove_image(fake_api.FAKE_IMAGE_ID)
 
         fake_request.assert_called_with(
@@ -118,7 +118,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_image_history(self):
+    def test_image_history(self) -> None:
         self.client.history(fake_api.FAKE_IMAGE_NAME)
 
         fake_request.assert_called_with(
@@ -127,7 +127,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_import_image(self):
+    def test_import_image(self) -> None:
         self.client.import_image(
             fake_api.FAKE_TARBALL_PATH,
             repository=fake_api.FAKE_REPO_NAME,
@@ -146,7 +146,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_import_image_from_bytes(self):
+    def test_import_image_from_bytes(self) -> None:
         stream = (i for i in range(0, 100))
 
         self.client.import_image(
@@ -170,7 +170,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_import_image_from_image(self):
+    def test_import_image_from_image(self) -> None:
         self.client.import_image(
             image=fake_api.FAKE_IMAGE_NAME,
             repository=fake_api.FAKE_REPO_NAME,
@@ -189,7 +189,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_inspect_image(self):
+    def test_inspect_image(self) -> None:
         self.client.inspect_image(fake_api.FAKE_IMAGE_NAME)
 
         fake_request.assert_called_with(
@@ -198,14 +198,14 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_inspect_image_undefined_id(self):
+    def test_inspect_image_undefined_id(self) -> None:
         for arg in None, '', {True: True}:
             with pytest.raises(docker.errors.NullResource) as excinfo:
                 self.client.inspect_image(arg)
 
             assert excinfo.value.args[0] == 'Resource ID was not provided'
 
-    def test_push_image(self):
+    def test_push_image(self) -> None:
         with mock.patch('docker.auth.resolve_authconfig',
                         fake_resolve_authconfig):
             self.client.push(fake_api.FAKE_IMAGE_NAME)
@@ -222,7 +222,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_push_image_with_tag(self):
+    def test_push_image_with_tag(self) -> None:
         with mock.patch('docker.auth.resolve_authconfig',
                         fake_resolve_authconfig):
             self.client.push(
@@ -241,7 +241,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_push_image_with_auth(self):
+    def test_push_image_with_auth(self) -> None:
         auth_config = {
             'username': "test_user",
             'password': "test_password",
@@ -266,7 +266,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_push_image_stream(self):
+    def test_push_image_stream(self) -> None:
         with mock.patch('docker.auth.resolve_authconfig',
                         fake_resolve_authconfig):
             self.client.push(fake_api.FAKE_IMAGE_NAME, stream=True)
@@ -283,7 +283,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_tag_image(self):
+    def test_tag_image(self) -> None:
         self.client.tag(fake_api.FAKE_IMAGE_ID, fake_api.FAKE_REPO_NAME)
 
         fake_request.assert_called_with(
@@ -297,7 +297,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_tag_image_tag(self):
+    def test_tag_image_tag(self) -> None:
         self.client.tag(
             fake_api.FAKE_IMAGE_ID,
             fake_api.FAKE_REPO_NAME,
@@ -315,7 +315,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_tag_image_force(self):
+    def test_tag_image_force(self) -> None:
         self.client.tag(
             fake_api.FAKE_IMAGE_ID, fake_api.FAKE_REPO_NAME, force=True)
 
@@ -330,7 +330,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_get_image(self):
+    def test_get_image(self) -> None:
         self.client.get_image(fake_api.FAKE_IMAGE_ID)
 
         fake_request.assert_called_with(
@@ -340,7 +340,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_load_image(self):
+    def test_load_image(self) -> None:
         self.client.load_image('Byte Stream....')
 
         fake_request.assert_called_with(
@@ -352,7 +352,7 @@ class ImageTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_load_image_quiet(self):
+    def test_load_image_quiet(self) -> None:
         self.client.load_image('Byte Stream....', quiet=True)
 
         fake_request.assert_called_with(

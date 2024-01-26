@@ -3,27 +3,27 @@ from docker.utils.json_stream import json_splitter, stream_as_text, json_stream
 
 class TestJsonSplitter:
 
-    def test_json_splitter_no_object(self):
+    def test_json_splitter_no_object(self) -> None:
         data = '{"foo": "bar'
         assert json_splitter(data) is None
 
-    def test_json_splitter_with_object(self):
+    def test_json_splitter_with_object(self) -> None:
         data = '{"foo": "bar"}\n  \n{"next": "obj"}'
         assert json_splitter(data) == ({'foo': 'bar'}, '{"next": "obj"}')
 
-    def test_json_splitter_leading_whitespace(self):
+    def test_json_splitter_leading_whitespace(self) -> None:
         data = '\n   \r{"foo": "bar"}\n\n   {"next": "obj"}'
         assert json_splitter(data) == ({'foo': 'bar'}, '{"next": "obj"}')
 
 
 class TestStreamAsText:
 
-    def test_stream_with_non_utf_unicode_character(self):
+    def test_stream_with_non_utf_unicode_character(self) -> None:
         stream = [b'\xed\xf3\xf3']
         output, = stream_as_text(stream)
         assert output == '���'
 
-    def test_stream_with_utf_character(self):
+    def test_stream_with_utf_character(self) -> None:
         stream = ['ěĝ'.encode()]
         output, = stream_as_text(stream)
         assert output == 'ěĝ'
@@ -31,7 +31,7 @@ class TestStreamAsText:
 
 class TestJsonStream:
 
-    def test_with_falsy_entries(self):
+    def test_with_falsy_entries(self) -> None:
         stream = [
             '{"one": "two"}\n{}\n',
             "[1, 2, 3]\n[]\n",
@@ -44,7 +44,7 @@ class TestJsonStream:
             [],
         ]
 
-    def test_with_leading_whitespace(self):
+    def test_with_leading_whitespace(self) -> None:
         stream = [
             '\n  \r\n  {"one": "two"}{"x": 1}',
             '  {"three": "four"}\t\t{"x": 2}'

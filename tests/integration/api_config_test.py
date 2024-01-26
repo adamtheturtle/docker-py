@@ -18,7 +18,7 @@ class ConfigAPITest(BaseAPIIntegrationTest):
         client = cls.get_client_instance()
         force_leave_swarm(client)
 
-    def test_create_config(self):
+    def test_create_config(self) -> None:
         config_id = self.client.create_config(
             'favorite_character', 'sakuya izayoi'
         )
@@ -27,7 +27,7 @@ class ConfigAPITest(BaseAPIIntegrationTest):
         data = self.client.inspect_config(config_id)
         assert data['Spec']['Name'] == 'favorite_character'
 
-    def test_create_config_unicode_data(self):
+    def test_create_config_unicode_data(self) -> None:
         config_id = self.client.create_config(
             'favorite_character', 'いざよいさくや'
         )
@@ -36,7 +36,7 @@ class ConfigAPITest(BaseAPIIntegrationTest):
         data = self.client.inspect_config(config_id)
         assert data['Spec']['Name'] == 'favorite_character'
 
-    def test_inspect_config(self):
+    def test_inspect_config(self) -> None:
         config_name = 'favorite_character'
         config_id = self.client.create_config(
             config_name, 'sakuya izayoi'
@@ -47,7 +47,7 @@ class ConfigAPITest(BaseAPIIntegrationTest):
         assert 'ID' in data
         assert 'Version' in data
 
-    def test_remove_config(self):
+    def test_remove_config(self) -> None:
         config_name = 'favorite_character'
         config_id = self.client.create_config(
             config_name, 'sakuya izayoi'
@@ -58,7 +58,7 @@ class ConfigAPITest(BaseAPIIntegrationTest):
         with pytest.raises(docker.errors.NotFound):
             self.client.inspect_config(config_id)
 
-    def test_list_configs(self):
+    def test_list_configs(self) -> None:
         config_name = 'favorite_character'
         config_id = self.client.create_config(
             config_name, 'sakuya izayoi'
@@ -70,7 +70,7 @@ class ConfigAPITest(BaseAPIIntegrationTest):
         assert data[0]['ID'] == config_id['ID']
 
     @requires_api_version('1.37')
-    def test_create_config_with_templating(self):
+    def test_create_config_with_templating(self) -> None:
         config_id = self.client.create_config(
             'favorite_character', 'sakuya izayoi',
             templating={'name': 'golang'}

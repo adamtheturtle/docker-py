@@ -5,7 +5,7 @@ from .base import BaseIntegrationTest, TEST_API_VERSION
 
 class NetworkCollectionTest(BaseIntegrationTest):
 
-    def test_create(self):
+    def test_create(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         name = helpers.random_name()
         network = client.networks.create(name, labels={'foo': 'bar'})
@@ -13,7 +13,7 @@ class NetworkCollectionTest(BaseIntegrationTest):
         assert network.name == name
         assert network.attrs['Labels']['foo'] == "bar"
 
-    def test_get(self):
+    def test_get(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         name = helpers.random_name()
         network_id = client.networks.create(name).id
@@ -21,7 +21,7 @@ class NetworkCollectionTest(BaseIntegrationTest):
         network = client.networks.get(network_id)
         assert network.name == name
 
-    def test_list_remove(self):
+    def test_list_remove(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         name = helpers.random_name()
         network = client.networks.create(name)
@@ -49,7 +49,7 @@ class NetworkCollectionTest(BaseIntegrationTest):
 
 class NetworkTest(BaseIntegrationTest):
 
-    def test_connect_disconnect(self):
+    def test_connect_disconnect(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         network = client.networks.create(helpers.random_name())
         self.tmp_networks.append(network.id)

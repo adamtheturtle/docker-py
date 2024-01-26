@@ -10,7 +10,7 @@ from .base import TEST_API_VERSION
 class SSHConnectionTest(unittest.TestCase):
     @pytest.mark.skipif('UNKNOWN_DOCKER_SSH_HOST' not in os.environ,
                         reason='Unknown Docker SSH host not configured')
-    def test_ssh_unknown_host(self):
+    def test_ssh_unknown_host(self) -> None:
         with self.assertRaises(paramiko.ssh_exception.SSHException) as cm:
             docker.APIClient(
                 version=TEST_API_VERSION,

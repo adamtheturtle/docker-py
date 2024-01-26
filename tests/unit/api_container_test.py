@@ -20,7 +20,7 @@ def fake_inspect_container_tty(self, container):
 
 
 class StartContainerTest(BaseAPIClientTest):
-    def test_start_container(self):
+    def test_start_container(self) -> None:
         self.client.start(fake_api.FAKE_CONTAINER_ID)
 
         args = fake_request.call_args
@@ -29,7 +29,7 @@ class StartContainerTest(BaseAPIClientTest):
         assert 'data' not in args[1]
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_start_container_none(self):
+    def test_start_container_none(self) -> None:
         with pytest.raises(ValueError) as excinfo:
             self.client.start(container=None)
 
@@ -40,24 +40,24 @@ class StartContainerTest(BaseAPIClientTest):
 
         assert str(excinfo.value) == 'Resource ID was not provided'
 
-    def test_start_container_regression_573(self):
+    def test_start_container_regression_573(self) -> None:
         self.client.start(**{'container': fake_api.FAKE_CONTAINER_ID})
 
-    def test_start_container_with_lxc_conf(self):
+    def test_start_container_with_lxc_conf(self) -> None:
         with pytest.raises(docker.errors.DeprecatedMethod):
             self.client.start(
                 fake_api.FAKE_CONTAINER_ID,
                 lxc_conf={'lxc.conf.k': 'lxc.conf.value'}
             )
 
-    def test_start_container_with_lxc_conf_compat(self):
+    def test_start_container_with_lxc_conf_compat(self) -> None:
         with pytest.raises(docker.errors.DeprecatedMethod):
             self.client.start(
                 fake_api.FAKE_CONTAINER_ID,
                 lxc_conf=[{'Key': 'lxc.conf.k', 'Value': 'lxc.conf.value'}]
             )
 
-    def test_start_container_with_binds_ro(self):
+    def test_start_container_with_binds_ro(self) -> None:
         with pytest.raises(docker.errors.DeprecatedMethod):
             self.client.start(
                 fake_api.FAKE_CONTAINER_ID, binds={
@@ -68,7 +68,7 @@ class StartContainerTest(BaseAPIClientTest):
                 }
             )
 
-    def test_start_container_with_binds_rw(self):
+    def test_start_container_with_binds_rw(self) -> None:
         with pytest.raises(docker.errors.DeprecatedMethod):
             self.client.start(
                 fake_api.FAKE_CONTAINER_ID, binds={
@@ -76,7 +76,7 @@ class StartContainerTest(BaseAPIClientTest):
                 }
             )
 
-    def test_start_container_with_port_binds(self):
+    def test_start_container_with_port_binds(self) -> None:
         self.maxDiff = None
 
         with pytest.raises(docker.errors.DeprecatedMethod):
@@ -89,13 +89,13 @@ class StartContainerTest(BaseAPIClientTest):
                 6666: [('127.0.0.1',), ('192.168.0.1',)]
             })
 
-    def test_start_container_with_links(self):
+    def test_start_container_with_links(self) -> None:
         with pytest.raises(docker.errors.DeprecatedMethod):
             self.client.start(
                 fake_api.FAKE_CONTAINER_ID, links={'path': 'alias'}
             )
 
-    def test_start_container_with_multiple_links(self):
+    def test_start_container_with_multiple_links(self) -> None:
         with pytest.raises(docker.errors.DeprecatedMethod):
             self.client.start(
                 fake_api.FAKE_CONTAINER_ID,
@@ -105,16 +105,16 @@ class StartContainerTest(BaseAPIClientTest):
                 }
             )
 
-    def test_start_container_with_links_as_list_of_tuples(self):
+    def test_start_container_with_links_as_list_of_tuples(self) -> None:
         with pytest.raises(docker.errors.DeprecatedMethod):
             self.client.start(fake_api.FAKE_CONTAINER_ID,
                               links=[('path', 'alias')])
 
-    def test_start_container_privileged(self):
+    def test_start_container_privileged(self) -> None:
         with pytest.raises(docker.errors.DeprecatedMethod):
             self.client.start(fake_api.FAKE_CONTAINER_ID, privileged=True)
 
-    def test_start_container_with_dict_instead_of_id(self):
+    def test_start_container_with_dict_instead_of_id(self) -> None:
         self.client.start({'Id': fake_api.FAKE_CONTAINER_ID})
 
         args = fake_request.call_args
@@ -125,7 +125,7 @@ class StartContainerTest(BaseAPIClientTest):
 
 
 class CreateContainerTest(BaseAPIClientTest):
-    def test_create_container(self):
+    def test_create_container(self) -> None:
         self.client.create_container('busybox', 'true')
 
         args = fake_request.call_args
@@ -139,7 +139,7 @@ class CreateContainerTest(BaseAPIClientTest):
          ''')
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_container_with_binds(self):
+    def test_create_container_with_binds(self) -> None:
         mount_dest = '/mnt'
 
         self.client.create_container('busybox', ['ls', mount_dest],
@@ -158,7 +158,7 @@ class CreateContainerTest(BaseAPIClientTest):
         ''')
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_container_with_volume_string(self):
+    def test_create_container_with_volume_string(self) -> None:
         mount_dest = '/mnt'
 
         self.client.create_container('busybox', ['ls', mount_dest],
@@ -177,7 +177,7 @@ class CreateContainerTest(BaseAPIClientTest):
         ''')
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_container_with_ports(self):
+    def test_create_container_with_ports(self) -> None:
         self.client.create_container('busybox', 'ls',
                                      ports=[1111, (2222, 'udp'), (3333,)])
 
@@ -198,7 +198,7 @@ class CreateContainerTest(BaseAPIClientTest):
         ''')
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_container_with_entrypoint(self):
+    def test_create_container_with_entrypoint(self) -> None:
         self.client.create_container('busybox', 'hello',
                                      entrypoint='cowsay entry')
 
@@ -215,7 +215,7 @@ class CreateContainerTest(BaseAPIClientTest):
         ''')
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_container_with_host_config_cpu_shares(self):
+    def test_create_container_with_host_config_cpu_shares(self) -> None:
         self.client.create_container(
             'busybox', 'ls', host_config=self.client.create_host_config(
                 cpu_shares=512
@@ -239,7 +239,7 @@ class CreateContainerTest(BaseAPIClientTest):
         ''')
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_container_with_host_config_cpuset(self):
+    def test_create_container_with_host_config_cpuset(self) -> None:
         self.client.create_container(
             'busybox', 'ls', host_config=self.client.create_host_config(
                 cpuset_cpus='0,1'
@@ -263,7 +263,7 @@ class CreateContainerTest(BaseAPIClientTest):
         ''')
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_container_with_host_config_cpuset_mems(self):
+    def test_create_container_with_host_config_cpuset_mems(self) -> None:
         self.client.create_container(
             'busybox', 'ls', host_config=self.client.create_host_config(
                 cpuset_mems='0'
@@ -287,7 +287,7 @@ class CreateContainerTest(BaseAPIClientTest):
         ''')
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_container_with_cgroup_parent(self):
+    def test_create_container_with_cgroup_parent(self) -> None:
         self.client.create_container(
             'busybox', 'ls', host_config=self.client.create_host_config(
                 cgroup_parent='test'
@@ -301,7 +301,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert 'CgroupParent' in data['HostConfig']
         assert data['HostConfig']['CgroupParent'] == 'test'
 
-    def test_create_container_with_working_dir(self):
+    def test_create_container_with_working_dir(self) -> None:
         self.client.create_container('busybox', 'ls',
                                      working_dir='/root')
 
@@ -318,7 +318,7 @@ class CreateContainerTest(BaseAPIClientTest):
         ''')
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_container_with_stdin_open(self):
+    def test_create_container_with_stdin_open(self) -> None:
         self.client.create_container('busybox', 'true', stdin_open=True)
 
         args = fake_request.call_args
@@ -332,7 +332,7 @@ class CreateContainerTest(BaseAPIClientTest):
         ''')
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_named_container(self):
+    def test_create_named_container(self) -> None:
         self.client.create_container('busybox', 'true',
                                      name='marisa-kirisame')
 
@@ -348,7 +348,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['params'] == {'name': 'marisa-kirisame'}
 
-    def test_create_container_with_platform(self):
+    def test_create_container_with_platform(self) -> None:
         self.client.create_container('busybox', 'true',
                                      platform='linux')
 
@@ -364,7 +364,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['params'] == {'name': None, 'platform': 'linux'}
 
-    def test_create_container_with_mem_limit_as_int(self):
+    def test_create_container_with_mem_limit_as_int(self) -> None:
         self.client.create_container(
             'busybox', 'true', host_config=self.client.create_host_config(
                 mem_limit=128.0
@@ -375,7 +375,7 @@ class CreateContainerTest(BaseAPIClientTest):
         data = json.loads(args[1]['data'])
         assert data['HostConfig']['Memory'] == 128.0
 
-    def test_create_container_with_mem_limit_as_string(self):
+    def test_create_container_with_mem_limit_as_string(self) -> None:
         self.client.create_container(
             'busybox', 'true', host_config=self.client.create_host_config(
                 mem_limit='128'
@@ -386,7 +386,7 @@ class CreateContainerTest(BaseAPIClientTest):
         data = json.loads(args[1]['data'])
         assert data['HostConfig']['Memory'] == 128.0
 
-    def test_create_container_with_mem_limit_as_string_with_k_unit(self):
+    def test_create_container_with_mem_limit_as_string_with_k_unit(self) -> None:
         self.client.create_container(
             'busybox', 'true', host_config=self.client.create_host_config(
                 mem_limit='128k'
@@ -397,7 +397,7 @@ class CreateContainerTest(BaseAPIClientTest):
         data = json.loads(args[1]['data'])
         assert data['HostConfig']['Memory'] == 128.0 * 1024
 
-    def test_create_container_with_mem_limit_as_string_with_m_unit(self):
+    def test_create_container_with_mem_limit_as_string_with_m_unit(self) -> None:
         self.client.create_container(
             'busybox', 'true', host_config=self.client.create_host_config(
                 mem_limit='128m'
@@ -408,7 +408,7 @@ class CreateContainerTest(BaseAPIClientTest):
         data = json.loads(args[1]['data'])
         assert data['HostConfig']['Memory'] == 128.0 * 1024 * 1024
 
-    def test_create_container_with_mem_limit_as_string_with_g_unit(self):
+    def test_create_container_with_mem_limit_as_string_with_g_unit(self) -> None:
         self.client.create_container(
             'busybox', 'true', host_config=self.client.create_host_config(
                 mem_limit='128g'
@@ -419,14 +419,14 @@ class CreateContainerTest(BaseAPIClientTest):
         data = json.loads(args[1]['data'])
         assert data['HostConfig']['Memory'] == 128.0 * 1024 * 1024 * 1024
 
-    def test_create_container_with_mem_limit_as_string_with_wrong_value(self):
+    def test_create_container_with_mem_limit_as_string_with_wrong_value(self) -> None:
         with pytest.raises(docker.errors.DockerException):
             self.client.create_host_config(mem_limit='128p')
 
         with pytest.raises(docker.errors.DockerException):
             self.client.create_host_config(mem_limit='1f28')
 
-    def test_create_container_with_lxc_conf(self):
+    def test_create_container_with_lxc_conf(self) -> None:
         self.client.create_container(
             'busybox', 'true', host_config=self.client.create_host_config(
                 lxc_conf={'lxc.conf.k': 'lxc.conf.value'}
@@ -445,7 +445,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_lxc_conf_compat(self):
+    def test_create_container_with_lxc_conf_compat(self) -> None:
         self.client.create_container(
             'busybox', 'true', host_config=self.client.create_host_config(
                 lxc_conf=[{'Key': 'lxc.conf.k', 'Value': 'lxc.conf.value'}]
@@ -463,7 +463,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_binds_ro(self):
+    def test_create_container_with_binds_ro(self) -> None:
         mount_dest = '/mnt'
         mount_origin = '/tmp'
 
@@ -485,7 +485,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_binds_rw(self):
+    def test_create_container_with_binds_rw(self) -> None:
         mount_dest = '/mnt'
         mount_origin = '/tmp'
 
@@ -507,7 +507,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_binds_mode(self):
+    def test_create_container_with_binds_mode(self) -> None:
         mount_dest = '/mnt'
         mount_origin = '/tmp'
 
@@ -529,7 +529,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_binds_mode_and_ro_error(self):
+    def test_create_container_with_binds_mode_and_ro_error(self) -> None:
         with pytest.raises(ValueError):
             mount_dest = '/mnt'
             mount_origin = '/tmp'
@@ -543,7 +543,7 @@ class CreateContainerTest(BaseAPIClientTest):
                 )
             )
 
-    def test_create_container_with_binds_list(self):
+    def test_create_container_with_binds_list(self) -> None:
         self.client.create_container(
             'busybox', 'true', host_config=self.client.create_host_config(
                 binds=[
@@ -565,7 +565,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_port_binds(self):
+    def test_create_container_with_port_binds(self) -> None:
         self.maxDiff = None
 
         self.client.create_container(
@@ -608,7 +608,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_mac_address(self):
+    def test_create_container_with_mac_address(self) -> None:
         expected = "02:42:ac:11:00:0a"
 
         self.client.create_container(
@@ -622,7 +622,7 @@ class CreateContainerTest(BaseAPIClientTest):
         data = json.loads(args[1]['data'])
         assert data['MacAddress'] == expected
 
-    def test_create_container_with_links(self):
+    def test_create_container_with_links(self) -> None:
         link_path = 'path'
         alias = 'alias'
 
@@ -641,7 +641,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert json.loads(args[1]['data']) == expected_payload
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_container_with_multiple_links(self):
+    def test_create_container_with_multiple_links(self) -> None:
         link_path = 'path'
         alias = 'alias'
 
@@ -664,7 +664,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert json.loads(args[1]['data']) == expected_payload
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_container_with_links_as_list_of_tuples(self):
+    def test_create_container_with_links_as_list_of_tuples(self) -> None:
         link_path = 'path'
         alias = 'alias'
 
@@ -683,7 +683,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert json.loads(args[1]['data']) == expected_payload
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
-    def test_create_container_privileged(self):
+    def test_create_container_privileged(self) -> None:
         self.client.create_container(
             'busybox', 'true',
             host_config=self.client.create_host_config(privileged=True)
@@ -698,7 +698,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_restart_policy(self):
+    def test_create_container_with_restart_policy(self) -> None:
         self.client.create_container(
             'busybox', 'true', host_config=self.client.create_host_config(
                 restart_policy={
@@ -721,7 +721,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_added_capabilities(self):
+    def test_create_container_with_added_capabilities(self) -> None:
         self.client.create_container(
             'busybox', 'true',
             host_config=self.client.create_host_config(cap_add=['MKNOD'])
@@ -736,7 +736,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_dropped_capabilities(self):
+    def test_create_container_with_dropped_capabilities(self) -> None:
         self.client.create_container(
             'busybox', 'true',
             host_config=self.client.create_host_config(cap_drop=['MKNOD'])
@@ -751,7 +751,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_devices(self):
+    def test_create_container_with_devices(self) -> None:
         self.client.create_container(
             'busybox', 'true', host_config=self.client.create_host_config(
                 devices=['/dev/sda:/dev/xvda:rwm',
@@ -779,7 +779,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_device_requests(self):
+    def test_create_container_with_device_requests(self) -> None:
         client = APIClient(version='1.40')
         fake_api.fake_responses.setdefault(
             f'{fake_api.prefix}/v1.40/containers/create',
@@ -840,7 +840,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert set(args[1]['headers']) <= {'Content-Type', 'User-Agent'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_labels_dict(self):
+    def test_create_container_with_labels_dict(self) -> None:
         labels_dict = {
             'foo': '1',
             'bar': '2',
@@ -857,7 +857,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_labels_list(self):
+    def test_create_container_with_labels_list(self) -> None:
         labels_list = [
             'foo',
             'bar',
@@ -878,7 +878,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_named_volume(self):
+    def test_create_container_with_named_volume(self) -> None:
         mount_dest = '/mnt'
         volume_name = 'name'
 
@@ -902,7 +902,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_stop_signal(self):
+    def test_create_container_with_stop_signal(self) -> None:
         self.client.create_container('busybox', 'ls',
                                      stop_signal='SIGINT')
 
@@ -920,7 +920,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
     @requires_api_version('1.22')
-    def test_create_container_with_aliases(self):
+    def test_create_container_with_aliases(self) -> None:
         self.client.create_container(
             'busybox', 'ls',
             host_config=self.client.create_host_config(
@@ -952,7 +952,7 @@ class CreateContainerTest(BaseAPIClientTest):
         ''')
 
     @requires_api_version('1.22')
-    def test_create_container_with_tmpfs_list(self):
+    def test_create_container_with_tmpfs_list(self) -> None:
 
         self.client.create_container(
             'busybox', 'true', host_config=self.client.create_host_config(
@@ -976,7 +976,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
     @requires_api_version('1.22')
-    def test_create_container_with_tmpfs_dict(self):
+    def test_create_container_with_tmpfs_dict(self) -> None:
 
         self.client.create_container(
             'busybox', 'true', host_config=self.client.create_host_config(
@@ -1000,7 +1000,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
     @requires_api_version('1.24')
-    def test_create_container_with_sysctl(self):
+    def test_create_container_with_sysctl(self) -> None:
         self.client.create_container(
             'busybox', 'true',
             host_config=self.client.create_host_config(
@@ -1022,7 +1022,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
         assert args[1]['timeout'] == DEFAULT_TIMEOUT_SECONDS
 
-    def test_create_container_with_unicode_envvars(self):
+    def test_create_container_with_unicode_envvars(self) -> None:
         envvars_dict = {
             'foo': '☃',
         }
@@ -1041,7 +1041,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert json.loads(args[1]['data'])['Env'] == expected
 
     @requires_api_version('1.25')
-    def test_create_container_with_host_config_cpus(self):
+    def test_create_container_with_host_config_cpus(self) -> None:
         self.client.create_container(
             'busybox', 'ls', host_config=self.client.create_host_config(
                 cpu_count=1,
@@ -1070,7 +1070,7 @@ class CreateContainerTest(BaseAPIClientTest):
         assert args[1]['headers'] == {'Content-Type': 'application/json'}
 
     @requires_api_version('1.41')
-    def test_create_container_with_cgroupns(self):
+    def test_create_container_with_cgroupns(self) -> None:
         self.client.create_container(
             image='busybox',
             command='true',
@@ -1090,7 +1090,7 @@ class CreateContainerTest(BaseAPIClientTest):
 
 
 class ContainerTest(BaseAPIClientTest):
-    def test_list_containers(self):
+    def test_list_containers(self) -> None:
         self.client.containers(all=True)
 
         fake_request.assert_called_with(
@@ -1107,7 +1107,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_resize_container(self):
+    def test_resize_container(self) -> None:
         self.client.resize(
             {'Id': fake_api.FAKE_CONTAINER_ID},
             height=15,
@@ -1122,7 +1122,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_rename_container(self):
+    def test_rename_container(self) -> None:
         self.client.rename(
             {'Id': fake_api.FAKE_CONTAINER_ID},
             name='foobar'
@@ -1136,7 +1136,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_wait(self):
+    def test_wait(self) -> None:
         self.client.wait(fake_api.FAKE_CONTAINER_ID)
 
         fake_request.assert_called_with(
@@ -1146,7 +1146,7 @@ class ContainerTest(BaseAPIClientTest):
             params={}
         )
 
-    def test_wait_with_dict_instead_of_id(self):
+    def test_wait_with_dict_instead_of_id(self) -> None:
         self.client.wait({'Id': fake_api.FAKE_CONTAINER_ID})
 
         fake_request.assert_called_with(
@@ -1156,7 +1156,7 @@ class ContainerTest(BaseAPIClientTest):
             params={}
         )
 
-    def test_logs(self):
+    def test_logs(self) -> None:
         with mock.patch('docker.api.client.APIClient.inspect_container',
                         fake_inspect_container):
             logs = self.client.logs(fake_api.FAKE_CONTAINER_ID)
@@ -1172,7 +1172,7 @@ class ContainerTest(BaseAPIClientTest):
 
         assert logs == b'Flowering Nights\n(Sakuya Iyazoi)\n'
 
-    def test_logs_with_dict_instead_of_id(self):
+    def test_logs_with_dict_instead_of_id(self) -> None:
         with mock.patch('docker.api.client.APIClient.inspect_container',
                         fake_inspect_container):
             logs = self.client.logs({'Id': fake_api.FAKE_CONTAINER_ID})
@@ -1188,7 +1188,7 @@ class ContainerTest(BaseAPIClientTest):
 
         assert logs == b'Flowering Nights\n(Sakuya Iyazoi)\n'
 
-    def test_log_streaming(self):
+    def test_log_streaming(self) -> None:
         with mock.patch('docker.api.client.APIClient.inspect_container',
                         fake_inspect_container):
             self.client.logs(fake_api.FAKE_CONTAINER_ID, stream=True,
@@ -1203,7 +1203,7 @@ class ContainerTest(BaseAPIClientTest):
             stream=True
         )
 
-    def test_log_following(self):
+    def test_log_following(self) -> None:
         with mock.patch('docker.api.client.APIClient.inspect_container',
                         fake_inspect_container):
             self.client.logs(fake_api.FAKE_CONTAINER_ID, stream=False,
@@ -1218,7 +1218,7 @@ class ContainerTest(BaseAPIClientTest):
             stream=False
         )
 
-    def test_log_following_backwards(self):
+    def test_log_following_backwards(self) -> None:
         with mock.patch('docker.api.client.APIClient.inspect_container',
                         fake_inspect_container):
             self.client.logs(fake_api.FAKE_CONTAINER_ID, stream=True)
@@ -1232,7 +1232,7 @@ class ContainerTest(BaseAPIClientTest):
             stream=True
         )
 
-    def test_log_streaming_and_following(self):
+    def test_log_streaming_and_following(self) -> None:
         with mock.patch('docker.api.client.APIClient.inspect_container',
                         fake_inspect_container):
             self.client.logs(fake_api.FAKE_CONTAINER_ID, stream=True,
@@ -1247,7 +1247,7 @@ class ContainerTest(BaseAPIClientTest):
             stream=True
         )
 
-    def test_log_tail(self):
+    def test_log_tail(self) -> None:
 
         with mock.patch('docker.api.client.APIClient.inspect_container',
                         fake_inspect_container):
@@ -1263,7 +1263,7 @@ class ContainerTest(BaseAPIClientTest):
             stream=False
         )
 
-    def test_log_since(self):
+    def test_log_since(self) -> None:
         ts = 809222400
         with mock.patch('docker.api.client.APIClient.inspect_container',
                         fake_inspect_container):
@@ -1279,7 +1279,7 @@ class ContainerTest(BaseAPIClientTest):
             stream=False
         )
 
-    def test_log_since_with_float(self):
+    def test_log_since_with_float(self) -> None:
         ts = 809222400.000000
         with mock.patch('docker.api.client.APIClient.inspect_container',
                         fake_inspect_container):
@@ -1295,7 +1295,7 @@ class ContainerTest(BaseAPIClientTest):
             stream=False
         )
 
-    def test_log_since_with_datetime(self):
+    def test_log_since_with_datetime(self) -> None:
         ts = 809222400
         time = datetime.datetime.utcfromtimestamp(ts)
         with mock.patch('docker.api.client.APIClient.inspect_container',
@@ -1312,14 +1312,14 @@ class ContainerTest(BaseAPIClientTest):
             stream=False
         )
 
-    def test_log_since_with_invalid_value_raises_error(self):
+    def test_log_since_with_invalid_value_raises_error(self) -> None:
         with mock.patch('docker.api.client.APIClient.inspect_container',
                         fake_inspect_container):
             with pytest.raises(docker.errors.InvalidArgument):
                 self.client.logs(fake_api.FAKE_CONTAINER_ID, stream=False,
                                  follow=False, since="42.42")
 
-    def test_log_tty(self):
+    def test_log_tty(self) -> None:
         m = mock.Mock()
         with mock.patch('docker.api.client.APIClient.inspect_container',
                         fake_inspect_container_tty):
@@ -1338,7 +1338,7 @@ class ContainerTest(BaseAPIClientTest):
             stream=True
         )
 
-    def test_diff(self):
+    def test_diff(self) -> None:
         self.client.diff(fake_api.FAKE_CONTAINER_ID)
 
         fake_request.assert_called_with(
@@ -1348,7 +1348,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_diff_with_dict_instead_of_id(self):
+    def test_diff_with_dict_instead_of_id(self) -> None:
         self.client.diff({'Id': fake_api.FAKE_CONTAINER_ID})
 
         fake_request.assert_called_with(
@@ -1358,7 +1358,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_port(self):
+    def test_port(self) -> None:
         self.client.port({'Id': fake_api.FAKE_CONTAINER_ID}, 1111)
 
         fake_request.assert_called_with(
@@ -1367,7 +1367,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_stop_container(self):
+    def test_stop_container(self) -> None:
         timeout = 2
 
         self.client.stop(fake_api.FAKE_CONTAINER_ID, timeout=timeout)
@@ -1379,7 +1379,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=(DEFAULT_TIMEOUT_SECONDS + timeout)
         )
 
-    def test_stop_container_with_dict_instead_of_id(self):
+    def test_stop_container_with_dict_instead_of_id(self) -> None:
         timeout = 2
 
         self.client.stop({'Id': fake_api.FAKE_CONTAINER_ID},
@@ -1392,7 +1392,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=(DEFAULT_TIMEOUT_SECONDS + timeout)
         )
 
-    def test_pause_container(self):
+    def test_pause_container(self) -> None:
         self.client.pause(fake_api.FAKE_CONTAINER_ID)
 
         fake_request.assert_called_with(
@@ -1402,7 +1402,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=(DEFAULT_TIMEOUT_SECONDS)
         )
 
-    def test_unpause_container(self):
+    def test_unpause_container(self) -> None:
         self.client.unpause(fake_api.FAKE_CONTAINER_ID)
 
         fake_request.assert_called_with(
@@ -1412,7 +1412,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=(DEFAULT_TIMEOUT_SECONDS)
         )
 
-    def test_kill_container(self):
+    def test_kill_container(self) -> None:
         self.client.kill(fake_api.FAKE_CONTAINER_ID)
 
         fake_request.assert_called_with(
@@ -1422,7 +1422,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_kill_container_with_dict_instead_of_id(self):
+    def test_kill_container_with_dict_instead_of_id(self) -> None:
         self.client.kill({'Id': fake_api.FAKE_CONTAINER_ID})
 
         fake_request.assert_called_with(
@@ -1432,7 +1432,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_kill_container_with_signal(self):
+    def test_kill_container_with_signal(self) -> None:
         self.client.kill(fake_api.FAKE_CONTAINER_ID, signal=signal.SIGTERM)
 
         fake_request.assert_called_with(
@@ -1442,7 +1442,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_restart_container(self):
+    def test_restart_container(self) -> None:
         self.client.restart(fake_api.FAKE_CONTAINER_ID, timeout=2)
 
         fake_request.assert_called_with(
@@ -1453,7 +1453,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=(DEFAULT_TIMEOUT_SECONDS + 2)
         )
 
-    def test_restart_container_with_dict_instead_of_id(self):
+    def test_restart_container_with_dict_instead_of_id(self) -> None:
         self.client.restart({'Id': fake_api.FAKE_CONTAINER_ID}, timeout=2)
 
         fake_request.assert_called_with(
@@ -1464,7 +1464,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=(DEFAULT_TIMEOUT_SECONDS + 2)
         )
 
-    def test_remove_container(self):
+    def test_remove_container(self) -> None:
         self.client.remove_container(fake_api.FAKE_CONTAINER_ID)
 
         fake_request.assert_called_with(
@@ -1474,7 +1474,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_remove_container_with_dict_instead_of_id(self):
+    def test_remove_container_with_dict_instead_of_id(self) -> None:
         self.client.remove_container({'Id': fake_api.FAKE_CONTAINER_ID})
 
         fake_request.assert_called_with(
@@ -1484,7 +1484,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_export(self):
+    def test_export(self) -> None:
         self.client.export(fake_api.FAKE_CONTAINER_ID)
 
         fake_request.assert_called_with(
@@ -1495,7 +1495,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_export_with_dict_instead_of_id(self):
+    def test_export_with_dict_instead_of_id(self) -> None:
         self.client.export({'Id': fake_api.FAKE_CONTAINER_ID})
 
         fake_request.assert_called_with(
@@ -1506,7 +1506,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_inspect_container(self):
+    def test_inspect_container(self) -> None:
         self.client.inspect_container(fake_api.FAKE_CONTAINER_ID)
 
         fake_request.assert_called_with(
@@ -1515,14 +1515,14 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_inspect_container_undefined_id(self):
+    def test_inspect_container_undefined_id(self) -> None:
         for arg in None, '', {True: True}:
             with pytest.raises(docker.errors.NullResource) as excinfo:
                 self.client.inspect_container(arg)
 
             assert excinfo.value.args[0] == 'Resource ID was not provided'
 
-    def test_container_stats(self):
+    def test_container_stats(self) -> None:
         self.client.stats(fake_api.FAKE_CONTAINER_ID)
 
         fake_request.assert_called_with(
@@ -1533,7 +1533,7 @@ class ContainerTest(BaseAPIClientTest):
             params={'stream': True}
         )
 
-    def test_container_stats_without_streaming(self):
+    def test_container_stats_without_streaming(self) -> None:
         self.client.stats(fake_api.FAKE_CONTAINER_ID, stream=False)
 
         fake_request.assert_called_with(
@@ -1543,7 +1543,7 @@ class ContainerTest(BaseAPIClientTest):
             params={'stream': False}
         )
 
-    def test_container_stats_with_one_shot(self):
+    def test_container_stats_with_one_shot(self) -> None:
         self.client.stats(
             fake_api.FAKE_CONTAINER_ID, stream=False, one_shot=True)
 
@@ -1554,7 +1554,7 @@ class ContainerTest(BaseAPIClientTest):
             params={'stream': False, 'one-shot': True}
         )
 
-    def test_container_top(self):
+    def test_container_top(self) -> None:
         self.client.top(fake_api.FAKE_CONTAINER_ID)
 
         fake_request.assert_called_with(
@@ -1564,7 +1564,7 @@ class ContainerTest(BaseAPIClientTest):
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
 
-    def test_container_top_with_psargs(self):
+    def test_container_top_with_psargs(self) -> None:
         self.client.top(fake_api.FAKE_CONTAINER_ID, 'waux')
 
         fake_request.assert_called_with(
@@ -1575,7 +1575,7 @@ class ContainerTest(BaseAPIClientTest):
         )
 
     @requires_api_version('1.22')
-    def test_container_update(self):
+    def test_container_update(self) -> None:
         self.client.update_container(
             fake_api.FAKE_CONTAINER_ID, mem_limit='2k', cpu_shares=124,
             blkio_weight=345

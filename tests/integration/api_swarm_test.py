@@ -22,11 +22,11 @@ class SwarmTest(BaseAPIIntegrationTest):
         super().tearDown()
 
     @requires_api_version('1.24')
-    def test_init_swarm_simple(self):
+    def test_init_swarm_simple(self) -> None:
         assert self.init_swarm()
 
     @requires_api_version('1.24')
-    def test_init_swarm_force_new_cluster(self):
+    def test_init_swarm_force_new_cluster(self) -> None:
         pytest.skip('Test stalls the engine on 1.12.0')
 
         assert self.init_swarm()
@@ -36,28 +36,28 @@ class SwarmTest(BaseAPIIntegrationTest):
         assert version_2 != version_1
 
     @requires_api_version('1.39')
-    def test_init_swarm_custom_addr_pool_defaults(self):
+    def test_init_swarm_custom_addr_pool_defaults(self) -> None:
         assert self.init_swarm()
         results = self.client.inspect_swarm()
         assert set(results['DefaultAddrPool']) == {'10.0.0.0/8'}
         assert results['SubnetSize'] == 24
 
     @requires_api_version('1.39')
-    def test_init_swarm_custom_addr_pool_only_pool(self):
+    def test_init_swarm_custom_addr_pool_only_pool(self) -> None:
         assert self.init_swarm(default_addr_pool=['2.0.0.0/16'])
         results = self.client.inspect_swarm()
         assert set(results['DefaultAddrPool']) == {'2.0.0.0/16'}
         assert results['SubnetSize'] == 24
 
     @requires_api_version('1.39')
-    def test_init_swarm_custom_addr_pool_only_subnet_size(self):
+    def test_init_swarm_custom_addr_pool_only_subnet_size(self) -> None:
         assert self.init_swarm(subnet_size=26)
         results = self.client.inspect_swarm()
         assert set(results['DefaultAddrPool']) == {'10.0.0.0/8'}
         assert results['SubnetSize'] == 26
 
     @requires_api_version('1.39')
-    def test_init_swarm_custom_addr_pool_both_args(self):
+    def test_init_swarm_custom_addr_pool_both_args(self) -> None:
         assert self.init_swarm(default_addr_pool=['2.0.0.0/16', '3.0.0.0/16'],
                                subnet_size=28)
         results = self.client.inspect_swarm()
@@ -65,13 +65,13 @@ class SwarmTest(BaseAPIIntegrationTest):
         assert results['SubnetSize'] == 28
 
     @requires_api_version('1.24')
-    def test_init_already_in_cluster(self):
+    def test_init_already_in_cluster(self) -> None:
         assert self.init_swarm()
         with pytest.raises(docker.errors.APIError):
             self.init_swarm()
 
     @requires_api_version('1.24')
-    def test_init_swarm_custom_raft_spec(self):
+    def test_init_swarm_custom_raft_spec(self) -> None:
         spec = self.client.create_swarm_spec(
             snapshot_interval=5000, log_entries_for_slow_followers=1200
         )
@@ -81,7 +81,7 @@ class SwarmTest(BaseAPIIntegrationTest):
         assert swarm_info['Spec']['Raft']['LogEntriesForSlowFollowers'] == 1200
 
     @requires_api_version('1.30')
-    def test_init_swarm_with_ca_config(self):
+    def test_init_swarm_with_ca_config(self) -> None:
         spec = self.client.create_swarm_spec(
             node_cert_expiry=7776000000000000, ca_force_rotate=6000000000000
         )
@@ -96,7 +96,7 @@ class SwarmTest(BaseAPIIntegrationTest):
         )
 
     @requires_api_version('1.25')
-    def test_init_swarm_with_autolock_managers(self):
+    def test_init_swarm_with_autolock_managers(self) -> None:
         spec = self.client.create_swarm_spec(autolock_managers=True)
         assert self.init_swarm(swarm_spec=spec)
         # save unlock key for tearDown
@@ -113,7 +113,7 @@ class SwarmTest(BaseAPIIntegrationTest):
     @pytest.mark.xfail(
         reason="This doesn't seem to be taken into account by the engine"
     )
-    def test_init_swarm_with_log_driver(self):
+    def test_init_swarm_with_log_driver(self) -> None:
         spec = {'TaskDefaults': {'LogDriver': {'Name': 'syslog'}}}
         assert self.init_swarm(swarm_spec=spec)
         swarm_info = self.client.inspect_swarm()
@@ -123,7 +123,7 @@ class SwarmTest(BaseAPIIntegrationTest):
         )
 
     @requires_api_version('1.24')
-    def test_leave_swarm(self):
+    def test_leave_swarm(self) -> None:
         assert self.init_swarm()
         with pytest.raises(docker.errors.APIError) as exc_info:
             self.client.leave_swarm()
@@ -135,7 +135,7 @@ class SwarmTest(BaseAPIIntegrationTest):
         assert self.client.leave_swarm(force=True)
 
     @requires_api_version('1.24')
-    def test_update_swarm(self):
+    def test_update_swarm(self) -> None:
         assert self.init_swarm()
         swarm_info_1 = self.client.inspect_swarm()
         spec = self.client.create_swarm_spec(
@@ -166,7 +166,7 @@ class SwarmTest(BaseAPIIntegrationTest):
         )
 
     @requires_api_version('1.24')
-    def test_list_nodes(self):
+    def test_list_nodes(self) -> None:
         assert self.init_swarm()
         nodes_list = self.client.nodes()
         assert len(nodes_list) == 1
@@ -185,7 +185,7 @@ class SwarmTest(BaseAPIIntegrationTest):
         assert len(filtered_list) == 0
 
     @requires_api_version('1.24')
-    def test_inspect_node(self):
+    def test_inspect_node(self) -> None:
         node_id = self.init_swarm()
         assert node_id
         nodes_list = self.client.nodes()
@@ -197,7 +197,7 @@ class SwarmTest(BaseAPIIntegrationTest):
         assert node['Version'] == node_data['Version']
 
     @requires_api_version('1.24')
-    def test_update_node(self):
+    def test_update_node(self) -> None:
         assert self.init_swarm()
         nodes_list = self.client.nodes()
         node = nodes_list[0]
@@ -220,7 +220,7 @@ class SwarmTest(BaseAPIIntegrationTest):
         assert orig_spec == reverted_node['Spec']
 
     @requires_api_version('1.24')
-    def test_remove_main_node(self):
+    def test_remove_main_node(self) -> None:
         assert self.init_swarm()
         nodes_list = self.client.nodes()
         node_id = nodes_list[0]['ID']
@@ -237,7 +237,7 @@ class SwarmTest(BaseAPIIntegrationTest):
         assert e.value.response.status_code >= 400
 
     @requires_api_version('1.25')
-    def test_rotate_manager_unlock_key(self):
+    def test_rotate_manager_unlock_key(self) -> None:
         spec = self.client.create_swarm_spec(autolock_managers=True)
         assert self.init_swarm(swarm_spec=spec)
         swarm_info = self.client.inspect_swarm()
@@ -251,10 +251,10 @@ class SwarmTest(BaseAPIIntegrationTest):
 
     @requires_api_version('1.30')
     @pytest.mark.xfail(reason='Can fail if eth0 has multiple IP addresses')
-    def test_init_swarm_data_path_addr(self):
+    def test_init_swarm_data_path_addr(self) -> None:
         assert self.init_swarm(data_path_addr='eth0')
 
     @requires_api_version('1.40')
-    def test_init_swarm_data_path_port(self):
+    def test_init_swarm_data_path_port(self) -> None:
         assert self.init_swarm(data_path_port=4242)
         assert self.client.inspect_swarm()['DataPathPort'] == 4242

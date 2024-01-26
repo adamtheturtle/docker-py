@@ -9,7 +9,7 @@ from docker.utils.socket import read_exactly
 
 
 class ExecTest(BaseAPIIntegrationTest):
-    def test_execute_command_with_proxy_env(self):
+    def test_execute_command_with_proxy_env(self) -> None:
         # Set a custom proxy config on the client
         self.client._proxy_configs = ProxyConfig(
             ftp='a', https='b', http='c', no_proxy='d'
@@ -47,7 +47,7 @@ class ExecTest(BaseAPIIntegrationTest):
         for item in expected:
             assert item in output
 
-    def test_execute_command(self):
+    def test_execute_command(self) -> None:
         container = self.client.create_container(TEST_IMG, 'cat',
                                                  detach=True, stdin_open=True)
         id = container['Id']
@@ -60,7 +60,7 @@ class ExecTest(BaseAPIIntegrationTest):
         exec_log = self.client.exec_start(res)
         assert exec_log == b'hello\n'
 
-    def test_exec_command_string(self):
+    def test_exec_command_string(self) -> None:
         container = self.client.create_container(TEST_IMG, 'cat',
                                                  detach=True, stdin_open=True)
         id = container['Id']
@@ -73,7 +73,7 @@ class ExecTest(BaseAPIIntegrationTest):
         exec_log = self.client.exec_start(res)
         assert exec_log == b'hello world\n'
 
-    def test_exec_command_as_user(self):
+    def test_exec_command_as_user(self) -> None:
         container = self.client.create_container(TEST_IMG, 'cat',
                                                  detach=True, stdin_open=True)
         id = container['Id']
@@ -86,7 +86,7 @@ class ExecTest(BaseAPIIntegrationTest):
         exec_log = self.client.exec_start(res)
         assert exec_log == b'postgres\n'
 
-    def test_exec_command_as_root(self):
+    def test_exec_command_as_root(self) -> None:
         container = self.client.create_container(TEST_IMG, 'cat',
                                                  detach=True, stdin_open=True)
         id = container['Id']
@@ -99,7 +99,7 @@ class ExecTest(BaseAPIIntegrationTest):
         exec_log = self.client.exec_start(res)
         assert exec_log == b'root\n'
 
-    def test_exec_command_streaming(self):
+    def test_exec_command_streaming(self) -> None:
         container = self.client.create_container(TEST_IMG, 'cat',
                                                  detach=True, stdin_open=True)
         id = container['Id']
@@ -114,7 +114,7 @@ class ExecTest(BaseAPIIntegrationTest):
             res += chunk
         assert res == b'hello\nworld\n'
 
-    def test_exec_start_socket(self):
+    def test_exec_start_socket(self) -> None:
         container = self.client.create_container(TEST_IMG, 'cat',
                                                  detach=True, stdin_open=True)
         container_id = container['Id']
@@ -136,7 +136,7 @@ class ExecTest(BaseAPIIntegrationTest):
         data = read_exactly(socket, next_size)
         assert data.decode('utf-8') == line
 
-    def test_exec_start_detached(self):
+    def test_exec_start_detached(self) -> None:
         container = self.client.create_container(TEST_IMG, 'cat',
                                                  detach=True, stdin_open=True)
         container_id = container['Id']
@@ -151,7 +151,7 @@ class ExecTest(BaseAPIIntegrationTest):
 
         assert response == ""
 
-    def test_exec_inspect(self):
+    def test_exec_inspect(self) -> None:
         container = self.client.create_container(TEST_IMG, 'cat',
                                                  detach=True, stdin_open=True)
         id = container['Id']
@@ -166,7 +166,7 @@ class ExecTest(BaseAPIIntegrationTest):
         assert exec_info['ExitCode'] != 0
 
     @requires_api_version('1.25')
-    def test_exec_command_with_env(self):
+    def test_exec_command_with_env(self) -> None:
         container = self.client.create_container(TEST_IMG, 'cat',
                                                  detach=True, stdin_open=True)
         id = container['Id']
@@ -180,7 +180,7 @@ class ExecTest(BaseAPIIntegrationTest):
         assert b'X=Y\n' in exec_log
 
     @requires_api_version('1.35')
-    def test_exec_command_with_workdir(self):
+    def test_exec_command_with_workdir(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'cat', detach=True, stdin_open=True
         )
@@ -191,7 +191,7 @@ class ExecTest(BaseAPIIntegrationTest):
         exec_log = self.client.exec_start(res)
         assert exec_log == b'/var/opt\n'
 
-    def test_detach_with_default(self):
+    def test_detach_with_default(self) -> None:
         container = self.client.create_container(
             TEST_IMG, 'cat', detach=True, stdin_open=True
         )
@@ -209,7 +209,7 @@ class ExecTest(BaseAPIIntegrationTest):
             sock, [ctrl_with('p'), ctrl_with('q')]
         )
 
-    def test_detach_with_config_file(self):
+    def test_detach_with_config_file(self) -> None:
         self.client._general_configs['detachKeys'] = 'ctrl-p'
         container = self.client.create_container(
             TEST_IMG, 'cat', detach=True, stdin_open=True
@@ -246,14 +246,14 @@ class ExecDemuxTest(BaseAPIIntegrationTest):
         self.client.start(self.container)
         self.tmp_containers.append(self.container)
 
-    def test_exec_command_no_stream_no_demux(self):
+    def test_exec_command_no_stream_no_demux(self) -> None:
         # tty=False, stream=False, demux=False
         res = self.client.exec_create(self.container, self.cmd)
         exec_log = self.client.exec_start(res)
         assert b'hello out\n' in exec_log
         assert b'hello err\n' in exec_log
 
-    def test_exec_command_stream_no_demux(self):
+    def test_exec_command_stream_no_demux(self) -> None:
         # tty=False, stream=True, demux=False
         res = self.client.exec_create(self.container, self.cmd)
         exec_log = list(self.client.exec_start(res, stream=True))
@@ -261,13 +261,13 @@ class ExecDemuxTest(BaseAPIIntegrationTest):
         assert b'hello out\n' in exec_log
         assert b'hello err\n' in exec_log
 
-    def test_exec_command_no_stream_demux(self):
+    def test_exec_command_no_stream_demux(self) -> None:
         # tty=False, stream=False, demux=True
         res = self.client.exec_create(self.container, self.cmd)
         exec_log = self.client.exec_start(res, demux=True)
         assert exec_log == (b'hello out\n', b'hello err\n')
 
-    def test_exec_command_stream_demux(self):
+    def test_exec_command_stream_demux(self) -> None:
         # tty=False, stream=True, demux=True
         res = self.client.exec_create(self.container, self.cmd)
         exec_log = list(self.client.exec_start(res, demux=True, stream=True))
@@ -275,13 +275,13 @@ class ExecDemuxTest(BaseAPIIntegrationTest):
         assert (b'hello out\n', None) in exec_log
         assert (None, b'hello err\n') in exec_log
 
-    def test_exec_command_tty_no_stream_no_demux(self):
+    def test_exec_command_tty_no_stream_no_demux(self) -> None:
         # tty=True, stream=False, demux=False
         res = self.client.exec_create(self.container, self.cmd, tty=True)
         exec_log = self.client.exec_start(res)
         assert exec_log == b'hello out\r\nhello err\r\n'
 
-    def test_exec_command_tty_stream_no_demux(self):
+    def test_exec_command_tty_stream_no_demux(self) -> None:
         # tty=True, stream=True, demux=False
         res = self.client.exec_create(self.container, self.cmd, tty=True)
         exec_log = list(self.client.exec_start(res, stream=True))
@@ -293,13 +293,13 @@ class ExecDemuxTest(BaseAPIIntegrationTest):
             assert b'hello err' in exec_log
             assert b'\r\n' in exec_log
 
-    def test_exec_command_tty_no_stream_demux(self):
+    def test_exec_command_tty_no_stream_demux(self) -> None:
         # tty=True, stream=False, demux=True
         res = self.client.exec_create(self.container, self.cmd, tty=True)
         exec_log = self.client.exec_start(res, demux=True)
         assert exec_log == (b'hello out\r\nhello err\r\n', None)
 
-    def test_exec_command_tty_stream_demux(self):
+    def test_exec_command_tty_stream_demux(self) -> None:
         # tty=True, stream=True, demux=True
         res = self.client.exec_create(self.container, self.cmd, tty=True)
         exec_log = list(self.client.exec_start(res, demux=True, stream=True))

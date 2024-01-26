@@ -7,7 +7,7 @@ from .api_test import BaseAPIClientTest, url_prefix, fake_request
 
 
 class VolumeTest(BaseAPIClientTest):
-    def test_list_volumes(self):
+    def test_list_volumes(self) -> None:
         volumes = self.client.volumes()
         assert 'Volumes' in volumes
         assert len(volumes['Volumes']) == 2
@@ -16,7 +16,7 @@ class VolumeTest(BaseAPIClientTest):
         assert args[0][0] == 'GET'
         assert args[0][1] == f"{url_prefix}volumes"
 
-    def test_list_volumes_and_filters(self):
+    def test_list_volumes_and_filters(self) -> None:
         volumes = self.client.volumes(filters={'dangling': True})
         assert 'Volumes' in volumes
         assert len(volumes['Volumes']) == 2
@@ -27,7 +27,7 @@ class VolumeTest(BaseAPIClientTest):
         assert args[1] == {'params': {'filters': '{"dangling": ["true"]}'},
                            'timeout': 60}
 
-    def test_create_volume(self):
+    def test_create_volume(self) -> None:
         name = 'perfectcherryblossom'
         result = self.client.create_volume(name)
         assert 'Name' in result
@@ -41,7 +41,7 @@ class VolumeTest(BaseAPIClientTest):
         assert json.loads(args[1]['data']) == {'Name': name}
 
     @requires_api_version('1.23')
-    def test_create_volume_with_labels(self):
+    def test_create_volume_with_labels(self) -> None:
         name = 'perfectcherryblossom'
         result = self.client.create_volume(name, labels={
             'com.example.some-label': 'some-value'
@@ -51,12 +51,12 @@ class VolumeTest(BaseAPIClientTest):
         }
 
     @requires_api_version('1.23')
-    def test_create_volume_with_invalid_labels(self):
+    def test_create_volume_with_invalid_labels(self) -> None:
         name = 'perfectcherryblossom'
         with pytest.raises(TypeError):
             self.client.create_volume(name, labels=1)
 
-    def test_create_volume_with_driver(self):
+    def test_create_volume_with_driver(self) -> None:
         name = 'perfectcherryblossom'
         driver_name = 'sshfs'
         self.client.create_volume(name, driver=driver_name)
@@ -68,7 +68,7 @@ class VolumeTest(BaseAPIClientTest):
         assert 'Driver' in data
         assert data['Driver'] == driver_name
 
-    def test_create_volume_invalid_opts_type(self):
+    def test_create_volume_invalid_opts_type(self) -> None:
         with pytest.raises(TypeError):
             self.client.create_volume(
                 'perfectcherryblossom', driver_opts='hello=world'
@@ -85,7 +85,7 @@ class VolumeTest(BaseAPIClientTest):
             )
 
     @requires_api_version('1.24')
-    def test_create_volume_with_no_specified_name(self):
+    def test_create_volume_with_no_specified_name(self) -> None:
         result = self.client.create_volume(name=None)
         assert 'Name' in result
         assert result['Name'] is not None
@@ -94,7 +94,7 @@ class VolumeTest(BaseAPIClientTest):
         assert 'Scope' in result
         assert result['Scope'] == 'local'
 
-    def test_inspect_volume(self):
+    def test_inspect_volume(self) -> None:
         name = 'perfectcherryblossom'
         result = self.client.inspect_volume(name)
         assert 'Name' in result
@@ -106,7 +106,7 @@ class VolumeTest(BaseAPIClientTest):
         assert args[0][0] == 'GET'
         assert args[0][1] == f'{url_prefix}volumes/{name}'
 
-    def test_remove_volume(self):
+    def test_remove_volume(self) -> None:
         name = 'perfectcherryblossom'
         self.client.remove_volume(name)
         args = fake_request.call_args

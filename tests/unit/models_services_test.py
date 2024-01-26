@@ -3,7 +3,7 @@ from docker.models.services import _get_create_service_kwargs
 
 
 class CreateServiceKwargsTest(unittest.TestCase):
-    def test_get_create_service_kwargs(self):
+    def test_get_create_service_kwargs(self) -> None:
         kwargs = _get_create_service_kwargs('test', {
             'image': 'foo',
             'command': 'true',

@@ -6,7 +6,7 @@ from .base import BaseAPIIntegrationTest
 
 
 class TestVolumes(BaseAPIIntegrationTest):
-    def test_create_volume(self):
+    def test_create_volume(self) -> None:
         name = 'perfectcherryblossom'
         self.tmp_volumes.append(name)
         result = self.client.create_volume(name)
@@ -15,13 +15,13 @@ class TestVolumes(BaseAPIIntegrationTest):
         assert 'Driver' in result
         assert result['Driver'] == 'local'
 
-    def test_create_volume_invalid_driver(self):
+    def test_create_volume_invalid_driver(self) -> None:
         driver_name = 'invalid.driver'
 
         with pytest.raises(docker.errors.NotFound):
             self.client.create_volume('perfectcherryblossom', driver_name)
 
-    def test_list_volumes(self):
+    def test_list_volumes(self) -> None:
         name = 'imperishablenight'
         self.tmp_volumes.append(name)
         volume_info = self.client.create_volume(name)
@@ -30,39 +30,39 @@ class TestVolumes(BaseAPIIntegrationTest):
         volumes = result['Volumes']
         assert volume_info in volumes
 
-    def test_inspect_volume(self):
+    def test_inspect_volume(self) -> None:
         name = 'embodimentofscarletdevil'
         self.tmp_volumes.append(name)
         volume_info = self.client.create_volume(name)
         result = self.client.inspect_volume(name)
         assert volume_info == result
 
-    def test_inspect_nonexistent_volume(self):
+    def test_inspect_nonexistent_volume(self) -> None:
         name = 'embodimentofscarletdevil'
         with pytest.raises(docker.errors.NotFound):
             self.client.inspect_volume(name)
 
-    def test_remove_volume(self):
+    def test_remove_volume(self) -> None:
         name = 'shootthebullet'
         self.tmp_volumes.append(name)
         self.client.create_volume(name)
         self.client.remove_volume(name)
 
     @requires_api_version('1.25')
-    def test_force_remove_volume(self):
+    def test_force_remove_volume(self) -> None:
         name = 'shootthebullet'
         self.tmp_volumes.append(name)
         self.client.create_volume(name)
         self.client.remove_volume(name, force=True)
 
     @requires_api_version('1.25')
-    def test_prune_volumes(self):
+    def test_prune_volumes(self) -> None:
         v = self.client.create_volume()
         self.tmp_volumes.append(v["Name"])
         result = self.client.prune_volumes()
         assert v["Name"] in result['VolumesDeleted']
 
-    def test_remove_nonexistent_volume(self):
+    def test_remove_nonexistent_volume(self) -> None:
         name = 'shootthebullet'
         with pytest.raises(docker.errors.NotFound):
             self.client.remove_volume(name)

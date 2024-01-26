@@ -13,7 +13,7 @@ from .fake_api_client import make_fake_client
 
 
 class ContainerCollectionTest(unittest.TestCase):
-    def test_run(self):
+    def test_run(self) -> None:
         client = make_fake_client()
         out = client.containers.run("alpine", "echo hello world")
 
@@ -33,7 +33,7 @@ class ContainerCollectionTest(unittest.TestCase):
             follow=True
         )
 
-    def test_create_container_args(self):
+    def test_create_container_args(self) -> None:
         networking_config = {
             'foo': EndpointConfig(
                 DEFAULT_DOCKER_API_VERSION, aliases=['test'],
@@ -228,7 +228,7 @@ class ContainerCollectionTest(unittest.TestCase):
 
         assert create_kwargs == expected
 
-    def test_run_detach(self):
+    def test_run_detach(self) -> None:
         client = make_fake_client()
         container = client.containers.run('alpine', 'sleep 300', detach=True)
         assert isinstance(container, Container)
@@ -244,7 +244,7 @@ class ContainerCollectionTest(unittest.TestCase):
         client.api.inspect_container.assert_called_with(FAKE_CONTAINER_ID)
         client.api.start.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_run_pull(self):
+    def test_run_pull(self) -> None:
         client = make_fake_client()
 
         # raise exception on first call, then return normal value
@@ -260,7 +260,7 @@ class ContainerCollectionTest(unittest.TestCase):
             'alpine', platform=None, tag='latest', all_tags=False, stream=True
         )
 
-    def test_run_with_error(self):
+    def test_run_with_error(self) -> None:
         client = make_fake_client()
         client.api.logs.return_value = "some error"
         client.api.wait.return_value = {'StatusCode': 1}
@@ -270,7 +270,7 @@ class ContainerCollectionTest(unittest.TestCase):
         assert cm.value.exit_status == 1
         assert "some error" in cm.exconly()
 
-    def test_run_with_image_object(self):
+    def test_run_with_image_object(self) -> None:
         client = make_fake_client()
         image = client.images.get(FAKE_IMAGE_ID)
         client.containers.run(image)
@@ -283,7 +283,7 @@ class ContainerCollectionTest(unittest.TestCase):
             }
         )
 
-    def test_run_remove(self):
+    def test_run_remove(self) -> None:
         client = make_fake_client()
         client.containers.run("alpine")
         client.api.remove_container.assert_not_called()
@@ -338,7 +338,7 @@ class ContainerCollectionTest(unittest.TestCase):
                          'NetworkMode': 'default'}
         )
 
-    def test_run_platform(self):
+    def test_run_platform(self) -> None:
         client = make_fake_client()
 
         # raise exception on first call, then return normal value
@@ -365,7 +365,7 @@ class ContainerCollectionTest(unittest.TestCase):
             host_config={'NetworkMode': 'default'},
         )
 
-    def test_run_networking_config_without_network(self):
+    def test_run_networking_config_without_network(self) -> None:
         client = make_fake_client()
 
         with pytest.raises(RuntimeError):
@@ -375,7 +375,7 @@ class ContainerCollectionTest(unittest.TestCase):
                                    'driver_opt': {'key1': 'a'}}
             )
 
-    def test_run_networking_config_with_network_mode(self):
+    def test_run_networking_config_with_network_mode(self) -> None:
         client = make_fake_client()
 
         with pytest.raises(RuntimeError):
@@ -386,7 +386,7 @@ class ContainerCollectionTest(unittest.TestCase):
                                    'driver_opt': {'key1': 'a'}}
             )
 
-    def test_run_networking_config(self):
+    def test_run_networking_config(self) -> None:
         client = make_fake_client()
 
         networking_config = {
@@ -412,7 +412,7 @@ class ContainerCollectionTest(unittest.TestCase):
             host_config={'NetworkMode': 'foo'}
         )
 
-    def test_run_networking_config_with_undeclared_network(self):
+    def test_run_networking_config_with_undeclared_network(self) -> None:
         client = make_fake_client()
 
         networking_config = {
@@ -443,7 +443,7 @@ class ContainerCollectionTest(unittest.TestCase):
             host_config={'NetworkMode': 'foo'}
         )
 
-    def test_run_networking_config_only_undeclared_network(self):
+    def test_run_networking_config_only_undeclared_network(self) -> None:
         client = make_fake_client()
 
         networking_config = {
@@ -467,7 +467,7 @@ class ContainerCollectionTest(unittest.TestCase):
             host_config={'NetworkMode': 'foo'}
         )
 
-    def test_create(self):
+    def test_create(self) -> None:
         client = make_fake_client()
         container = client.containers.create(
             'alpine',
@@ -484,7 +484,7 @@ class ContainerCollectionTest(unittest.TestCase):
         )
         client.api.inspect_container.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_create_with_image_object(self):
+    def test_create_with_image_object(self) -> None:
         client = make_fake_client()
         image = client.images.get(FAKE_IMAGE_ID)
         client.containers.create(image)
@@ -494,7 +494,7 @@ class ContainerCollectionTest(unittest.TestCase):
             host_config={'NetworkMode': 'default'}
         )
 
-    def test_create_networking_config_without_network(self):
+    def test_create_networking_config_without_network(self) -> None:
         client = make_fake_client()
 
         client.containers.create(
@@ -509,7 +509,7 @@ class ContainerCollectionTest(unittest.TestCase):
             host_config={'NetworkMode': 'default'}
         )
 
-    def test_create_networking_config_with_network_mode(self):
+    def test_create_networking_config_with_network_mode(self) -> None:
         client = make_fake_client()
 
         client.containers.create(
@@ -525,7 +525,7 @@ class ContainerCollectionTest(unittest.TestCase):
             host_config={'NetworkMode': 'none'}
         )
 
-    def test_create_networking_config(self):
+    def test_create_networking_config(self) -> None:
         client = make_fake_client()
 
         networking_config = {
@@ -550,7 +550,7 @@ class ContainerCollectionTest(unittest.TestCase):
             host_config={'NetworkMode': 'foo'}
         )
 
-    def test_create_networking_config_with_undeclared_network(self):
+    def test_create_networking_config_with_undeclared_network(self) -> None:
         client = make_fake_client()
 
         networking_config = {
@@ -580,7 +580,7 @@ class ContainerCollectionTest(unittest.TestCase):
             host_config={'NetworkMode': 'foo'}
         )
 
-    def test_create_networking_config_only_undeclared_network(self):
+    def test_create_networking_config_only_undeclared_network(self) -> None:
         client = make_fake_client()
 
         networking_config = {
@@ -603,14 +603,14 @@ class ContainerCollectionTest(unittest.TestCase):
             host_config={'NetworkMode': 'foo'}
         )
 
-    def test_get(self):
+    def test_get(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         assert isinstance(container, Container)
         assert container.id == FAKE_CONTAINER_ID
         client.api.inspect_container.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_list(self):
+    def test_list(self) -> None:
         client = make_fake_client()
         containers = client.containers.list(all=True)
         client.api.containers.assert_called_with(
@@ -625,7 +625,7 @@ class ContainerCollectionTest(unittest.TestCase):
         assert isinstance(containers[0], Container)
         assert containers[0].id == FAKE_CONTAINER_ID
 
-    def test_list_ignore_removed(self):
+    def test_list_ignore_removed(self) -> None:
         def side_effect(*args, **kwargs):
             raise docker.errors.NotFound('Container not found')
 
@@ -640,28 +640,28 @@ class ContainerCollectionTest(unittest.TestCase):
 
 
 class ContainerTest(unittest.TestCase):
-    def test_short_id(self):
+    def test_short_id(self) -> None:
         container = Container(attrs={'Id': '8497fe9244dd45cac543eb3c37d8605077'
                                            '6800eebef1f3ec2ee111e8ccf12db6'})
         assert container.short_id == '8497fe9244dd'
 
-    def test_name(self):
+    def test_name(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         assert container.name == 'foobar'
 
-    def test_status(self):
+    def test_status(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         assert container.status == "running"
 
-    def test_attach(self):
+    def test_attach(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.attach(stream=True)
         client.api.attach.assert_called_with(FAKE_CONTAINER_ID, stream=True)
 
-    def test_commit(self):
+    def test_commit(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         image = container.commit()
@@ -671,13 +671,13 @@ class ContainerTest(unittest.TestCase):
         assert isinstance(image, Image)
         assert image.id == FAKE_IMAGE_ID
 
-    def test_diff(self):
+    def test_diff(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.diff()
         client.api.diff.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_exec_run(self):
+    def test_exec_run(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.exec_run("echo hello world", privileged=True, stream=True)
@@ -691,7 +691,7 @@ class ContainerTest(unittest.TestCase):
             demux=False,
         )
 
-    def test_exec_run_failure(self):
+    def test_exec_run_failure(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.exec_run("docker ps", privileged=True, stream=False)
@@ -705,7 +705,7 @@ class ContainerTest(unittest.TestCase):
             demux=False,
         )
 
-    def test_export(self):
+    def test_export(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.export()
@@ -713,7 +713,7 @@ class ContainerTest(unittest.TestCase):
             FAKE_CONTAINER_ID, DEFAULT_DATA_CHUNK_SIZE
         )
 
-    def test_get_archive(self):
+    def test_get_archive(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.get_archive('foo')
@@ -721,103 +721,103 @@ class ContainerTest(unittest.TestCase):
             FAKE_CONTAINER_ID, 'foo', DEFAULT_DATA_CHUNK_SIZE, False
         )
 
-    def test_image(self):
+    def test_image(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         assert container.image.id == FAKE_IMAGE_ID
 
-    def test_kill(self):
+    def test_kill(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.kill(signal=5)
         client.api.kill.assert_called_with(FAKE_CONTAINER_ID, signal=5)
 
-    def test_labels(self):
+    def test_labels(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         assert container.labels == {'foo': 'bar'}
 
-    def test_logs(self):
+    def test_logs(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.logs()
         client.api.logs.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_pause(self):
+    def test_pause(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.pause()
         client.api.pause.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_put_archive(self):
+    def test_put_archive(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.put_archive('path', 'foo')
         client.api.put_archive.assert_called_with(FAKE_CONTAINER_ID,
                                                   'path', 'foo')
 
-    def test_remove(self):
+    def test_remove(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.remove()
         client.api.remove_container.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_rename(self):
+    def test_rename(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.rename("foo")
         client.api.rename.assert_called_with(FAKE_CONTAINER_ID, "foo")
 
-    def test_resize(self):
+    def test_resize(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.resize(1, 2)
         client.api.resize.assert_called_with(FAKE_CONTAINER_ID, 1, 2)
 
-    def test_restart(self):
+    def test_restart(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.restart()
         client.api.restart.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_start(self):
+    def test_start(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.start()
         client.api.start.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_stats(self):
+    def test_stats(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.stats()
         client.api.stats.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_stop(self):
+    def test_stop(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.stop()
         client.api.stop.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_top(self):
+    def test_top(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.top()
         client.api.top.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_unpause(self):
+    def test_unpause(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.unpause()
         client.api.unpause.assert_called_with(FAKE_CONTAINER_ID)
 
-    def test_update(self):
+    def test_update(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.update(cpu_shares=2)
         client.api.update_container.assert_called_with(FAKE_CONTAINER_ID,
                                                        cpu_shares=2)
 
-    def test_wait(self):
+    def test_wait(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.wait()

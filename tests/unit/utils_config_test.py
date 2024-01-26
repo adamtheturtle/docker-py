@@ -16,19 +16,19 @@ class FindConfigFileTest(unittest.TestCase):
     def tmpdir(self, tmpdir):
         self.mkdir = tmpdir.mkdir
 
-    def test_find_config_fallback(self):
+    def test_find_config_fallback(self) -> None:
         tmpdir = self.mkdir('test_find_config_fallback')
 
         with mock.patch.dict(os.environ, {'HOME': str(tmpdir)}):
             assert config.find_config_file() is None
 
-    def test_find_config_from_explicit_path(self):
+    def test_find_config_from_explicit_path(self) -> None:
         tmpdir = self.mkdir('test_find_config_from_explicit_path')
         config_path = tmpdir.ensure('my-config-file.json')
 
         assert config.find_config_file(str(config_path)) == str(config_path)
 
-    def test_find_config_from_environment(self):
+    def test_find_config_from_environment(self) -> None:
         tmpdir = self.mkdir('test_find_config_from_environment')
         config_path = tmpdir.ensure('config.json')
 
@@ -36,7 +36,7 @@ class FindConfigFileTest(unittest.TestCase):
             assert config.find_config_file() == str(config_path)
 
     @mark.skipif("sys.platform == 'win32'")
-    def test_find_config_from_home_posix(self):
+    def test_find_config_from_home_posix(self) -> None:
         tmpdir = self.mkdir('test_find_config_from_home_posix')
         config_path = tmpdir.ensure('.docker', 'config.json')
 
@@ -44,7 +44,7 @@ class FindConfigFileTest(unittest.TestCase):
             assert config.find_config_file() == str(config_path)
 
     @mark.skipif("sys.platform == 'win32'")
-    def test_find_config_from_home_legacy_name(self):
+    def test_find_config_from_home_legacy_name(self) -> None:
         tmpdir = self.mkdir('test_find_config_from_home_legacy_name')
         config_path = tmpdir.ensure('.dockercfg')
 
@@ -52,7 +52,7 @@ class FindConfigFileTest(unittest.TestCase):
             assert config.find_config_file() == str(config_path)
 
     @mark.skipif("sys.platform != 'win32'")
-    def test_find_config_from_home_windows(self):
+    def test_find_config_from_home_windows(self) -> None:
         tmpdir = self.mkdir('test_find_config_from_home_windows')
         config_path = tmpdir.ensure('.docker', 'config.json')
 
@@ -61,7 +61,7 @@ class FindConfigFileTest(unittest.TestCase):
 
 
 class LoadConfigTest(unittest.TestCase):
-    def test_load_config_no_file(self):
+    def test_load_config_no_file(self) -> None:
         folder = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, folder)
         cfg = config.load_general_config(folder)
@@ -69,7 +69,7 @@ class LoadConfigTest(unittest.TestCase):
         assert isinstance(cfg, dict)
         assert not cfg
 
-    def test_load_config_custom_headers(self):
+    def test_load_config_custom_headers(self) -> None:
         folder = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, folder)
 
@@ -91,7 +91,7 @@ class LoadConfigTest(unittest.TestCase):
             'Surname': 'Spiegel'
         }
 
-    def test_load_config_detach_keys(self):
+    def test_load_config_detach_keys(self) -> None:
         folder = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, folder)
         dockercfg_path = os.path.join(folder, 'config.json')
@@ -104,7 +104,7 @@ class LoadConfigTest(unittest.TestCase):
         cfg = config.load_general_config(dockercfg_path)
         assert cfg == config_data
 
-    def test_load_config_from_env(self):
+    def test_load_config_from_env(self) -> None:
         folder = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, folder)
         dockercfg_path = os.path.join(folder, 'config.json')

@@ -5,7 +5,7 @@ from .fake_api_client import make_fake_client
 
 
 class ModelTest(unittest.TestCase):
-    def test_reload(self):
+    def test_reload(self) -> None:
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.attrs['Name'] = "oldname"
@@ -13,7 +13,7 @@ class ModelTest(unittest.TestCase):
         assert client.api.inspect_container.call_count == 2
         assert container.attrs['Name'] == "foobar"
 
-    def test_hash(self):
+    def test_hash(self) -> None:
         client = make_fake_client()
         container1 = client.containers.get(FAKE_CONTAINER_ID)
         my_set = {container1}

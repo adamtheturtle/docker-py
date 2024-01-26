@@ -14,7 +14,7 @@ class SwarmTest(unittest.TestCase):
     def tearDown(self):
         helpers.force_leave_swarm(docker.from_env(version=TEST_API_VERSION))
 
-    def test_init_update_leave(self):
+    def test_init_update_leave(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         client.swarm.init(
             advertise_addr='127.0.0.1', snapshot_interval=5000,
@@ -32,7 +32,7 @@ class SwarmTest(unittest.TestCase):
             cm.value.response.status_code == 503
         )
 
-    def test_join_on_already_joined_swarm(self):
+    def test_join_on_already_joined_swarm(self) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         client.swarm.init()
         join_token = client.swarm.attrs['JoinTokens']['Manager']
