@@ -6,3 +6,13 @@ from .constants import (
     DEFAULT_WIN32_STORE,
     PROGRAM_PREFIX,
 )
+
+__all__ = [
+    'Store',
+    'StoreError',
+    'CredentialsNotFound',
+    'DEFAULT_LINUX_STORE',
+    'DEFAULT_OSX_STORE',
+    'DEFAULT_WIN32_STORE',
+    'PROGRAM_PREFIX',
+]

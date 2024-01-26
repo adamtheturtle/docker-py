@@ -9,3 +9,10 @@ try:
     from .sshconn import SSHHTTPAdapter
 except ImportError:
     pass
+
+__all__ = [
+    'UnixHTTPAdapter',
+    'NpipeHTTPAdapter',
+    'NpipeSocket',
+    'SSHHTTPAdapter'
+]
