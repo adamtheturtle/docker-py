@@ -1,12 +1,15 @@
-import docker
-from docker.constants import DEFAULT_DATA_CHUNK_SIZE
-from docker.models.containers import Container, _create_container_args
-from docker.models.images import Image
 import unittest
 
+import pytest
+
+import docker
+from docker.constants import DEFAULT_DATA_CHUNK_SIZE, \
+    DEFAULT_DOCKER_API_VERSION
+from docker.models.containers import Container, _create_container_args
+from docker.models.images import Image
+from docker.types import EndpointConfig
 from .fake_api import FAKE_CONTAINER_ID, FAKE_IMAGE_ID, FAKE_EXEC_ID
 from .fake_api_client import make_fake_client
-import pytest
 
 
 class ContainerCollectionTest(unittest.TestCase):
@@ -31,97 +34,103 @@ class ContainerCollectionTest(unittest.TestCase):
         )
 
     def test_create_container_args(self):
-        create_kwargs = _create_container_args(dict(
-            image='alpine',
-            command='echo hello world',
-            blkio_weight_device=[{'Path': 'foo', 'Weight': 3}],
-            blkio_weight=2,
-            cap_add=['foo'],
-            cap_drop=['bar'],
-            cgroup_parent='foobar',
-            cpu_period=1,
-            cpu_quota=2,
-            cpu_shares=5,
-            cpuset_cpus='0-3',
-            detach=False,
-            device_read_bps=[{'Path': 'foo', 'Rate': 3}],
-            device_read_iops=[{'Path': 'foo', 'Rate': 3}],
-            device_write_bps=[{'Path': 'foo', 'Rate': 3}],
-            device_write_iops=[{'Path': 'foo', 'Rate': 3}],
-            devices=['/dev/sda:/dev/xvda:rwm'],
-            dns=['8.8.8.8'],
-            domainname='example.com',
-            dns_opt=['foo'],
-            dns_search=['example.com'],
-            entrypoint='/bin/sh',
-            environment={'FOO': 'BAR'},
-            extra_hosts={'foo': '1.2.3.4'},
-            group_add=['blah'],
-            ipc_mode='foo',
-            kernel_memory=123,
-            labels={'key': 'value'},
-            links={'foo': 'bar'},
-            log_config={'Type': 'json-file', 'Config': {}},
-            lxc_conf={'foo': 'bar'},
-            healthcheck={'test': 'true'},
-            hostname='somehost',
-            mac_address='abc123',
-            mem_limit=123,
-            mem_reservation=123,
-            mem_swappiness=2,
-            memswap_limit=456,
-            name='somename',
-            network_disabled=False,
-            network='foo',
-            oom_kill_disable=True,
-            oom_score_adj=5,
-            pid_mode='host',
-            pids_limit=500,
-            ports={
-                1111: 4567,
-                2222: None
-            },
-            privileged=True,
-            publish_all_ports=True,
-            read_only=True,
-            restart_policy={'Name': 'always'},
-            security_opt=['blah'],
-            shm_size=123,
-            stdin_open=True,
-            stop_signal=9,
-            sysctls={'foo': 'bar'},
-            tmpfs={'/blah': ''},
-            tty=True,
-            ulimits=[{"Name": "nofile", "Soft": 1024, "Hard": 2048}],
-            user='bob',
-            userns_mode='host',
-            uts_mode='host',
-            version='1.23',
-            volume_driver='some_driver',
-            volumes=[
+        networking_config = {
+            'foo': EndpointConfig(
+                DEFAULT_DOCKER_API_VERSION, aliases=['test'],
+                driver_opt={'key1': 'a'}
+            )
+        }
+
+        create_kwargs = _create_container_args({
+            'image': 'alpine',
+            'command': 'echo hello world',
+            'blkio_weight_device': [{'Path': 'foo', 'Weight': 3}],
+            'blkio_weight': 2,
+            'cap_add': ['foo'],
+            'cap_drop': ['bar'],
+            'cgroup_parent': 'foobar',
+            'cgroupns': 'host',
+            'cpu_period': 1,
+            'cpu_quota': 2,
+            'cpu_shares': 5,
+            'cpuset_cpus': '0-3',
+            'detach': False,
+            'device_read_bps': [{'Path': 'foo', 'Rate': 3}],
+            'device_read_iops': [{'Path': 'foo', 'Rate': 3}],
+            'device_write_bps': [{'Path': 'foo', 'Rate': 3}],
+            'device_write_iops': [{'Path': 'foo', 'Rate': 3}],
+            'devices': ['/dev/sda:/dev/xvda:rwm'],
+            'dns': ['8.8.8.8'],
+            'domainname': 'example.com',
+            'dns_opt': ['foo'],
+            'dns_search': ['example.com'],
+            'entrypoint': '/bin/sh',
+            'environment': {'FOO': 'BAR'},
+            'extra_hosts': {'foo': '1.2.3.4'},
+            'group_add': ['blah'],
+            'ipc_mode': 'foo',
+            'kernel_memory': 123,
+            'labels': {'key': 'value'},
+            'links': {'foo': 'bar'},
+            'log_config': {'Type': 'json-file', 'Config': {}},
+            'lxc_conf': {'foo': 'bar'},
+            'healthcheck': {'test': 'true'},
+            'hostname': 'somehost',
+            'mac_address': 'abc123',
+            'mem_limit': 123,
+            'mem_reservation': 123,
+            'mem_swappiness': 2,
+            'memswap_limit': 456,
+            'name': 'somename',
+            'network_disabled': False,
+            'network': 'foo',
+            'networking_config': networking_config,
+            'oom_kill_disable': True,
+            'oom_score_adj': 5,
+            'pid_mode': 'host',
+            'pids_limit': 500,
+            'platform': 'linux',
+            'ports': {1111: 4567, 2222: None},
+            'privileged': True,
+            'publish_all_ports': True,
+            'read_only': True,
+            'restart_policy': {'Name': 'always'},
+            'security_opt': ['blah'],
+            'shm_size': 123,
+            'stdin_open': True,
+            'stop_signal': 9,
+            'sysctls': {'foo': 'bar'},
+            'tmpfs': {'/blah': ''},
+            'tty': True,
+            'ulimits': [{"Name": "nofile", "Soft": 1024, "Hard": 2048}],
+            'user': 'bob',
+            'userns_mode': 'host',
+            'uts_mode': 'host',
+            'version': DEFAULT_DOCKER_API_VERSION,
+            'volume_driver': 'some_driver', 'volumes': [
                 '/home/user1/:/mnt/vol2',
                 '/var/www:/mnt/vol1:ro',
-                'volumename:/mnt/vol3',
+                'volumename:/mnt/vol3r',
                 '/volumewithnohostpath',
                 '/anothervolumewithnohostpath:ro',
                 'C:\\windows\\path:D:\\hello\\world:rw'
             ],
-            volumes_from=['container'],
-            working_dir='/code'
-        ))
+            'volumes_from': ['container'],
+            'working_dir': '/code',
+        })
 
-        expected = dict(
-            image='alpine',
-            command='echo hello world',
-            domainname='example.com',
-            detach=False,
-            entrypoint='/bin/sh',
-            environment={'FOO': 'BAR'},
-            host_config={
+        expected = {
+            'image': 'alpine',
+            'command': 'echo hello world',
+            'domainname': 'example.com',
+            'detach': False,
+            'entrypoint': '/bin/sh',
+            'environment': {'FOO': 'BAR'},
+            'host_config': {
                 'Binds': [
                     '/home/user1/:/mnt/vol2',
                     '/var/www:/mnt/vol1:ro',
-                    'volumename:/mnt/vol3',
+                    'volumename:/mnt/vol3r',
                     '/volumewithnohostpath',
                     '/anothervolumewithnohostpath:ro',
                     'C:\\windows\\path:D:\\hello\\world:rw'
@@ -134,14 +143,19 @@ class ContainerCollectionTest(unittest.TestCase):
                 'BlkioWeight': 2,
                 'CapAdd': ['foo'],
                 'CapDrop': ['bar'],
+                'CgroupnsMode': 'host',
                 'CgroupParent': 'foobar',
                 'CpuPeriod': 1,
                 'CpuQuota': 2,
                 'CpuShares': 5,
                 'CpusetCpus': '0-3',
-                'Devices': [{'PathOnHost': '/dev/sda',
-                             'CgroupPermissions': 'rwm',
-                             'PathInContainer': '/dev/xvda'}],
+                'Devices': [
+                    {
+                        'PathOnHost': '/dev/sda',
+                        'CgroupPermissions': 'rwm',
+                        'PathInContainer': '/dev/xvda',
+                    },
+                ],
                 'Dns': ['8.8.8.8'],
                 'DnsOptions': ['foo'],
                 'DnsSearch': ['example.com'],
@@ -173,34 +187,44 @@ class ContainerCollectionTest(unittest.TestCase):
                 'ShmSize': 123,
                 'Sysctls': {'foo': 'bar'},
                 'Tmpfs': {'/blah': ''},
-                'Ulimits': [{"Name": "nofile", "Soft": 1024, "Hard": 2048}],
+                'Ulimits': [
+                    {"Name": "nofile", "Soft": 1024, "Hard": 2048},
+                ],
                 'UsernsMode': 'host',
                 'UTSMode': 'host',
                 'VolumeDriver': 'some_driver',
                 'VolumesFrom': ['container'],
             },
-            healthcheck={'test': 'true'},
-            hostname='somehost',
-            labels={'key': 'value'},
-            mac_address='abc123',
-            name='somename',
-            network_disabled=False,
-            networking_config={'foo': None},
-            ports=[('1111', 'tcp'), ('2222', 'tcp')],
-            stdin_open=True,
-            stop_signal=9,
-            tty=True,
-            user='bob',
-            volumes=[
+            'healthcheck': {'test': 'true'},
+            'hostname': 'somehost',
+            'labels': {'key': 'value'},
+            'mac_address': 'abc123',
+            'name': 'somename',
+            'network_disabled': False,
+            'networking_config': {
+                'EndpointsConfig': {
+                    'foo': {
+                        'Aliases': ['test'],
+                        'DriverOpts': {'key1': 'a'},
+                    },
+                }
+            },
+            'platform': 'linux',
+            'ports': [('1111', 'tcp'), ('2222', 'tcp')],
+            'stdin_open': True,
+            'stop_signal': 9,
+            'tty': True,
+            'user': 'bob',
+            'volumes': [
                 '/mnt/vol2',
                 '/mnt/vol1',
-                '/mnt/vol3',
+                '/mnt/vol3r',
                 '/volumewithnohostpath',
                 '/anothervolumewithnohostpath',
                 'D:\\hello\\world'
             ],
-            working_dir='/code'
-        )
+            'working_dir': '/code',
+        }
 
         assert create_kwargs == expected
 
@@ -233,7 +257,7 @@ class ContainerCollectionTest(unittest.TestCase):
 
         assert container.id == FAKE_CONTAINER_ID
         client.api.pull.assert_called_with(
-            'alpine', platform=None, tag=None, stream=True
+            'alpine', platform=None, tag='latest', all_tags=False, stream=True
         )
 
     def test_run_with_error(self):
@@ -314,6 +338,135 @@ class ContainerCollectionTest(unittest.TestCase):
                          'NetworkMode': 'default'}
         )
 
+    def test_run_platform(self):
+        client = make_fake_client()
+
+        # raise exception on first call, then return normal value
+        client.api.create_container.side_effect = [
+            docker.errors.ImageNotFound(""),
+            client.api.create_container.return_value
+        ]
+
+        client.containers.run(image='alpine', platform='linux/arm64')
+
+        client.api.pull.assert_called_with(
+            'alpine',
+            tag='latest',
+            all_tags=False,
+            stream=True,
+            platform='linux/arm64',
+        )
+
+        client.api.create_container.assert_called_with(
+            detach=False,
+            platform='linux/arm64',
+            image='alpine',
+            command=None,
+            host_config={'NetworkMode': 'default'},
+        )
+
+    def test_run_networking_config_without_network(self):
+        client = make_fake_client()
+
+        with pytest.raises(RuntimeError):
+            client.containers.run(
+                image='alpine',
+                networking_config={'aliases': ['test'],
+                                   'driver_opt': {'key1': 'a'}}
+            )
+
+    def test_run_networking_config_with_network_mode(self):
+        client = make_fake_client()
+
+        with pytest.raises(RuntimeError):
+            client.containers.run(
+                image='alpine',
+                network_mode='none',
+                networking_config={'aliases': ['test'],
+                                   'driver_opt': {'key1': 'a'}}
+            )
+
+    def test_run_networking_config(self):
+        client = make_fake_client()
+
+        networking_config = {
+            'foo': EndpointConfig(
+                DEFAULT_DOCKER_API_VERSION, aliases=['test'],
+                driver_opt={'key1': 'a'}
+            )
+        }
+
+        client.containers.run(
+            image='alpine',
+            network='foo',
+            networking_config=networking_config
+        )
+
+        client.api.create_container.assert_called_with(
+            detach=False,
+            image='alpine',
+            command=None,
+            networking_config={'EndpointsConfig': {
+                'foo': {'Aliases': ['test'], 'DriverOpts': {'key1': 'a'}}}
+            },
+            host_config={'NetworkMode': 'foo'}
+        )
+
+    def test_run_networking_config_with_undeclared_network(self):
+        client = make_fake_client()
+
+        networking_config = {
+            'foo': EndpointConfig(
+                DEFAULT_DOCKER_API_VERSION, aliases=['test_foo'],
+                driver_opt={'key2': 'b'}
+            ),
+            'bar': EndpointConfig(
+                DEFAULT_DOCKER_API_VERSION, aliases=['test'],
+                driver_opt={'key1': 'a'}
+            )
+        }
+
+        client.containers.run(
+            image='alpine',
+            network='foo',
+            networking_config=networking_config
+        )
+
+        client.api.create_container.assert_called_with(
+            detach=False,
+            image='alpine',
+            command=None,
+            networking_config={'EndpointsConfig': {
+                'foo': {'Aliases': ['test_foo'], 'DriverOpts': {'key2': 'b'}},
+                'bar': {'Aliases': ['test'], 'DriverOpts': {'key1': 'a'}},
+            }},
+            host_config={'NetworkMode': 'foo'}
+        )
+
+    def test_run_networking_config_only_undeclared_network(self):
+        client = make_fake_client()
+
+        networking_config = {
+            'bar': EndpointConfig(
+                DEFAULT_DOCKER_API_VERSION, aliases=['test'],
+                driver_opt={'key1': 'a'}
+            )
+        }
+
+        client.containers.run(
+            image='alpine',
+            network='foo',
+            networking_config=networking_config
+        )
+
+        client.api.create_container.assert_called_with(
+            detach=False,
+            image='alpine',
+            command=None,
+            networking_config={'foo': None},
+            host_config={'NetworkMode': 'foo'}
+        )
+
     def test_create(self):
         client = make_fake_client()
         container = client.containers.create(
@@ -341,6 +494,115 @@ class ContainerCollectionTest(unittest.TestCase):
             host_config={'NetworkMode': 'default'}
         )
 
+    def test_create_networking_config_without_network(self):
+        client = make_fake_client()
+
+        client.containers.create(
+            image='alpine',
+            networking_config={'aliases': ['test'],
+                               'driver_opt': {'key1': 'a'}}
+        )
+
+        client.api.create_container.assert_called_with(
+            image='alpine',
+            command=None,
+            host_config={'NetworkMode': 'default'}
+        )
+
+    def test_create_networking_config_with_network_mode(self):
+        client = make_fake_client()
+
+        client.containers.create(
+            image='alpine',
+            network_mode='none',
+            networking_config={'aliases': ['test'],
+                               'driver_opt': {'key1': 'a'}}
+        )
+
+        client.api.create_container.assert_called_with(
+            image='alpine',
+            command=None,
+            host_config={'NetworkMode': 'none'}
+        )
+
+    def test_create_networking_config(self):
+        client = make_fake_client()
+
+        networking_config = {
+            'foo': EndpointConfig(
+                DEFAULT_DOCKER_API_VERSION, aliases=['test'],
+                driver_opt={'key1': 'a'}
+            )
+        }
+
+        client.containers.create(
+            image='alpine',
+            network='foo',
+            networking_config=networking_config
+        )
+
+        client.api.create_container.assert_called_with(
+            image='alpine',
+            command=None,
+            networking_config={'EndpointsConfig': {
+                'foo': {'Aliases': ['test'], 'DriverOpts': {'key1': 'a'}}}
+            },
+            host_config={'NetworkMode': 'foo'}
+        )
+
+    def test_create_networking_config_with_undeclared_network(self):
+        client = make_fake_client()
+
+        networking_config = {
+            'foo': EndpointConfig(
+                DEFAULT_DOCKER_API_VERSION, aliases=['test_foo'],
+                driver_opt={'key2': 'b'}
+            ),
+            'bar': EndpointConfig(
+                DEFAULT_DOCKER_API_VERSION, aliases=['test'],
+                driver_opt={'key1': 'a'}
+            )
+        }
+
+        client.containers.create(
+            image='alpine',
+            network='foo',
+            networking_config=networking_config
+        )
+
+        client.api.create_container.assert_called_with(
+            image='alpine',
+            command=None,
+            networking_config={'EndpointsConfig': {
+                'foo': {'Aliases': ['test_foo'], 'DriverOpts': {'key2': 'b'}},
+                'bar': {'Aliases': ['test'], 'DriverOpts': {'key1': 'a'}},
+            }},
+            host_config={'NetworkMode': 'foo'}
+        )
+
+    def test_create_networking_config_only_undeclared_network(self):
+        client = make_fake_client()
+
+        networking_config = {
+            'bar': EndpointConfig(
+                DEFAULT_DOCKER_API_VERSION, aliases=['test'],
+                driver_opt={'key1': 'a'}
+            )
+        }
+
+        client.containers.create(
+            image='alpine',
+            network='foo',
+            networking_config=networking_config
+        )
+
+        client.api.create_container.assert_called_with(
+            image='alpine',
+            command=None,
+            networking_config={'foo': None},
+            host_config={'NetworkMode': 'foo'}
+        )
+
     def test_get(self):
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
@@ -366,6 +628,7 @@ class ContainerCollectionTest(unittest.TestCase):
     def test_list_ignore_removed(self):
         def side_effect(*args, **kwargs):
             raise docker.errors.NotFound('Container not found')
+
         client = make_fake_client({
             'inspect_container.side_effect': side_effect
         })
@@ -377,6 +640,11 @@ class ContainerCollectionTest(unittest.TestCase):
 
 
 class ContainerTest(unittest.TestCase):
+    def test_short_id(self):
+        container = Container(attrs={'Id': '8497fe9244dd45cac543eb3c37d8605077'
+                                           '6800eebef1f3ec2ee111e8ccf12db6'})
+        assert container.short_id == '8497fe9244dd'
+
     def test_name(self):
         client = make_fake_client()
         container = client.containers.get(FAKE_CONTAINER_ID)
@@ -450,7 +718,7 @@ class ContainerTest(unittest.TestCase):
         container = client.containers.get(FAKE_CONTAINER_ID)
         container.get_archive('foo')
         client.api.get_archive.assert_called_with(
-            FAKE_CONTAINER_ID, 'foo', DEFAULT_DATA_CHUNK_SIZE
+            FAKE_CONTAINER_ID, 'foo', DEFAULT_DATA_CHUNK_SIZE, False
         )
 
     def test_image(self):

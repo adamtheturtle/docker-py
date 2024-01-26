@@ -11,15 +11,19 @@
 [Org]
 	[Org."Core maintainers"]
 		people = [
-			"shin-",
+		    "glours",
+		    "milas",
 		]
 	[Org.Alumni]
 		people = [
+		    "aiordache",
 			"aanand",
 			"bfirsh",
 			"dnephin",
 			"mnowster",
 			"mpetazzoni",
+			"shin-",
+			"ulyssessouza",
 		]
 
 [people]
@@ -35,6 +39,11 @@
 	Email = "aanand@docker.com"
 	GitHub = "aanand"
 
+	[people.aiordache]
+	Name = "Anca Iordache"
+	Email = "anca.iordache@docker.com"
+	GitHub = "aiordache"
+
 	[people.bfirsh]
 	Name = "Ben Firshman"
 	Email = "b@fir.sh"
@@ -44,6 +53,16 @@
 	Name = "Daniel Nephin"
 	Email = "dnephin@gmail.com"
 	GitHub = "dnephin"
+
+	[people.glours]
+	Name = "Guillaume Lours"
+	Email = "705411+glours@users.noreply.github.com"
+	GitHub = "glours"
+
+	[people.milas]
+	Name = "Milas Bowman"
+	Email = "devnull@milas.dev"
+	GitHub = "milas"
 
 	[people.mnowster]
 	Name = "Mazz Mosley"
@@ -59,3 +78,8 @@
 	Name = "Joffrey F"
 	Email = "joffrey@docker.com"
 	GitHub = "shin-"
+
+	[people.ulyssessouza]
+	Name = "Ulysses Domiciano Souza"
+	Email = "ulysses.souza@docker.com"
+	GitHub = "ulyssessouza"

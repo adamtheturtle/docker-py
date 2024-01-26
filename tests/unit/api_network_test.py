@@ -1,14 +1,8 @@
 import json
 
-import six
-
 from .api_test import BaseAPIClientTest, url_prefix, response
 from docker.types import IPAMConfig, IPAMPool
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 
 class NetworkTest(BaseAPIClientTest):
@@ -34,7 +28,7 @@ class NetworkTest(BaseAPIClientTest):
         with mock.patch('docker.api.client.APIClient.get', get):
             assert self.client.networks() == networks
 
-            assert get.call_args[0][0] == url_prefix + 'networks'
+            assert get.call_args[0][0] == f"{url_prefix}networks"
 
             filters = json.loads(get.call_args[1]['params']['filters'])
             assert not filters
@@ -60,7 +54,7 @@ class NetworkTest(BaseAPIClientTest):
             result = self.client.create_network('foo')
             assert result == network_data
 
-            assert post.call_args[0][0] == url_prefix + 'networks/create'
+            assert post.call_args[0][0] == f"{url_prefix}networks/create"
 
             assert json.loads(post.call_args[1]['data']) == {"Name": "foo"}
 
@@ -103,16 +97,16 @@ class NetworkTest(BaseAPIClientTest):
             self.client.remove_network(network_id)
 
         args = delete.call_args
-        assert args[0][0] == url_prefix + 'networks/{0}'.format(network_id)
+        assert args[0][0] == f"{url_prefix}networks/{network_id}"
 
     def test_inspect_network(self):
         network_id = 'abc12345'
         network_name = 'foo'
         network_data = {
-            six.u('name'): network_name,
-            six.u('id'): network_id,
-            six.u('driver'): 'bridge',
-            six.u('containers'): {},
+            'name': network_name,
+            'id': network_id,
+            'driver': 'bridge',
+            'containers': {},
         }
 
         network_response = response(status_code=200, content=network_data)
@@ -123,7 +117,7 @@ class NetworkTest(BaseAPIClientTest):
             assert result == network_data
 
         args = get.call_args
-        assert args[0][0] == url_prefix + 'networks/{0}'.format(network_id)
+        assert args[0][0] == f"{url_prefix}networks/{network_id}"
 
     def test_connect_container_to_network(self):
         network_id = 'abc12345'
@@ -136,11 +130,12 @@ class NetworkTest(BaseAPIClientTest):
                 container={'Id': container_id},
                 net_id=network_id,
                 aliases=['foo', 'bar'],
-                links=[('baz', 'quux')]
+                links=[('baz', 'quux')],
+                driver_opt={'com.docker-py.setting': 'yes'},
             )
 
         assert post.call_args[0][0] == (
-            url_prefix + 'networks/{0}/connect'.format(network_id)
+            f"{url_prefix}networks/{network_id}/connect"
         )
 
         assert json.loads(post.call_args[1]['data']) == {
@@ -148,6 +143,7 @@ class NetworkTest(BaseAPIClientTest):
             'EndpointConfig': {
                 'Aliases': ['foo', 'bar'],
                 'Links': ['baz:quux'],
+                'DriverOpts': {'com.docker-py.setting': 'yes'},
             },
         }
 
@@ -162,7 +158,7 @@ class NetworkTest(BaseAPIClientTest):
                 container={'Id': container_id}, net_id=network_id)
 
         assert post.call_args[0][0] == (
-            url_prefix + 'networks/{0}/disconnect'.format(network_id)
+            f"{url_prefix}networks/{network_id}/disconnect"
         )
         assert json.loads(post.call_args[1]['data']) == {
             'Container': container_id

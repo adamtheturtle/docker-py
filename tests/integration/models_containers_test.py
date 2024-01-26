@@ -2,10 +2,13 @@ import os
 import tempfile
 import threading
 
-import docker
 import pytest
-from .base import BaseIntegrationTest, TEST_API_VERSION
-from ..helpers import random_name, requires_api_version
+
+import docker
+from .base import BaseIntegrationTest
+from .base import TEST_API_VERSION
+from ..helpers import random_name
+from ..helpers import requires_api_version
 
 
 class ContainerCollectionTest(BaseIntegrationTest):
@@ -46,7 +49,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
 
         container = client.containers.run(
             "alpine", "sh -c 'echo \"hello\" > /insidecontainer/test'",
-            volumes=["%s:/insidecontainer" % path],
+            volumes=[f"{path}:/insidecontainer"],
             detach=True
         )
         self.tmp_containers.append(container.id)
@@ -55,7 +58,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         name = "container_volume_test"
         out = client.containers.run(
             "alpine", "cat /insidecontainer/test",
-            volumes=["%s:/insidecontainer" % path],
+            volumes=[f"{path}:/insidecontainer"],
             name=name
         )
         self.tmp_containers.append(name)
@@ -101,12 +104,102 @@ class ContainerCollectionTest(BaseIntegrationTest):
         assert 'Networks' in attrs['NetworkSettings']
         assert list(attrs['NetworkSettings']['Networks'].keys()) == [net_name]
 
+    def test_run_with_networking_config(self):
+        net_name = random_name()
+        client = docker.from_env(version=TEST_API_VERSION)
+        client.networks.create(net_name)
+        self.tmp_networks.append(net_name)
+
+        test_aliases = ['hello']
+        test_driver_opt = {'key1': 'a'}
+
+        networking_config = {
+            net_name: client.api.create_endpoint_config(
+                aliases=test_aliases,
+                driver_opt=test_driver_opt
+            )
+        }
+
+        container = client.containers.run(
+            'alpine', 'echo hello world', network=net_name,
+            networking_config=networking_config,
+            detach=True
+        )
+        self.tmp_containers.append(container.id)
+
+        attrs = container.attrs
+
+        assert 'NetworkSettings' in attrs
+        assert 'Networks' in attrs['NetworkSettings']
+        assert list(attrs['NetworkSettings']['Networks'].keys()) == [net_name]
+        assert attrs['NetworkSettings']['Networks'][net_name]['Aliases'] == \
+               test_aliases
+        assert attrs['NetworkSettings']['Networks'][net_name]['DriverOpts'] \
+               == test_driver_opt
+
+    def test_run_with_networking_config_with_undeclared_network(self):
+        net_name = random_name()
+        client = docker.from_env(version=TEST_API_VERSION)
+        client.networks.create(net_name)
+        self.tmp_networks.append(net_name)
+
+        test_aliases = ['hello']
+        test_driver_opt = {'key1': 'a'}
+
+        networking_config = {
+            net_name: client.api.create_endpoint_config(
+                aliases=test_aliases,
+                driver_opt=test_driver_opt
+            ),
+            'bar': client.api.create_endpoint_config(
+                aliases=['test'],
+                driver_opt={'key2': 'b'}
+            ),
+        }
+
+        with pytest.raises(docker.errors.APIError):
+            container = client.containers.run(
+                'alpine', 'echo hello world', network=net_name,
+                networking_config=networking_config,
+                detach=True
+            )
+            self.tmp_containers.append(container.id)
+
+    def test_run_with_networking_config_only_undeclared_network(self):
+        net_name = random_name()
+        client = docker.from_env(version=TEST_API_VERSION)
+        client.networks.create(net_name)
+        self.tmp_networks.append(net_name)
+
+        networking_config = {
+            'bar': client.api.create_endpoint_config(
+                aliases=['hello'],
+                driver_opt={'key1': 'a'}
+            ),
+        }
+
+        container = client.containers.run(
+            'alpine', 'echo hello world', network=net_name,
+            networking_config=networking_config,
+            detach=True
+        )
+        self.tmp_containers.append(container.id)
+
+        attrs = container.attrs
+
+        assert 'NetworkSettings' in attrs
+        assert 'Networks' in attrs['NetworkSettings']
+        assert list(attrs['NetworkSettings']['Networks'].keys()) == [net_name]
+        assert attrs['NetworkSettings']['Networks'][net_name]['Aliases'] is None
+        assert (attrs['NetworkSettings']['Networks'][net_name]['DriverOpts']
+                is None)
+
     def test_run_with_none_driver(self):
         client = docker.from_env(version=TEST_API_VERSION)
 
         out = client.containers.run(
             "alpine", "echo hello",
-            log_config=dict(type='none')
+            log_config={"type": 'none'}
         )
         assert out is None
 
@@ -115,7 +208,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
 
         out = client.containers.run(
             "alpine", "echo hello",
-            log_config=dict(type='json-file')
+            log_config={"type": 'json-file'}
         )
         assert out == b'hello\n'
 
@@ -147,7 +240,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         out = client.containers.run(
             'alpine', 'sh -c "echo hello && echo world"', stream=True
         )
-        logs = [line for line in out]
+        logs = list(out)
         assert logs[0] == b'hello\n'
         assert logs[1] == b'world\n'
 
@@ -162,7 +255,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
 
         threading.Timer(1, out.close).start()
 
-        logs = [line for line in out]
+        logs = list(out)
 
         assert len(logs) == 2
         assert logs[0] == b'hello\n'
@@ -174,9 +267,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
             ftp='sakuya.jp:4967'
         )
 
-        out = client.containers.run(
-            'alpine', 'sh -c "env"', use_config_proxy=True
-        )
+        out = client.containers.run('alpine', 'sh -c "env"')
 
         assert b'FTP_PROXY=sakuya.jp:4967\n' in out
         assert b'ftp_proxy=sakuya.jp:4967\n' in out
@@ -186,7 +277,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         container = client.containers.run("alpine", "sleep 300", detach=True)
         self.tmp_containers.append(container.id)
         assert client.containers.get(container.id).attrs[
-            'Config']['Image'] == "alpine"
+                   'Config']['Image'] == "alpine"
 
     def test_list(self):
         client = docker.from_env(version=TEST_API_VERSION)
@@ -220,7 +311,7 @@ class ContainerCollectionTest(BaseIntegrationTest):
         assert container.status == 'running'
         assert container.image == client.images.get('alpine')
         with pytest.raises(docker.errors.DockerException):
-            container.labels
+            _ = container.labels
 
         container.kill()
         container.remove()

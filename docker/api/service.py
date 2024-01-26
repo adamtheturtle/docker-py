@@ -7,9 +7,7 @@ def _check_api_features(version, task_template, update_config, endpoint_spec,
 
     def raise_version_error(param, min_version):
         raise errors.InvalidVersion(
-            '{} is not supported in API version < {}'.format(
-                param, min_version
-            )
+            f'{param} is not supported in API version < {min_version}'
         )
 
     if update_config is not None:
@@ -45,7 +43,7 @@ def _check_api_features(version, task_template, update_config, endpoint_spec,
     if task_template is not None:
         if 'ForceUpdate' in task_template and utils.version_lt(
                 version, '1.25'):
-                raise_version_error('force_update', '1.25')
+            raise_version_error('force_update', '1.25')
 
         if task_template.get('Placement'):
             if utils.version_lt(version, '1.30'):
@@ -113,7 +111,7 @@ def _merge_task_template(current, override):
     return merged
 
 
-class ServiceApiMixin(object):
+class ServiceApiMixin:
     @utils.minimum_version('1.24')
     def create_service(
             self, task_template, name=None, labels=None, mode=None,
@@ -135,8 +133,9 @@ class ServiceApiMixin(object):
                 of the service. Default: ``None``
             rollback_config (RollbackConfig): Specification for the rollback
                 strategy of the service. Default: ``None``
-            networks (:py:class:`list`): List of network names or IDs to attach
-                the service to. Default: ``None``.
+            networks (:py:class:`list`): List of network names or IDs or
+                :py:class:`~docker.types.NetworkAttachmentConfig` to attach the
+                service to. Default: ``None``.
             endpoint_spec (EndpointSpec): Properties that can be configured to
                 access and load balance a service. Default: ``None``.
 
@@ -261,7 +260,7 @@ class ServiceApiMixin(object):
         return True
 
     @utils.minimum_version('1.24')
-    def services(self, filters=None):
+    def services(self, filters=None, status=None):
         """
         List services.
 
@@ -269,6 +268,8 @@ class ServiceApiMixin(object):
             filters (dict): Filters to process on the nodes list. Valid
                 filters: ``id``, ``name`` , ``label`` and ``mode``.
                 Default: ``None``.
+            status (bool): Include the service task count of running and
+                desired tasks. Default: ``None``.
 
         Returns:
             A list of dictionaries containing data about each service.
@@ -280,6 +281,12 @@ class ServiceApiMixin(object):
         params = {
             'filters': utils.convert_filters(filters) if filters else None
         }
+        if status is not None:
+            if utils.version_lt(self._version, '1.41'):
+                raise errors.InvalidVersion(
+                    'status is not supported in API version < 1.41'
+                )
+            params['status'] = status
         url = self._url('/services')
         return self._result(self._get(url, params=params), True)
 
@@ -383,8 +390,9 @@ class ServiceApiMixin(object):
                 of the service. Default: ``None``.
             rollback_config (RollbackConfig): Specification for the rollback
                 strategy of the service. Default: ``None``
-            networks (:py:class:`list`): List of network names or IDs to attach
-                the service to. Default: ``None``.
+            networks (:py:class:`list`): List of network names or IDs or
+                :py:class:`~docker.types.NetworkAttachmentConfig` to attach the
+                service to. Default: ``None``.
             endpoint_spec (EndpointSpec): Properties that can be configured to
                 access and load balance a service. Default: ``None``.
             fetch_current_spec (boolean): Use the undefined settings from the

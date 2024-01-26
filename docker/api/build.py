@@ -12,7 +12,7 @@ from .. import utils
 log = logging.getLogger(__name__)
 
 
-class BuildApiMixin(object):
+class BuildApiMixin:
     def build(self, path=None, tag=None, quiet=False, fileobj=None,
               nocache=False, rm=False, timeout=None,
               custom_context=False, encoding=None, pull=False,
@@ -20,7 +20,7 @@ class BuildApiMixin(object):
               decode=False, buildargs=None, gzip=False, shmsize=None,
               labels=None, cache_from=None, target=None, network_mode=None,
               squash=None, extra_hosts=None, platform=None, isolation=None,
-              use_config_proxy=False):
+              use_config_proxy=True):
         """
         Similar to the ``docker build`` command. Either ``path`` or ``fileobj``
         needs to be set. ``path`` can be a local path (to a directory
@@ -76,6 +76,7 @@ class BuildApiMixin(object):
             forcerm (bool): Always remove intermediate containers, even after
                 unsuccessful builds
             dockerfile (str): path within the build context to the Dockerfile
+            gzip (bool): If set to ``True``, gzip compression/encoding is used
             buildargs (dict): A dictionary of build arguments
             container_limits (dict): A dictionary of limits applied to each
                 container created by the build process. Valid keys:
@@ -128,13 +129,16 @@ class BuildApiMixin(object):
             raise errors.DockerException(
                 'Can not use custom encoding if gzip is enabled'
             )
-
+        if tag is not None:
+            if not utils.match_tag(tag):
+                raise errors.DockerException(
+                    f"invalid tag '{tag}': invalid reference format"
+            )
         for key in container_limits.keys():
             if key not in constants.CONTAINER_LIMITS_KEYS:
                 raise errors.DockerException(
-                    'Invalid container_limits key {0}'.format(key)
+                    f"invalid tag '{tag}': invalid reference format"
                 )
-
         if custom_context:
             if not fileobj:
                 raise TypeError("You must specify fileobj with custom_context")
@@ -150,10 +154,10 @@ class BuildApiMixin(object):
             dockerignore = os.path.join(path, '.dockerignore')
             exclude = None
             if os.path.exists(dockerignore):
-                with open(dockerignore, 'r') as f:
+                with open(dockerignore) as f:
                     exclude = list(filter(
                         lambda x: x != '' and x[0] != '#',
-                        [l.strip() for l in f.read().splitlines()]
+                        [line.strip() for line in f.read().splitlines()]
                     ))
             dockerfile = process_dockerfile(dockerfile, path)
             context = utils.tar(
@@ -275,9 +279,23 @@ class BuildApiMixin(object):
         return self._stream_helper(response, decode=decode)
 
     @utils.minimum_version('1.31')
-    def prune_builds(self):
+    def prune_builds(self, filters=None, keep_storage=None, all=None):
         """
         Delete the builder cache
+
+        Args:
+            filters (dict): Filters to process on the prune list.
+                Needs Docker API v1.39+
+                Available filters:
+                - dangling (bool):  When set to true (or 1), prune only
+                unused and untagged images.
+                - until (str): Can be Unix timestamps, date formatted
+                timestamps, or Go duration strings (e.g. 10m, 1h30m) computed
+                relative to the daemon's local time.
+            keep_storage (int): Amount of disk space in bytes to keep for cache.
+                Needs Docker API v1.39+
+            all (bool): Remove all types of build cache.
+                Needs Docker API v1.39+
 
         Returns:
             (dict): A dictionary containing information about the operation's
@@ -289,7 +307,20 @@ class BuildApiMixin(object):
                 If the server returns an error.
         """
         url = self._url("/build/prune")
-        return self._result(self._post(url), True)
+        if (filters, keep_storage, all) != (None, None, None) \
+                and utils.version_lt(self._version, '1.39'):
+            raise errors.InvalidVersion(
+                '`filters`, `keep_storage`, and `all` args are only available '
+                'for API version > 1.38'
+            )
+        params = {}
+        if filters is not None:
+            params['filters'] = utils.convert_filters(filters)
+        if keep_storage is not None:
+            params['keep-storage'] = keep_storage
+        if all is not None:
+            params['all'] = all
+        return self._result(self._post(url, params=params), True)
 
     def _set_auth_headers(self, headers):
         log.debug('Looking for auth config')
@@ -308,13 +339,13 @@ class BuildApiMixin(object):
             auth_data = self._auth_configs.get_all_credentials()
 
             # See https://github.com/docker/docker-py/issues/1683
-            if auth.INDEX_URL not in auth_data and auth.INDEX_URL in auth_data:
+            if (auth.INDEX_URL not in auth_data and
+                    auth.INDEX_NAME in auth_data):
                 auth_data[auth.INDEX_URL] = auth_data.get(auth.INDEX_NAME, {})
 
             log.debug(
-                'Sending auth config ({0})'.format(
-                    ', '.join(repr(k) for k in auth_data.keys())
-                )
+                "Sending auth config (%s)",
+                ', '.join(repr(k) for k in auth_data),
             )
 
             if auth_data:
@@ -334,18 +365,15 @@ def process_dockerfile(dockerfile, path):
         abs_dockerfile = os.path.join(path, dockerfile)
         if constants.IS_WINDOWS_PLATFORM and path.startswith(
                 constants.WINDOWS_LONGPATH_PREFIX):
-            abs_dockerfile = '{}{}'.format(
-                constants.WINDOWS_LONGPATH_PREFIX,
-                os.path.normpath(
-                    abs_dockerfile[len(constants.WINDOWS_LONGPATH_PREFIX):]
-                )
-            )
+            normpath = os.path.normpath(
+                abs_dockerfile[len(constants.WINDOWS_LONGPATH_PREFIX):])
+            abs_dockerfile = f'{constants.WINDOWS_LONGPATH_PREFIX}{normpath}'
     if (os.path.splitdrive(path)[0] != os.path.splitdrive(abs_dockerfile)[0] or
             os.path.relpath(abs_dockerfile, path).startswith('..')):
         # Dockerfile not in context - read data to insert into tar later
-        with open(abs_dockerfile, 'r') as df:
+        with open(abs_dockerfile) as df:
             return (
-                '.dockerfile.{0:x}'.format(random.getrandbits(160)),
+                f'.dockerfile.{random.getrandbits(160):x}',
                 df.read()
             )
 

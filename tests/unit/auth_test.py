@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import base64
 import json
 import os
@@ -9,14 +7,9 @@ import shutil
 import tempfile
 import unittest
 
-from docker import auth, errors
-import dockerpycreds
+from docker import auth, credentials, errors
+from unittest import mock
 import pytest
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 
 
 class RegressionTest(unittest.TestCase):
@@ -240,7 +233,7 @@ class LoadConfigTest(unittest.TestCase):
         cfg_path = os.path.join(folder, '.dockercfg')
         auth_ = base64.b64encode(b'sakuya:izayoi').decode('ascii')
         with open(cfg_path, 'w') as f:
-            f.write('auth = {0}\n'.format(auth_))
+            f.write(f'auth = {auth_}\n')
             f.write('email = sakuya@scarlet.net')
 
         cfg = auth.load_config(cfg_path)
@@ -297,14 +290,15 @@ class LoadConfigTest(unittest.TestCase):
         folder = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, folder)
 
-        dockercfg_path = os.path.join(folder,
-                                      '.{0}.dockercfg'.format(
-                                          random.randrange(100000)))
+        dockercfg_path = os.path.join(
+            folder,
+            f'.{random.randrange(100000)}.dockercfg',
+        )
         registry = 'https://your.private.registry.io'
         auth_ = base64.b64encode(b'sakuya:izayoi').decode('ascii')
         config = {
             registry: {
-                'auth': '{0}'.format(auth_),
+                'auth': f'{auth_}',
                 'email': 'sakuya@scarlet.net'
             }
         }
@@ -330,7 +324,7 @@ class LoadConfigTest(unittest.TestCase):
         auth_ = base64.b64encode(b'sakuya:izayoi').decode('ascii')
         config = {
             registry: {
-                'auth': '{0}'.format(auth_),
+                'auth': f'{auth_}',
                 'email': 'sakuya@scarlet.net'
             }
         }
@@ -358,7 +352,7 @@ class LoadConfigTest(unittest.TestCase):
         config = {
             'auths': {
                 registry: {
-                    'auth': '{0}'.format(auth_),
+                    'auth': f'{auth_}',
                     'email': 'sakuya@scarlet.net'
                 }
             }
@@ -387,7 +381,7 @@ class LoadConfigTest(unittest.TestCase):
         config = {
             'auths': {
                 registry: {
-                    'auth': '{0}'.format(auth_),
+                    'auth': f'{auth_}',
                     'email': 'sakuya@scarlet.net'
                 }
             }
@@ -531,7 +525,17 @@ class CredstoreTest(unittest.TestCase):
                 'Password': 'izayoi',
                 'ServerAddress': 'https://gensokyo.jp/v2',
             },
+            'gensokyo.jp': {
+                'Username': 'sakuya',
+                'Password': 'izayoi',
+                'ServerAddress': 'https://gensokyo.jp/v2',
+            },
             'https://default.com/v2': {
+                'Username': 'user',
+                'Password': 'hunter2',
+                'ServerAddress': 'https://default.com/v2',
+            },
+            'default.com': {
                 'Username': 'user',
                 'Password': 'hunter2',
                 'ServerAddress': 'https://default.com/v2',
@@ -549,7 +553,17 @@ class CredstoreTest(unittest.TestCase):
                 'Password': 'izayoi',
                 'ServerAddress': 'https://gensokyo.jp/v2',
             },
+            'gensokyo.jp': {
+                'Username': 'sakuya',
+                'Password': 'izayoi',
+                'ServerAddress': 'https://gensokyo.jp/v2',
+            },
             'https://default.com/v2': {
+                'Username': 'user',
+                'Password': 'hunter2',
+                'ServerAddress': 'https://default.com/v2',
+            },
+            'default.com': {
                 'Username': 'user',
                 'Password': 'hunter2',
                 'ServerAddress': 'https://default.com/v2',
@@ -572,7 +586,17 @@ class CredstoreTest(unittest.TestCase):
                 'Password': 'izayoi',
                 'ServerAddress': 'https://gensokyo.jp/v2',
             },
+            'gensokyo.jp': {
+                'Username': 'sakuya',
+                'Password': 'izayoi',
+                'ServerAddress': 'https://gensokyo.jp/v2',
+            },
             'https://default.com/v2': {
+                'Username': 'user',
+                'Password': 'hunter2',
+                'ServerAddress': 'https://default.com/v2',
+            },
+            'default.com': {
                 'Username': 'user',
                 'Password': 'hunter2',
                 'ServerAddress': 'https://default.com/v2',
@@ -592,7 +616,17 @@ class CredstoreTest(unittest.TestCase):
                 'Password': 'izayoi',
                 'ServerAddress': 'https://gensokyo.jp/v2',
             },
+            'gensokyo.jp': {
+                'Username': 'sakuya',
+                'Password': 'izayoi',
+                'ServerAddress': 'https://gensokyo.jp/v2',
+            },
             'https://default.com/v2': {
+                'Username': 'user',
+                'Password': 'hunter2',
+                'ServerAddress': 'https://default.com/v2',
+            },
+            'default.com': {
                 'Username': 'user',
                 'Password': 'hunter2',
                 'ServerAddress': 'https://default.com/v2',
@@ -601,6 +635,62 @@ class CredstoreTest(unittest.TestCase):
                 'ServerAddress': 'registry1.io',
                 'Username': 'reimu',
                 'Password': 'hakurei',
+            },
+        }
+
+    def test_get_all_credentials_with_empty_auths_entry(self):
+        self.authconfig.add_auth('default.com', {})
+
+        assert self.authconfig.get_all_credentials() == {
+            'https://gensokyo.jp/v2': {
+                'Username': 'sakuya',
+                'Password': 'izayoi',
+                'ServerAddress': 'https://gensokyo.jp/v2',
+            },
+            'gensokyo.jp': {
+                'Username': 'sakuya',
+                'Password': 'izayoi',
+                'ServerAddress': 'https://gensokyo.jp/v2',
+            },
+            'https://default.com/v2': {
+                'Username': 'user',
+                'Password': 'hunter2',
+                'ServerAddress': 'https://default.com/v2',
+            },
+            'default.com': {
+                'Username': 'user',
+                'Password': 'hunter2',
+                'ServerAddress': 'https://default.com/v2',
+            },
+        }
+
+    def test_get_all_credentials_credstore_overrides_auth_entry(self):
+        self.authconfig.add_auth('default.com', {
+            'Username': 'shouldnotsee',
+            'Password': 'thisentry',
+            'ServerAddress': 'https://default.com/v2',
+        })
+
+        assert self.authconfig.get_all_credentials() == {
+            'https://gensokyo.jp/v2': {
+                'Username': 'sakuya',
+                'Password': 'izayoi',
+                'ServerAddress': 'https://gensokyo.jp/v2',
+            },
+            'gensokyo.jp': {
+                'Username': 'sakuya',
+                'Password': 'izayoi',
+                'ServerAddress': 'https://gensokyo.jp/v2',
+            },
+            'https://default.com/v2': {
+                'Username': 'user',
+                'Password': 'hunter2',
+                'ServerAddress': 'https://default.com/v2',
+            },
+            'default.com': {
+                'Username': 'user',
+                'Password': 'hunter2',
+                'ServerAddress': 'https://default.com/v2',
             },
         }
 
@@ -617,7 +707,17 @@ class CredstoreTest(unittest.TestCase):
                 'Password': 'izayoi',
                 'ServerAddress': 'https://gensokyo.jp/v2',
             },
+            'gensokyo.jp': {
+                'Username': 'sakuya',
+                'Password': 'izayoi',
+                'ServerAddress': 'https://gensokyo.jp/v2',
+            },
             'https://default.com/v2': {
+                'Username': 'reimu',
+                'Password': 'hakurei',
+                'ServerAddress': 'https://default.com/v2',
+            },
+            'default.com': {
                 'Username': 'reimu',
                 'Password': 'hakurei',
                 'ServerAddress': 'https://default.com/v2',
@@ -643,7 +743,17 @@ class CredstoreTest(unittest.TestCase):
                 'Password': 'izayoi',
                 'ServerAddress': 'https://gensokyo.jp/v2',
             },
+            'gensokyo.jp': {
+                'Username': 'sakuya',
+                'Password': 'izayoi',
+                'ServerAddress': 'https://gensokyo.jp/v2',
+            },
             'https://default.com/v2': {
+                'Username': 'user',
+                'Password': 'hunter2',
+                'ServerAddress': 'https://default.com/v2',
+            },
+            'default.com': {
                 'Username': 'user',
                 'Password': 'hunter2',
                 'ServerAddress': 'https://default.com/v2',
@@ -661,15 +771,15 @@ class CredstoreTest(unittest.TestCase):
         }
 
 
-class InMemoryStore(dockerpycreds.Store):
+class InMemoryStore(credentials.Store):
     def __init__(self, *args, **kwargs):
         self.__store = {}
 
     def get(self, server):
         try:
             return self.__store[server]
-        except KeyError:
-            raise dockerpycreds.errors.CredentialsNotFound()
+        except KeyError as ke:
+            raise credentials.errors.CredentialsNotFound() from ke
 
     def store(self, server, username, secret):
         self.__store[server] = {
@@ -679,9 +789,9 @@ class InMemoryStore(dockerpycreds.Store):
         }
 
     def list(self):
-        return dict(
-            [(k, v['Username']) for k, v in self.__store.items()]
-        )
+        return {
+            k: v['Username'] for k, v in self.__store.items()
+        }
 
     def erase(self, server):
         del self.__store[server]

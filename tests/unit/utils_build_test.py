@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import os.path
 import shutil
@@ -8,11 +6,10 @@ import tarfile
 import tempfile
 import unittest
 
+import pytest
 
 from docker.constants import IS_WINDOWS_PLATFORM
-from docker.utils import exclude_paths, tar
-
-import pytest
+from docker.utils import exclude_paths, tar, match_tag
 
 from ..helpers import make_tree
 
@@ -82,7 +79,7 @@ class ExcludePathsTest(unittest.TestCase):
         assert sorted(paths) == sorted(set(paths))
 
     def test_wildcard_exclude(self):
-        assert self.exclude(['*']) == set(['Dockerfile', '.dockerignore'])
+        assert self.exclude(['*']) == {'Dockerfile', '.dockerignore'}
 
     def test_exclude_dockerfile_dockerignore(self):
         """
@@ -99,18 +96,18 @@ class ExcludePathsTest(unittest.TestCase):
         If we're using a custom Dockerfile, make sure that's not
         excluded.
         """
-        assert self.exclude(['*'], dockerfile='Dockerfile.alt') == set(
-            ['Dockerfile.alt', '.dockerignore']
-        )
+        assert self.exclude(['*'], dockerfile='Dockerfile.alt') == {
+            'Dockerfile.alt', '.dockerignore'
+        }
 
         assert self.exclude(
             ['*'], dockerfile='foo/Dockerfile3'
-        ) == convert_paths(set(['foo/Dockerfile3', '.dockerignore']))
+        ) == convert_paths({'foo/Dockerfile3', '.dockerignore'})
 
         # https://github.com/docker/docker-py/issues/1956
         assert self.exclude(
             ['*'], dockerfile='./foo/Dockerfile3'
-        ) == convert_paths(set(['foo/Dockerfile3', '.dockerignore']))
+        ) == convert_paths({'foo/Dockerfile3', '.dockerignore'})
 
     def test_exclude_dockerfile_child(self):
         includes = self.exclude(['foo/'], dockerfile='foo/Dockerfile3')
@@ -119,56 +116,56 @@ class ExcludePathsTest(unittest.TestCase):
 
     def test_single_filename(self):
         assert self.exclude(['a.py']) == convert_paths(
-            self.all_paths - set(['a.py'])
+            self.all_paths - {'a.py'}
         )
 
     def test_single_filename_leading_dot_slash(self):
         assert self.exclude(['./a.py']) == convert_paths(
-            self.all_paths - set(['a.py'])
+            self.all_paths - {'a.py'}
         )
 
     # As odd as it sounds, a filename pattern with a trailing slash on the
     # end *will* result in that file being excluded.
     def test_single_filename_trailing_slash(self):
         assert self.exclude(['a.py/']) == convert_paths(
-            self.all_paths - set(['a.py'])
+            self.all_paths - {'a.py'}
         )
 
     def test_wildcard_filename_start(self):
         assert self.exclude(['*.py']) == convert_paths(
-            self.all_paths - set(['a.py', 'b.py', 'cde.py'])
+            self.all_paths - {'a.py', 'b.py', 'cde.py'}
         )
 
     def test_wildcard_with_exception(self):
         assert self.exclude(['*.py', '!b.py']) == convert_paths(
-            self.all_paths - set(['a.py', 'cde.py'])
+            self.all_paths - {'a.py', 'cde.py'}
         )
 
     def test_wildcard_with_wildcard_exception(self):
         assert self.exclude(['*.*', '!*.go']) == convert_paths(
-            self.all_paths - set([
+            self.all_paths - {
                 'a.py', 'b.py', 'cde.py', 'Dockerfile.alt',
-            ])
+            }
         )
 
     def test_wildcard_filename_end(self):
         assert self.exclude(['a.*']) == convert_paths(
-            self.all_paths - set(['a.py', 'a.go'])
+            self.all_paths - {'a.py', 'a.go'}
         )
 
     def test_question_mark(self):
         assert self.exclude(['?.py']) == convert_paths(
-            self.all_paths - set(['a.py', 'b.py'])
+            self.all_paths - {'a.py', 'b.py'}
         )
 
     def test_single_subdir_single_filename(self):
         assert self.exclude(['foo/a.py']) == convert_paths(
-            self.all_paths - set(['foo/a.py'])
+            self.all_paths - {'foo/a.py'}
         )
 
     def test_single_subdir_single_filename_leading_slash(self):
         assert self.exclude(['/foo/a.py']) == convert_paths(
-            self.all_paths - set(['foo/a.py'])
+            self.all_paths - {'foo/a.py'}
         )
 
     def test_exclude_include_absolute_path(self):
@@ -176,57 +173,57 @@ class ExcludePathsTest(unittest.TestCase):
         assert exclude_paths(
             base,
             ['/*', '!/*.py']
-        ) == set(['a.py', 'b.py'])
+        ) == {'a.py', 'b.py'}
 
     def test_single_subdir_with_path_traversal(self):
         assert self.exclude(['foo/whoops/../a.py']) == convert_paths(
-            self.all_paths - set(['foo/a.py'])
+            self.all_paths - {'foo/a.py'}
         )
 
     def test_single_subdir_wildcard_filename(self):
         assert self.exclude(['foo/*.py']) == convert_paths(
-            self.all_paths - set(['foo/a.py', 'foo/b.py'])
+            self.all_paths - {'foo/a.py', 'foo/b.py'}
         )
 
     def test_wildcard_subdir_single_filename(self):
         assert self.exclude(['*/a.py']) == convert_paths(
-            self.all_paths - set(['foo/a.py', 'bar/a.py'])
+            self.all_paths - {'foo/a.py', 'bar/a.py'}
         )
 
     def test_wildcard_subdir_wildcard_filename(self):
         assert self.exclude(['*/*.py']) == convert_paths(
-            self.all_paths - set(['foo/a.py', 'foo/b.py', 'bar/a.py'])
+            self.all_paths - {'foo/a.py', 'foo/b.py', 'bar/a.py'}
         )
 
     def test_directory(self):
         assert self.exclude(['foo']) == convert_paths(
-            self.all_paths - set([
+            self.all_paths - {
                 'foo', 'foo/a.py', 'foo/b.py', 'foo/bar', 'foo/bar/a.py',
                 'foo/Dockerfile3'
-            ])
+            }
         )
 
     def test_directory_with_trailing_slash(self):
         assert self.exclude(['foo']) == convert_paths(
-            self.all_paths - set([
+            self.all_paths - {
                 'foo', 'foo/a.py', 'foo/b.py',
                 'foo/bar', 'foo/bar/a.py', 'foo/Dockerfile3'
-            ])
+            }
         )
 
     def test_directory_with_single_exception(self):
         assert self.exclude(['foo', '!foo/bar/a.py']) == convert_paths(
-            self.all_paths - set([
+            self.all_paths - {
                 'foo/a.py', 'foo/b.py', 'foo', 'foo/bar',
                 'foo/Dockerfile3'
-            ])
+            }
         )
 
     def test_directory_with_subdir_exception(self):
         assert self.exclude(['foo', '!foo/bar']) == convert_paths(
-            self.all_paths - set([
+            self.all_paths - {
                 'foo/a.py', 'foo/b.py', 'foo', 'foo/Dockerfile3'
-            ])
+            }
         )
 
     @pytest.mark.skipif(
@@ -234,21 +231,21 @@ class ExcludePathsTest(unittest.TestCase):
     )
     def test_directory_with_subdir_exception_win32_pathsep(self):
         assert self.exclude(['foo', '!foo\\bar']) == convert_paths(
-            self.all_paths - set([
+            self.all_paths - {
                 'foo/a.py', 'foo/b.py', 'foo', 'foo/Dockerfile3'
-            ])
+            }
         )
 
     def test_directory_with_wildcard_exception(self):
         assert self.exclude(['foo', '!foo/*.py']) == convert_paths(
-            self.all_paths - set([
+            self.all_paths - {
                 'foo/bar', 'foo/bar/a.py', 'foo', 'foo/Dockerfile3'
-            ])
+            }
         )
 
     def test_subdirectory(self):
         assert self.exclude(['foo/bar']) == convert_paths(
-            self.all_paths - set(['foo/bar', 'foo/bar/a.py'])
+            self.all_paths - {'foo/bar', 'foo/bar/a.py'}
         )
 
     @pytest.mark.skipif(
@@ -256,52 +253,52 @@ class ExcludePathsTest(unittest.TestCase):
     )
     def test_subdirectory_win32_pathsep(self):
         assert self.exclude(['foo\\bar']) == convert_paths(
-            self.all_paths - set(['foo/bar', 'foo/bar/a.py'])
+            self.all_paths - {'foo/bar', 'foo/bar/a.py'}
         )
 
     def test_double_wildcard(self):
         assert self.exclude(['**/a.py']) == convert_paths(
-            self.all_paths - set(
-                ['a.py', 'foo/a.py', 'foo/bar/a.py', 'bar/a.py']
-            )
+            self.all_paths - {
+                'a.py', 'foo/a.py', 'foo/bar/a.py', 'bar/a.py'
+            }
         )
 
         assert self.exclude(['foo/**/bar']) == convert_paths(
-            self.all_paths - set(['foo/bar', 'foo/bar/a.py'])
+            self.all_paths - {'foo/bar', 'foo/bar/a.py'}
         )
 
     def test_single_and_double_wildcard(self):
         assert self.exclude(['**/target/*/*']) == convert_paths(
-            self.all_paths - set(
-                ['target/subdir/file.txt',
-                 'subdir/target/subdir/file.txt',
-                 'subdir/subdir2/target/subdir/file.txt']
-            )
+            self.all_paths - {
+                'target/subdir/file.txt',
+                'subdir/target/subdir/file.txt',
+                'subdir/subdir2/target/subdir/file.txt'
+            }
         )
 
     def test_trailing_double_wildcard(self):
         assert self.exclude(['subdir/**']) == convert_paths(
-            self.all_paths - set(
-                ['subdir/file.txt',
-                 'subdir/target/file.txt',
-                 'subdir/target/subdir/file.txt',
-                 'subdir/subdir2/file.txt',
-                 'subdir/subdir2/target/file.txt',
-                 'subdir/subdir2/target/subdir/file.txt',
-                 'subdir/target',
-                 'subdir/target/subdir',
-                 'subdir/subdir2',
-                 'subdir/subdir2/target',
-                 'subdir/subdir2/target/subdir']
-            )
+            self.all_paths - {
+                'subdir/file.txt',
+                'subdir/target/file.txt',
+                'subdir/target/subdir/file.txt',
+                'subdir/subdir2/file.txt',
+                'subdir/subdir2/target/file.txt',
+                'subdir/subdir2/target/subdir/file.txt',
+                'subdir/target',
+                'subdir/target/subdir',
+                'subdir/subdir2',
+                'subdir/subdir2/target',
+                'subdir/subdir2/target/subdir'
+            }
         )
 
     def test_double_wildcard_with_exception(self):
         assert self.exclude(['**', '!bar', '!foo/bar']) == convert_paths(
-            set([
+            {
                 'foo/bar', 'foo/bar/a.py', 'bar', 'bar/a.py', 'Dockerfile',
                 '.dockerignore',
-            ])
+            }
         )
 
     def test_include_wildcard(self):
@@ -324,7 +321,7 @@ class ExcludePathsTest(unittest.TestCase):
         assert exclude_paths(
             base,
             ['*.md', '!README*.md', 'README-secret.md']
-        ) == set(['README.md', 'README-bis.md'])
+        ) == {'README.md', 'README-bis.md'}
 
     def test_parent_directory(self):
         base = make_tree(
@@ -335,12 +332,12 @@ class ExcludePathsTest(unittest.TestCase):
         # Dockerignore reference stipulates that absolute paths are
         # equivalent to relative paths, hence /../foo should be
         # equivalent to ../foo. It also stipulates that paths are run
-        # through Go's filepath.Clean, which explicitely "replace
+        # through Go's filepath.Clean, which explicitly "replace
         # "/.."  by "/" at the beginning of a path".
         assert exclude_paths(
             base,
             ['../a.py', '/../b.py']
-        ) == set(['c.py'])
+        ) == {'c.py'}
 
 
 class TarTest(unittest.TestCase):
@@ -374,14 +371,14 @@ class TarTest(unittest.TestCase):
             '.dockerignore',
         ]
 
-        expected_names = set([
+        expected_names = {
             'Dockerfile',
             '.dockerignore',
             'a.go',
             'b.py',
             'bar',
             'bar/a.py',
-        ])
+        }
 
         base = make_tree(dirs, files)
         self.addCleanup(shutil.rmtree, base)
@@ -413,7 +410,7 @@ class TarTest(unittest.TestCase):
         with pytest.raises(IOError) as ei:
             tar(base)
 
-        assert 'Can not read file in context: {}'.format(full_path) in (
+        assert f'Can not read file in context: {full_path}' in (
             ei.exconly()
         )
 
@@ -491,3 +488,51 @@ class TarTest(unittest.TestCase):
                 assert member in names
             assert 'a/c/b' in names
             assert 'a/c/b/utils.py' not in names
+
+
+# selected test cases from https://github.com/distribution/reference/blob/8507c7fcf0da9f570540c958ea7b972c30eeaeca/reference_test.go#L13-L328
+@pytest.mark.parametrize("tag,expected", [
+    ("test_com", True),
+    ("test.com:tag", True),
+    # N.B. this implicitly means "docker.io/library/test.com:5000"
+    # i.e. the `5000` is a tag, not a port here!
+    ("test.com:5000", True),
+    ("test.com/repo:tag", True),
+    ("test:5000/repo", True),
+    ("test:5000/repo:tag", True),
+    ("test:5000/repo", True),
+    ("", False),
+    (":justtag", False),
+    ("Uppercase:tag", False),
+    ("test:5000/Uppercase/lowercase:tag", False),
+    ("lowercase:Uppercase", True),
+    # length limits not enforced
+    pytest.param("a/"*128 + "a:tag", False, marks=pytest.mark.xfail),
+    ("a/"*127 + "a:tag-puts-this-over-max", True),
+    ("aa/asdf$$^/aa", False),
+    ("sub-dom1.foo.com/bar/baz/quux", True),
+    ("sub-dom1.foo.com/bar/baz/quux:some-long-tag", True),
+    ("b.gcr.io/test.example.com/my-app:test.example.com", True),
+    ("xn--n3h.com/myimage:xn--n3h.com", True),
+    ("foo_bar.com:8080", True),
+    ("foo/foo_bar.com:8080", True),
+    ("192.168.1.1", True),
+    ("192.168.1.1:tag", True),
+    ("192.168.1.1:5000", True),
+    ("192.168.1.1/repo", True),
+    ("192.168.1.1:5000/repo", True),
+    ("192.168.1.1:5000/repo:5050", True),
+    # regex does not properly handle ipv6
+    pytest.param("[2001:db8::1]", False, marks=pytest.mark.xfail),
+    ("[2001:db8::1]:5000", False),
+    pytest.param("[2001:db8::1]/repo", True, marks=pytest.mark.xfail),
+    pytest.param("[2001:db8:1:2:3:4:5:6]/repo:tag", True, marks=pytest.mark.xfail),
+    pytest.param("[2001:db8::1]:5000/repo", True, marks=pytest.mark.xfail),
+    pytest.param("[2001:db8::1]:5000/repo:tag", True, marks=pytest.mark.xfail),
+    pytest.param("[2001:db8::]:5000/repo", True, marks=pytest.mark.xfail),
+    pytest.param("[::1]:5000/repo", True, marks=pytest.mark.xfail),
+    ("[fe80::1%eth0]:5000/repo", False),
+    ("[fe80::1%@invalidzone]:5000/repo", False),
+])
+def test_match_tag(tag: str, expected: bool):
+    assert match_tag(tag) == expected

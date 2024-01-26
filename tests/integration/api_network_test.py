@@ -3,13 +3,13 @@ from docker.types import IPAMConfig, IPAMPool
 import pytest
 
 from ..helpers import random_name, requires_api_version
-from .base import BaseAPIIntegrationTest, BUSYBOX
+from .base import BaseAPIIntegrationTest, TEST_IMG
 
 
 class TestNetworks(BaseAPIIntegrationTest):
     def tearDown(self):
         self.client.leave_swarm(force=True)
-        super(TestNetworks, self).tearDown()
+        super().tearDown()
 
     def create_network(self, *args, **kwargs):
         net_name = random_name()
@@ -92,7 +92,7 @@ class TestNetworks(BaseAPIIntegrationTest):
     def test_connect_and_disconnect_container(self):
         net_name, net_id = self.create_network()
 
-        container = self.client.create_container(BUSYBOX, 'top')
+        container = self.client.create_container(TEST_IMG, 'top')
         self.tmp_containers.append(container)
         self.client.start(container)
 
@@ -119,7 +119,7 @@ class TestNetworks(BaseAPIIntegrationTest):
     def test_connect_and_force_disconnect_container(self):
         net_name, net_id = self.create_network()
 
-        container = self.client.create_container(BUSYBOX, 'top')
+        container = self.client.create_container(TEST_IMG, 'top')
         self.tmp_containers.append(container)
         self.client.start(container)
 
@@ -144,7 +144,7 @@ class TestNetworks(BaseAPIIntegrationTest):
     def test_connect_with_aliases(self):
         net_name, net_id = self.create_network()
 
-        container = self.client.create_container(BUSYBOX, 'top')
+        container = self.client.create_container(TEST_IMG, 'top')
         self.tmp_containers.append(container)
         self.client.start(container)
 
@@ -161,7 +161,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         net_name, net_id = self.create_network()
 
         container = self.client.create_container(
-            image=BUSYBOX,
+            image=TEST_IMG,
             command='top',
             host_config=self.client.create_host_config(network_mode=net_name),
         )
@@ -181,7 +181,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         net_name, net_id = self.create_network()
 
         container = self.client.create_container(
-            image=BUSYBOX,
+            image=TEST_IMG,
             command='top',
             host_config=self.client.create_host_config(
                 network_mode=net_name,
@@ -211,7 +211,7 @@ class TestNetworks(BaseAPIIntegrationTest):
             ),
         )
         container = self.client.create_container(
-            image=BUSYBOX, command='top',
+            image=TEST_IMG, command='top',
             host_config=self.client.create_host_config(network_mode=net_name),
             networking_config=self.client.create_networking_config({
                 net_name: self.client.create_endpoint_config(
@@ -233,11 +233,11 @@ class TestNetworks(BaseAPIIntegrationTest):
         net_name, net_id = self.create_network(
             ipam=IPAMConfig(
                 driver='default',
-                pool_configs=[IPAMPool(subnet="2001:389::1/64")],
+                pool_configs=[IPAMPool(subnet="2001:389::/64")],
             ),
         )
         container = self.client.create_container(
-            image=BUSYBOX, command='top',
+            image=TEST_IMG, command='top',
             host_config=self.client.create_host_config(network_mode=net_name),
             networking_config=self.client.create_networking_config({
                 net_name: self.client.create_endpoint_config(
@@ -257,7 +257,7 @@ class TestNetworks(BaseAPIIntegrationTest):
     @requires_api_version('1.24')
     def test_create_with_linklocal_ips(self):
         container = self.client.create_container(
-            BUSYBOX, 'top',
+            TEST_IMG, 'top',
             networking_config=self.client.create_networking_config(
                 {
                     'bridge': self.client.create_endpoint_config(
@@ -274,6 +274,27 @@ class TestNetworks(BaseAPIIntegrationTest):
         assert 'IPAMConfig' in net_cfg
         assert 'LinkLocalIPs' in net_cfg['IPAMConfig']
         assert net_cfg['IPAMConfig']['LinkLocalIPs'] == ['169.254.8.8']
+
+    @requires_api_version('1.32')
+    def test_create_with_driveropt(self):
+        container = self.client.create_container(
+            TEST_IMG, 'top',
+            networking_config=self.client.create_networking_config(
+                {
+                    'bridge': self.client.create_endpoint_config(
+                        driver_opt={'com.docker-py.setting': 'on'}
+                    )
+                }
+            ),
+            host_config=self.client.create_host_config(network_mode='bridge')
+        )
+        self.tmp_containers.append(container)
+        self.client.start(container)
+        container_data = self.client.inspect_container(container)
+        net_cfg = container_data['NetworkSettings']['Networks']['bridge']
+        assert 'DriverOpts' in net_cfg
+        assert 'com.docker-py.setting' in net_cfg['DriverOpts']
+        assert net_cfg['DriverOpts']['com.docker-py.setting'] == 'on'
 
     @requires_api_version('1.22')
     def test_create_with_links(self):
@@ -306,8 +327,6 @@ class TestNetworks(BaseAPIIntegrationTest):
         net_name, net_id = self.create_network()
         with pytest.raises(docker.errors.APIError):
             self.client.create_network(net_name, check_duplicate=True)
-        net_id = self.client.create_network(net_name, check_duplicate=False)
-        self.tmp_networks.append(net_id['Id'])
 
     @requires_api_version('1.22')
     def test_connect_with_links(self):
@@ -368,7 +387,7 @@ class TestNetworks(BaseAPIIntegrationTest):
                 driver='default',
                 pool_configs=[
                     IPAMPool(
-                        subnet="2001:389::1/64", iprange="2001:389::0/96",
+                        subnet="2001:389::/64", iprange="2001:389::0/96",
                         gateway="2001:389::ffff"
                     )
                 ]
@@ -386,6 +405,22 @@ class TestNetworks(BaseAPIIntegrationTest):
         container_data = self.client.inspect_container(container)
         net_data = container_data['NetworkSettings']['Networks'][net_name]
         assert net_data['IPAMConfig']['IPv6Address'] == '2001:389::f00d'
+
+    @requires_api_version('1.25')
+    def test_connect_with_mac_address(self):
+        net_name, net_id = self.create_network()
+
+        container = self.client.create_container(TEST_IMG, 'top')
+        self.tmp_containers.append(container)
+
+        self.client.connect_container_to_network(
+            container, net_name, mac_address='02:42:ac:11:00:02'
+        )
+
+        container_data = self.client.inspect_container(container)
+
+        net_data = container_data['NetworkSettings']['Networks'][net_name]
+        assert net_data['MacAddress'] == '02:42:ac:11:00:02'
 
     @requires_api_version('1.23')
     def test_create_internal_networks(self):
@@ -418,7 +453,7 @@ class TestNetworks(BaseAPIIntegrationTest):
                 driver='default',
                 pool_configs=[
                     IPAMPool(
-                        subnet="2001:389::1/64", iprange="2001:389::0/96",
+                        subnet="2001:389::/64", iprange="2001:389::0/96",
                         gateway="2001:389::ffff"
                     )
                 ]

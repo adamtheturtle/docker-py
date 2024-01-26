@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+
+[tool.setuptools_scm]
+write_to = 'docker/_version.py'
+
+[tool.ruff]
+target-version = "py38"
+extend-select = [
+    "B",
+    "C",
+    "F",
+    "UP",
+    "W",
+]
+ignore = [
+    "UP012",  # unnecessary `UTF-8` argument (we want to be explicit)
+    "C901",  # too complex (there's a whole bunch of these)
+]
+
+[tool.ruff.per-file-ignores]
+"**/__init__.py" = ["F401"]

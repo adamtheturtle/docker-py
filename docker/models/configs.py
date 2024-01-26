@@ -7,7 +7,7 @@ class Config(Model):
     id_attribute = 'ID'
 
     def __repr__(self):
-        return "<%s: '%s'>" % (self.__class__.__name__, self.name)
+        return f"<{self.__class__.__name__}: '{self.name}'>"
 
     @property
     def name(self):
@@ -30,6 +30,7 @@ class ConfigCollection(Collection):
 
     def create(self, **kwargs):
         obj = self.client.api.create_config(**kwargs)
+        obj.setdefault("Spec", {})["Name"] = kwargs.get("name")
         return self.prepare_model(obj)
     create.__doc__ = APIClient.create_config.__doc__
 

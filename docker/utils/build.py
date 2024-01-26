@@ -4,13 +4,20 @@ import re
 import tarfile
 import tempfile
 
-import six
-
 from .fnmatch import fnmatch
 from ..constants import IS_WINDOWS_PLATFORM
 
 
 _SEP = re.compile('/|\\\\') if IS_WINDOWS_PLATFORM else re.compile('/')
+_TAG = re.compile(
+    r"^[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*"
+    r"(?::[0-9]+)?(/[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*)*"
+    r"(:[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127})?$"
+)
+
+
+def match_tag(tag: str) -> bool:
+    return bool(_TAG.match(tag))
 
 
 def tar(path, exclude=None, dockerfile=None, fileobj=None, gzip=False):
@@ -44,7 +51,7 @@ def exclude_paths(root, patterns, dockerfile=None):
     if dockerfile is None:
         dockerfile = 'Dockerfile'
 
-    patterns.append('!' + dockerfile)
+    patterns.append(f"!{dockerfile}")
     pm = PatternMatcher(patterns)
     return set(pm.walk(root))
 
@@ -69,7 +76,7 @@ def create_archive(root, files=None, fileobj=None, gzip=False,
     t = tarfile.open(mode='w:gz' if gzip else 'w', fileobj=fileobj)
     if files is None:
         files = build_file_list(root)
-    extra_names = set(e[0] for e in extra_files)
+    extra_names = {e[0] for e in extra_files}
     for path in files:
         if path in extra_names:
             # Extra files override context files with the same name
@@ -95,18 +102,19 @@ def create_archive(root, files=None, fileobj=None, gzip=False,
             try:
                 with open(full_path, 'rb') as f:
                     t.addfile(i, f)
-            except IOError:
-                raise IOError(
-                    'Can not read file in context: {}'.format(full_path)
-                )
+            except OSError as oe:
+                raise OSError(
+                    f'Can not read file in context: {full_path}'
+                ) from oe
         else:
             # Directories, FIFOs, symlinks... don't need to be read.
             t.addfile(i, None)
 
     for name, contents in extra_files:
         info = tarfile.TarInfo(name)
-        info.size = len(contents)
-        t.addfile(info, io.BytesIO(contents.encode('utf-8')))
+        contents_encoded = contents.encode('utf-8')
+        info.size = len(contents_encoded)
+        t.addfile(info, io.BytesIO(contents_encoded))
 
     t.close()
     fileobj.seek(0)
@@ -118,12 +126,8 @@ def mkbuildcontext(dockerfile):
     t = tarfile.open(mode='w', fileobj=f)
     if isinstance(dockerfile, io.StringIO):
         dfinfo = tarfile.TarInfo('Dockerfile')
-        if six.PY3:
-            raise TypeError('Please use io.BytesIO to create in-memory '
-                            'Dockerfiles with Python 3')
-        else:
-            dfinfo.size = len(dockerfile.getvalue())
-            dockerfile.seek(0)
+        raise TypeError('Please use io.BytesIO to create in-memory '
+                        'Dockerfiles with Python 3')
     elif isinstance(dockerfile, io.BytesIO):
         dfinfo = tarfile.TarInfo('Dockerfile')
         dfinfo.size = len(dockerfile.getvalue())
@@ -153,7 +157,7 @@ def walk(root, patterns, default=True):
 
 # Heavily based on
 # https://github.com/moby/moby/blob/master/pkg/fileutils/fileutils.go
-class PatternMatcher(object):
+class PatternMatcher:
     def __init__(self, patterns):
         self.patterns = list(filter(
             lambda p: p.dirs, [Pattern(p) for p in patterns]
@@ -185,7 +189,7 @@ class PatternMatcher(object):
                 fpath = os.path.join(
                     os.path.relpath(current_dir, root), f
                 )
-                if fpath.startswith('.' + os.path.sep):
+                if fpath.startswith(f".{os.path.sep}"):
                     fpath = fpath[2:]
                 match = self.matches(fpath)
                 if not match:
@@ -211,13 +215,12 @@ class PatternMatcher(object):
                             break
                     if skip:
                         continue
-                for sub in rec_walk(cur):
-                    yield sub
+                yield from rec_walk(cur)
 
         return rec_walk(root)
 
 
-class Pattern(object):
+class Pattern:
     def __init__(self, pattern_str):
         self.exclusion = False
         if pattern_str.startswith('!'):
@@ -229,6 +232,9 @@ class Pattern(object):
 
     @classmethod
     def normalize(cls, p):
+
+        # Remove trailing spaces
+        p = p.strip()
 
         # Leading and trailing slashes are not relevant. Yes,
         # "foo.py/" must exclude the "foo.py" regular file. "."
