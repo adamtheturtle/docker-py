@@ -11,13 +11,13 @@ from docker.types.services import ServiceMode
 
 class ServiceTest(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         client = docker.from_env(version=TEST_API_VERSION)
         helpers.force_leave_swarm(client)
         client.swarm.init('127.0.0.1', listen_addr=helpers.swarm_listen_addr())
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         helpers.force_leave_swarm(docker.from_env(version=TEST_API_VERSION))
 
     def test_create(self) -> None:

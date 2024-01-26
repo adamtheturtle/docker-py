@@ -78,7 +78,7 @@ class BaseAPIIntegrationTest(BaseIntegrationTest):
     as `self.client`.
     """
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         cls.client = cls.get_client_instance()
         cls.client.pull(TEST_IMG)
 

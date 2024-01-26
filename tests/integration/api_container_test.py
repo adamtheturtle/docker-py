@@ -169,7 +169,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         res = self.client.wait(ctnr)['StatusCode']
         assert res != 0
 
-    def create_container_with_name(self):
+    def create_container_with_name(self) -> None:
         res = self.client.create_container(TEST_IMG, 'true', name='foobar')
         assert 'Id' in res
         self.tmp_containers.append(res['Id'])
@@ -177,7 +177,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
         assert 'Name' in inspect
         assert '/foobar' == inspect['Name']
 
-    def create_container_privileged(self):
+    def create_container_privileged(self) -> None:
         res = self.client.create_container(
             TEST_IMG, 'true', host_config=self.client.create_host_config(
                 privileged=True, network_mode='none'

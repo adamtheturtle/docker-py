@@ -208,7 +208,7 @@ class RegistryData(Model):
             platform, self.client.version()
         ) in self.attrs['Platforms']
 
-    def reload(self):
+    def reload(self) -> None:
         self.attrs = self.client.api.inspect_distribution(self.image_name)
 
     reload.__doc__ = Model.reload.__doc__

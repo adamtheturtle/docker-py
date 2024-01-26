@@ -21,7 +21,7 @@ class UnixHTTPConnection(urllib3.connection.HTTPConnection):
         self.unix_socket = unix_socket
         self.timeout = timeout
 
-    def connect(self):
+    def connect(self) -> None:
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         sock.settimeout(self.timeout)
         sock.connect(self.unix_socket)

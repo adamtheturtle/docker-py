@@ -18,11 +18,6 @@ _cache = {}
 _MAXCACHE = 100
 
 
-def _purge():
-    """Clear the pattern cache"""
-    _cache.clear()
-
-
 def fnmatch(name, pat):
     """Test whether FILENAME matches PATTERN.
 

@@ -113,7 +113,7 @@ class Context:
 
         return metadata
 
-    def _load_certs(self):
+    def _load_certs(self) -> None:
         certs = {}
         tls_dir = get_tls_dir(self.name)
         for endpoint in self.endpoints.keys():
@@ -139,7 +139,7 @@ class Context:
         self.tls_cfg = certs
         self.tls_path = tls_dir
 
-    def save(self):
+    def save(self) -> None:
         meta_dir = get_meta_dir(self.name)
         if not os.path.isdir(meta_dir):
             os.makedirs(meta_dir)

@@ -448,7 +448,7 @@ class Container(Model):
         """
         return self.client.api.stop(self.id, **kwargs)
 
-    def top(self, **kwargs):
+    def top(self, **kwargs) -> str:
         """
         Display the running processes of the container.
 

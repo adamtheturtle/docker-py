@@ -379,7 +379,7 @@ class UnixSocketStreamTest(unittest.TestCase):
         self.addCleanup(server_thread.join)
         self.addCleanup(self.stop)
 
-    def stop(self):
+    def stop(self) -> None:
         self.stop_server = True
 
     def _setup_socket(self):
@@ -390,7 +390,7 @@ class UnixSocketStreamTest(unittest.TestCase):
         server_sock.listen(5)
         return server_sock
 
-    def run_server(self):
+    def run_server(self) -> None:
         try:
             while not self.stop_server:
                 try:

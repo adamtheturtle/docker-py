@@ -43,7 +43,7 @@ class SSHSocket(socket.socket):
 
         preexec_func = None
         if not constants.IS_WINDOWS_PLATFORM:
-            def f():
+            def f() -> None:
                 signal.signal(signal.SIGINT, signal.SIG_IGN)
             preexec_func = f
 
@@ -87,7 +87,7 @@ class SSHSocket(socket.socket):
 
         return self.proc.stdout
 
-    def close(self):
+    def close(self) -> None:
         if not self.proc or self.proc.stdin.closed:
             return
         self.proc.stdin.write(b'\n\n')
@@ -104,7 +104,7 @@ class SSHConnection(urllib3.connection.HTTPConnection):
         self.timeout = timeout
         self.ssh_host = host
 
-    def connect(self):
+    def connect(self) -> None:
         if self.ssh_transport:
             sock = self.ssh_transport.open_session()
             sock.settimeout(self.timeout)
@@ -213,11 +213,11 @@ class SSHHTTPAdapter(BaseHTTPAdapter):
         self.ssh_client.load_system_host_keys()
         self.ssh_client.set_missing_host_key_policy(paramiko.RejectPolicy())
 
-    def _connect(self):
+    def _connect(self) -> None:
         if self.ssh_client:
             self.ssh_client.connect(**self.ssh_params)
 
-    def get_connection(self, url, proxies=None):
+    def get_connection(self, url, proxies=None) -> SSHConnectionPool:
         if not self.ssh_client:
             return SSHConnectionPool(
                 ssh_client=self.ssh_client,
@@ -244,7 +244,7 @@ class SSHHTTPAdapter(BaseHTTPAdapter):
 
         return pool
 
-    def close(self):
+    def close(self) -> None:
         super().close()
         if self.ssh_client:
             self.ssh_client.close()

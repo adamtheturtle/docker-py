@@ -232,7 +232,7 @@ class ImageApiMixin:
         )
 
     @utils.check_resource('image')
-    def inspect_image(self, image):
+    def inspect_image(self, image: str) -> dict:
         """
         Get detailed information about an image. Similar to the ``docker
         inspect`` command, but only for images.

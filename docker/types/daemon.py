@@ -34,7 +34,7 @@ class CancellableStream:
 
     next = __next__
 
-    def close(self):
+    def close(self) -> None:
         """
         Closes the event streaming.
         """

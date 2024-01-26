@@ -438,7 +438,7 @@ class ContainerApiMixin:
         )
         return self.create_container_from_config(config, name, platform)
 
-    def create_container_config(self, *args, **kwargs):
+    def create_container_config(self, *args, **kwargs) -> ContainerConfig:
         return ContainerConfig(self._version, *args, **kwargs)
 
     def create_container_from_config(self, config, name=None, platform=None):
@@ -455,7 +455,7 @@ class ContainerApiMixin:
         res = self._post_json(u, data=config, params=params)
         return self._result(res, True)
 
-    def create_host_config(self, *args, **kwargs):
+    def create_host_config(self, *args, **kwargs) -> HostConfig:
         """
         Create a dictionary for the ``host_config`` argument to
         :py:meth:`create_container`.
@@ -1183,7 +1183,7 @@ class ContainerApiMixin:
             return self._result(self._get(url, params=params), json=True)
 
     @utils.check_resource('container')
-    def stop(self, container, timeout=None):
+    def stop(self, container, timeout=None) -> None:
         """
         Stops a container. Similar to the ``docker stop`` command.
 

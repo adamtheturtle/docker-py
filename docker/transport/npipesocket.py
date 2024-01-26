@@ -7,6 +7,7 @@ import win32pipe
 import pywintypes
 import win32event
 import win32api
+from typing import Never, Literal
 
 cERROR_PIPE_BUSY = 0xe7
 cSECURITY_SQOS_PRESENT = 0x100000
@@ -38,13 +39,13 @@ class NpipeSocket:
         self._handle = handle
         self._closed = False
 
-    def accept(self):
+    def accept(self) -> Never:
         raise NotImplementedError()
 
     def bind(self, address):
         raise NotImplementedError()
 
-    def close(self):
+    def close(self) -> None:
         self._handle.Close()
         self._closed = True
 
@@ -207,14 +208,14 @@ class NpipeFileIOBase(io.RawIOBase):
     def __init__(self, npipe_socket):
         self.sock = npipe_socket
 
-    def close(self):
+    def close(self) -> None:
         super().close()
         self.sock = None
 
     def fileno(self):
         return self.sock.fileno()
 
-    def isatty(self):
+    def isatty(self) -> Literal[False]:
         return False
 
     def readable(self):

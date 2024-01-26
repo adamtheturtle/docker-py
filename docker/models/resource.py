@@ -41,7 +41,7 @@ class Model:
         """
         return self.id[:12]
 
-    def reload(self):
+    def reload(self) -> None:
         """
         Load this object from the server again and update ``attrs`` with the
         new data.
@@ -59,7 +59,7 @@ class Collection:
     #: The type of object this collection represents, set by subclasses
     model = None
 
-    def __init__(self, client=None):
+    def __init__(self, client=None) -> None:
         #: The client pointing at the server that this collection of objects
         #: is on.
         self.client = client
@@ -71,13 +71,13 @@ class Collection:
             "use docker.APIClient if so."
         )
 
-    def list(self):
+    def list(self) -> Never:
         raise NotImplementedError
 
-    def get(self, key):
+    def get(self, key) -> Never:
         raise NotImplementedError
 
-    def create(self, attrs=None):
+    def create(self, attrs=None) -> Never:
         raise NotImplementedError
 
     def prepare_model(self, attrs):

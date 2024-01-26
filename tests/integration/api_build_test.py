@@ -359,7 +359,7 @@ class BuildTest(BaseAPIIntegrationTest):
             'RUN echo blahblahblah > /file_3'
         ]).encode('ascii'))
 
-        def build_squashed(squash):
+        def build_squashed(squash) -> dict:
             tag = 'squash' if squash else 'nosquash'
             stream = self.client.build(
                 fileobj=script, tag=tag, squash=squash

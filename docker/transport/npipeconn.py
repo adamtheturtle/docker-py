@@ -19,7 +19,7 @@ class NpipeHTTPConnection(urllib3.connection.HTTPConnection):
         self.npipe_path = npipe_path
         self.timeout = timeout
 
-    def connect(self):
+    def connect(self) -> None:
         sock = NpipeSocket()
         sock.settimeout(self.timeout)
         sock.connect(self.npipe_path)
