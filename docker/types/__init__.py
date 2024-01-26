@@ -11,3 +11,36 @@ from .services import (
     UpdateConfig, NetworkAttachmentConfig
 )
 from .swarm import SwarmSpec, SwarmExternalCA
+
+__all__ = [
+    "ContainerConfig",
+    "HostConfig",
+    "LogConfig",
+    "Ulimit",
+    "DeviceRequest",
+    "CancellableStream",
+    "Healthcheck",
+    "EndpointConfig",
+    "IPAMConfig",
+    "IPAMPool",
+    "NetworkingConfig",
+    "ConfigReference",
+    "ContainerSpec",
+    "DNSConfig",
+    "DriverConfig",
+    "EndpointSpec",
+    "Mount",
+    "Placement",
+    "PlacementPreference",
+    "Privileges",
+    "Resources",
+    "RestartPolicy",
+    "RollbackConfig",
+    "SecretReference",
+    "ServiceMode",
+    "TaskTemplate",
+    "UpdateConfig",
+    "NetworkAttachmentConfig",
+    "SwarmSpec",
+    "SwarmExternalCA",
+]
