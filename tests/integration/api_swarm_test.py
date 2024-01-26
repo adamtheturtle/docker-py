@@ -7,7 +7,7 @@ from .base import BaseAPIIntegrationTest
 
 
 class SwarmTest(BaseAPIIntegrationTest):
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         force_leave_swarm(self.client)
         self._unlock_key = None

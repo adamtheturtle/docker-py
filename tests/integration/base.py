@@ -16,7 +16,7 @@ class BaseIntegrationTest(unittest.TestCase):
     after itself.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.tmp_imgs = []
         self.tmp_containers = []
         self.tmp_folders = []
@@ -74,7 +74,7 @@ class BaseAPIIntegrationTest(BaseIntegrationTest):
     as `self.client`.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.client = self.get_client_instance()
 

@@ -90,7 +90,7 @@ url_prefix = f'{url_base}v{docker.constants.DEFAULT_DOCKER_API_VERSION}/'
 
 
 class BaseAPIClientTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.patcher = mock.patch.multiple(
             'docker.api.client.APIClient',
             get=fake_get,
@@ -363,7 +363,7 @@ class DockerApiTest(BaseAPIClientTest):
 
 
 class UnixSocketStreamTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         socket_dir = tempfile.mkdtemp()
         self.build_context = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, socket_dir)
@@ -589,7 +589,7 @@ class TCPSocketStreamTest(unittest.TestCase):
 
 
 class UserAgentTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.patcher = mock.patch.object(
             APIClient,
             'send',
@@ -631,7 +631,7 @@ class DisableSocketTest(unittest.TestCase):
         def gettimeout(self):
             return self.timeout
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.client = APIClient(version=DEFAULT_DOCKER_API_VERSION)
 
     def test_disable_socket_timeout(self) -> None:

@@ -75,15 +75,15 @@ class APIError(requests.exceptions.HTTPError, DockerException):
         if self.response is not None:
             return self.response.status_code
 
-    def is_error(self):
+    def is_error(self) -> bool:
         return self.is_client_error() or self.is_server_error()
 
-    def is_client_error(self):
+    def is_client_error(self) -> bool:
         if self.status_code is None:
             return False
         return 400 <= self.status_code < 500
 
-    def is_server_error(self):
+    def is_server_error(self) -> bool:
         if self.status_code is None:
             return False
         return 500 <= self.status_code < 600

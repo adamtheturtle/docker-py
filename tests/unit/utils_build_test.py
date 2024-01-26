@@ -62,7 +62,7 @@ class ExcludePathsTest(unittest.TestCase):
 
     all_paths = set(dirs + files)
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.base = make_tree(self.dirs, self.files)
 
     def tearDown(self):

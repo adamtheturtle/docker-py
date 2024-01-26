@@ -453,7 +453,7 @@ class LoadConfigTest(unittest.TestCase):
 
 
 class CredstoreTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.authconfig = auth.AuthConfig({'credsStore': 'default'})
         self.default_store = InMemoryStore('default')
         self.authconfig._stores['default'] = self.default_store

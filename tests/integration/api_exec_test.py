@@ -238,7 +238,7 @@ class ExecDemuxTest(BaseAPIIntegrationTest):
         'echo hello err >&2'])
     )
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.container = self.client.create_container(
             TEST_IMG, 'cat', detach=True, stdin_open=True

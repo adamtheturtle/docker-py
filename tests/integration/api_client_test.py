@@ -33,7 +33,7 @@ class AutoDetectVersionTest(unittest.TestCase):
 
 
 class ConnectionTimeoutTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.timeout = 0.5
         self.client = docker.api.APIClient(
             version=docker.constants.MINIMUM_DOCKER_API_VERSION,

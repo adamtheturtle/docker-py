@@ -497,7 +497,7 @@ class CreateContainerTest(BaseAPIIntegrationTest):
     IS_WINDOWS_PLATFORM, reason='Test not designed for Windows platform'
 )
 class VolumeBindTest(BaseAPIIntegrationTest):
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
 
         self.mount_dest = '/mnt'

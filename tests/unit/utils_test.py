@@ -56,7 +56,7 @@ class DecoratorsTest(unittest.TestCase):
 
 
 class KwargsFromEnvTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.os_environ = os.environ.copy()
 
     def tearDown(self):

@@ -7,7 +7,7 @@ from .base import TEST_API_VERSION
 
 
 class NodesTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         helpers.force_leave_swarm(docker.from_env(version=TEST_API_VERSION))
 
     def tearDown(self):

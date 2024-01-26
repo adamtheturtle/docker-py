@@ -18,7 +18,7 @@ class BaseIntegrationTest(unittest.TestCase):
     after itself.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.tmp_imgs = []
         self.tmp_containers = []
         self.tmp_folders = []
