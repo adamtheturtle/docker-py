@@ -14,7 +14,7 @@ class Image(Model):
     """
     An image on the server.
     """
-    def __repr__(self):
+    def __repr__(self) -> str:
         tag_str = "', '".join(self.tags)
         return f"<{self.__class__.__name__}: '{tag_str}'>"
 
@@ -478,7 +478,7 @@ class ImageCollection(Collection):
         return self.client.api.push(repository, tag=tag, **kwargs)
     push.__doc__ = APIClient.push.__doc__
 
-    def remove(self, *args, **kwargs):
+    def remove(self, *args, **kwargs) -> None:
         self.client.api.remove_image(*args, **kwargs)
     remove.__doc__ = APIClient.remove_image.__doc__
 

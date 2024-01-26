@@ -55,7 +55,7 @@ class Store:
         }).encode('utf-8')
         return self._execute('store', data_input)
 
-    def erase(self, server):
+    def erase(self, server) -> None:
         """ Erase credentials for `server`. Raises a `StoreError` if an error
             occurs.
         """

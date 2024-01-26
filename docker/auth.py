@@ -202,7 +202,7 @@ class AuthConfig(dict):
         return self.get('credHelpers', {})
 
     @property
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return (
             not self.auths and not self.creds_store and not self.cred_helpers
         )
@@ -303,7 +303,7 @@ class AuthConfig(dict):
 
         return auth_data
 
-    def add_auth(self, reg, data):
+    def add_auth(self, reg, data) -> None:
         self['auths'][reg] = data
 
 

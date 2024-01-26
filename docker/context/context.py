@@ -13,7 +13,7 @@ class Context:
     """A context."""
 
     def __init__(self, name, orchestrator=None, host=None, endpoints=None,
-                 tls=False):
+                 tls=False) -> None:
         if not name:
             raise Exception("Name not provided")
         self.name = name
@@ -57,7 +57,7 @@ class Context:
 
     def set_endpoint(
             self, name="docker", host=None, tls_cfg=None,
-            skip_tls_verify=False, def_namespace=None):
+            skip_tls_verify=False, def_namespace=None) -> None:
         self.endpoints[name] = {
             "Host": get_context_host(host, not skip_tls_verify),
             "SkipTLSVerify": skip_tls_verify
@@ -166,13 +166,13 @@ class Context:
         self.meta_path = get_meta_dir(self.name)
         self.tls_path = get_tls_dir(self.name)
 
-    def remove(self):
+    def remove(self) -> None:
         if os.path.isdir(self.meta_path):
             rmtree(self.meta_path)
         if os.path.isdir(self.tls_path):
             rmtree(self.tls_path)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: '{self.name}'>"
 
     def __str__(self) -> str:

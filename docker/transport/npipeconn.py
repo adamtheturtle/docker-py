@@ -70,7 +70,7 @@ class NpipeHTTPAdapter(BaseHTTPAdapter):
 
     def __init__(self, base_url, timeout=60,
                  pool_connections=constants.DEFAULT_NUM_POOLS,
-                 max_pool_size=constants.DEFAULT_MAX_POOL_SIZE):
+                 max_pool_size=constants.DEFAULT_MAX_POOL_SIZE) -> None:
         self.npipe_path = base_url.replace('npipe://', '')
         self.timeout = timeout
         self.max_pool_size = max_pool_size

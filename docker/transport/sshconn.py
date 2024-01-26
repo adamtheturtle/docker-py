@@ -31,7 +31,7 @@ class SSHSocket(socket.socket):
 
         self.proc = None
 
-    def connect(self, **kwargs):
+    def connect(self, **kwargs) -> None:
         args = ['ssh']
         if self.user:
             args = args + ['-l', self.user]
@@ -68,7 +68,7 @@ class SSHSocket(socket.socket):
         self.proc.stdin.flush()
         return written
 
-    def sendall(self, data):
+    def sendall(self, data) -> None:
         self._write(data)
 
     def send(self, data):
@@ -165,7 +165,7 @@ class SSHHTTPAdapter(BaseHTTPAdapter):
     def __init__(self, base_url, timeout=60,
                  pool_connections=constants.DEFAULT_NUM_POOLS,
                  max_pool_size=constants.DEFAULT_MAX_POOL_SIZE,
-                 shell_out=False):
+                 shell_out=False) -> None:
         self.ssh_client = None
         if not shell_out:
             self._create_paramiko_client(base_url)
@@ -182,7 +182,7 @@ class SSHHTTPAdapter(BaseHTTPAdapter):
         )
         super().__init__()
 
-    def _create_paramiko_client(self, base_url):
+    def _create_paramiko_client(self, base_url) -> None:
         logging.getLogger("paramiko").setLevel(logging.WARNING)
         self.ssh_client = paramiko.SSHClient()
         base_url = urllib.parse.urlparse(base_url)

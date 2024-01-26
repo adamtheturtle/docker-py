@@ -19,7 +19,7 @@ class DockerException(Exception):
     """
 
 
-def create_api_error_from_http_exception(e):
+def create_api_error_from_http_exception(e) -> None:
     """
     Create a suitable APIError from requests.exceptions.HTTPError.
     """

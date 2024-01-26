@@ -18,7 +18,7 @@ class Model:
         if self.attrs is None:
             self.attrs = {}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: {self.short_id}>"
 
     def __eq__(self, other):
@@ -71,13 +71,13 @@ class Collection:
             "use docker.APIClient if so."
         )
 
-    def list(self) -> Never:
+    def list(self) -> None:
         raise NotImplementedError
 
-    def get(self, key) -> Never:
+    def get(self, key) -> None:
         raise NotImplementedError
 
-    def create(self, attrs=None) -> Never:
+    def create(self, attrs=None) -> None:
         raise NotImplementedError
 
     def prepare_model(self, attrs) -> Model:

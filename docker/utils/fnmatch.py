@@ -18,6 +18,11 @@ _cache = {}
 _MAXCACHE = 100
 
 
+def _purge() -> None:
+    """Clear the pattern cache"""
+    _cache.clear()
+
+
 def fnmatch(name, pat):
     """Test whether FILENAME matches PATTERN.
 
@@ -55,7 +60,7 @@ def fnmatchcase(name: str, pat):
     return re_pat.match(name) is not None
 
 
-def translate(pat):
+def translate(pat) -> str:
     """Translate a shell PATTERN to a regular expression.
 
     There is no way to quote meta-characters.

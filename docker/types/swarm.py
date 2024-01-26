@@ -15,7 +15,7 @@ class SwarmSpec(dict):
                  node_cert_expiry=None, external_cas=None, name=None,
                  labels=None, signing_ca_cert=None, signing_ca_key=None,
                  ca_force_rotate=None, autolock_managers=None,
-                 log_driver=None):
+                 log_driver=None) -> None:
         if task_history_retention_limit is not None:
             self['Orchestration'] = {
                 'TaskHistoryRetentionLimit': task_history_retention_limit

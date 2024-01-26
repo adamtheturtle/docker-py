@@ -54,7 +54,7 @@ class TLSConfig:
                 'Invalid CA certificate provided for `ca_cert`.'
             )
 
-    def configure_client(self, client):
+    def configure_client(self, client) -> None:
         """
         Configure a client with these TLS options.
         """

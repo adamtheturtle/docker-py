@@ -175,7 +175,7 @@ class NetworkApiMixin:
         return self._result(self._post(url, params=params), True)
 
     @check_resource('net_id')
-    def remove_network(self, net_id: str) -> None:
+    def remove_network(self, net_id) -> None:
         """
         Remove a network. Similar to the ``docker network rm`` command.
 
@@ -217,7 +217,7 @@ class NetworkApiMixin:
                                      ipv4_address=None, ipv6_address=None,
                                      aliases=None, links=None,
                                      link_local_ips=None, driver_opt=None,
-                                     mac_address=None):
+                                     mac_address=None) -> None:
         """
         Connect a container to a network.
 
