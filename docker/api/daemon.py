@@ -21,7 +21,7 @@ class DaemonApiMixin:
         url = self._url('/system/df')
         return self._result(self._get(url), True)
 
-    def events(self, since=None, until=None, filters=None, decode=None):
+    def events(self, since=None, until=None, filters=None, decode=None) -> types.CancellableStream:
         """
         Get real-time events from the server. Similar to the ``docker events``
         command.

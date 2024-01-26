@@ -10,6 +10,7 @@ from .models.secrets import SecretCollection
 from .models.services import ServiceCollection
 from .models.swarm import Swarm
 from .models.volumes import VolumeCollection
+from .types import CancellableStream
 from .utils import kwargs_from_env
 
 
@@ -182,7 +183,7 @@ class DockerClient:
         return VolumeCollection(client=self)
 
     # Top-level methods
-    def events(self, *args, **kwargs) -> None:
+    def events(self, *args, **kwargs) -> CancellableStream:
         return self.api.events(*args, **kwargs)
     events.__doc__ = APIClient.events.__doc__
 

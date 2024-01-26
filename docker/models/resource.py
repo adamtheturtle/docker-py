@@ -57,7 +57,7 @@ class Collection:
     """
 
     #: The type of object this collection represents, set by subclasses
-    model = None
+    model: type[Model]
 
     def __init__(self, client=None) -> None:
         #: The client pointing at the server that this collection of objects
@@ -80,7 +80,7 @@ class Collection:
     def create(self, attrs=None) -> Never:
         raise NotImplementedError
 
-    def prepare_model(self, attrs):
+    def prepare_model(self, attrs) -> Model:
         """
         Create a model from a set of attributes.
         """

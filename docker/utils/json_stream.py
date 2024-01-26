@@ -1,5 +1,6 @@
 import json
 import json.decoder
+from typing import Generator
 
 from ..errors import StreamParseError
 
@@ -48,7 +49,7 @@ def line_splitter(buffer, separator='\n'):
     return buffer[:index + 1], buffer[index + 1:]
 
 
-def split_buffer(stream, splitter=None, decoder=lambda a: a):
+def split_buffer(stream, splitter=None, decoder=lambda a: a) -> Generator[str, None, None]:
     """Given a generator which yields strings and a splitter function,
     joins all input, splits on the separator and yields each chunk.
     Unlike string.split(), each chunk includes the trailing
