@@ -622,7 +622,7 @@ class UserAgentTest(unittest.TestCase):
 
 class DisableSocketTest(unittest.TestCase):
     class DummySocket:
-        def __init__(self, timeout=60):
+        def __init__(self, timeout=60) -> None:
             self.timeout = timeout
 
         def settimeout(self, timeout):

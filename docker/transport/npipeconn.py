@@ -12,7 +12,7 @@ RecentlyUsedContainer = urllib3._collections.RecentlyUsedContainer
 
 
 class NpipeHTTPConnection(urllib3.connection.HTTPConnection):
-    def __init__(self, npipe_path, timeout=60):
+    def __init__(self, npipe_path, timeout=60) -> None:
         super().__init__(
             'localhost', timeout=timeout
         )
@@ -27,7 +27,7 @@ class NpipeHTTPConnection(urllib3.connection.HTTPConnection):
 
 
 class NpipeHTTPConnectionPool(urllib3.connectionpool.HTTPConnectionPool):
-    def __init__(self, npipe_path, timeout=60, maxsize=10):
+    def __init__(self, npipe_path, timeout=60, maxsize=10) -> None:
         super().__init__(
             'localhost', timeout=timeout, maxsize=maxsize
         )

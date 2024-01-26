@@ -27,7 +27,7 @@ class Healthcheck(DictType):
                 initialize before starting health-retries countdown in
                 nanoseconds. It should be 0 or at least 1000000 (1 ms).
     """
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         test = kwargs.get('test', kwargs.get('Test'))
         if isinstance(test, str):
             test = ["CMD-SHELL", test]

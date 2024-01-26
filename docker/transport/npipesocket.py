@@ -34,7 +34,7 @@ class NpipeSocket:
         implemented.
     """
 
-    def __init__(self, handle=None):
+    def __init__(self, handle=None) -> None:
         self._timeout = win32pipe.NMPWAIT_USE_DEFAULT_WAIT
         self._handle = handle
         self._closed = False
@@ -205,7 +205,7 @@ class NpipeSocket:
 
 
 class NpipeFileIOBase(io.RawIOBase):
-    def __init__(self, npipe_socket):
+    def __init__(self, npipe_socket) -> None:
         self.sock = npipe_socket
 
     def close(self) -> None:

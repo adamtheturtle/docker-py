@@ -6,7 +6,7 @@ class Model:
     """
     id_attribute = 'Id'
 
-    def __init__(self, attrs=None, client=None, collection=None):
+    def __init__(self, attrs=None, client=None, collection=None) -> None:
         #: A client pointing at the server that this object is on.
         self.client = client
 

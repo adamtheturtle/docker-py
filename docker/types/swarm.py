@@ -112,7 +112,7 @@ class SwarmExternalCA(dict):
 
 
     """
-    def __init__(self, url, protocol=None, options=None, ca_cert=None):
+    def __init__(self, url, protocol=None, options=None, ca_cert=None) -> None:
         self['URL'] = url
         self['Protocol'] = protocol
         self['Options'] = options

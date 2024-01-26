@@ -10,7 +10,7 @@ from .utils import create_environment_dict
 
 
 class Store:
-    def __init__(self, program, environment=None):
+    def __init__(self, program, environment=None) -> None:
         """ Create a store object that acts as an interface to
             perform the basic operations for storing, retrieving
             and erasing credentials using `program`.

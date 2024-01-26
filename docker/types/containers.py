@@ -55,7 +55,7 @@ class LogConfig(DictType):
     """
     types = LogConfigTypesEnum
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         log_driver_type = kwargs.get('type', kwargs.get('Type'))
         config = kwargs.get('config', kwargs.get('Config')) or {}
 
@@ -114,7 +114,7 @@ class Ulimit(DictType):
         [{'Name': 'nproc', 'Hard': 0, 'Soft': 1024}]
 
     """
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         name = kwargs.get('name', kwargs.get('Name'))
         soft = kwargs.get('soft', kwargs.get('Soft'))
         hard = kwargs.get('hard', kwargs.get('Hard'))
@@ -176,7 +176,7 @@ class DeviceRequest(DictType):
         options (dict): Driver-specific options. Optional.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         driver = kwargs.get('driver', kwargs.get('Driver'))
         count = kwargs.get('count', kwargs.get('Count'))
         device_ids = kwargs.get('device_ids', kwargs.get('DeviceIDs'))

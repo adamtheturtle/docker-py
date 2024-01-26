@@ -74,7 +74,7 @@ def get_credential_store(authconfig, registry):
 
 
 class AuthConfig(dict):
-    def __init__(self, dct, credstore_env=None):
+    def __init__(self, dct, credstore_env=None) -> None:
         if 'auths' not in dct:
             dct['auths'] = {}
         self.update(dct)

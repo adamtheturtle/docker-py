@@ -163,7 +163,7 @@ class Container(Model):
 
     def exec_run(self, cmd, stdout=True, stderr=True, stdin=False, tty=False,
                  privileged=False, user='', detach=False, stream=False,
-                 socket=False, environment=None, workdir=None, demux=False):
+                 socket=False, environment=None, workdir=None, demux=False) -> "ExecResult":
         """
         Run a command inside this container. Similar to
         ``docker exec``.

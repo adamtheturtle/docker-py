@@ -41,7 +41,7 @@ class DockerClient:
         max_pool_size (int): The maximum number of connections
             to save in the pool.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         self.api = APIClient(*args, **kwargs)
 
     @classmethod
@@ -102,7 +102,7 @@ class DockerClient:
 
     # Resources
     @property
-    def configs(self):
+    def configs(self) -> ConfigCollection:
         """
         An object for managing configs on the server. See the
         :doc:`configs documentation <configs>` for full details.
@@ -110,7 +110,7 @@ class DockerClient:
         return ConfigCollection(client=self)
 
     @property
-    def containers(self):
+    def containers(self) -> ContainerCollection:
         """
         An object for managing containers on the server. See the
         :doc:`containers documentation <containers>` for full details.
@@ -118,7 +118,7 @@ class DockerClient:
         return ContainerCollection(client=self)
 
     @property
-    def images(self):
+    def images(self) -> ImageCollection:
         """
         An object for managing images on the server. See the
         :doc:`images documentation <images>` for full details.
@@ -126,7 +126,7 @@ class DockerClient:
         return ImageCollection(client=self)
 
     @property
-    def networks(self):
+    def networks(self) -> NetworkCollection:
         """
         An object for managing networks on the server. See the
         :doc:`networks documentation <networks>` for full details.
@@ -134,7 +134,7 @@ class DockerClient:
         return NetworkCollection(client=self)
 
     @property
-    def nodes(self):
+    def nodes(self) -> NodeCollection:
         """
         An object for managing nodes on the server. See the
         :doc:`nodes documentation <nodes>` for full details.
@@ -142,7 +142,7 @@ class DockerClient:
         return NodeCollection(client=self)
 
     @property
-    def plugins(self):
+    def plugins(self) -> PluginCollection:
         """
         An object for managing plugins on the server. See the
         :doc:`plugins documentation <plugins>` for full details.
@@ -150,7 +150,7 @@ class DockerClient:
         return PluginCollection(client=self)
 
     @property
-    def secrets(self):
+    def secrets(self) -> SecretCollection:
         """
         An object for managing secrets on the server. See the
         :doc:`secrets documentation <secrets>` for full details.

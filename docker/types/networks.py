@@ -52,7 +52,7 @@ class EndpointConfig(dict):
 
 
 class NetworkingConfig(dict):
-    def __init__(self, endpoints_config=None):
+    def __init__(self, endpoints_config=None) -> None:
         if endpoints_config:
             self["EndpointsConfig"] = endpoints_config
 
@@ -76,7 +76,7 @@ class IPAMConfig(dict):
         >>> network = client.create_network('network1', ipam=ipam_config)
 
     """
-    def __init__(self, driver='default', pool_configs=None, options=None):
+    def __init__(self, driver='default', pool_configs=None, options=None) -> None:
         self.update({
             'Driver': driver,
             'Config': pool_configs or []

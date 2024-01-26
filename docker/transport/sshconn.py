@@ -18,7 +18,7 @@ RecentlyUsedContainer = urllib3._collections.RecentlyUsedContainer
 
 
 class SSHSocket(socket.socket):
-    def __init__(self, host):
+    def __init__(self, host) -> None:
         super().__init__(
             socket.AF_INET, socket.SOCK_STREAM)
         self.host = host
@@ -96,7 +96,7 @@ class SSHSocket(socket.socket):
 
 
 class SSHConnection(urllib3.connection.HTTPConnection):
-    def __init__(self, ssh_transport=None, timeout=60, host=None):
+    def __init__(self, ssh_transport=None, timeout=60, host=None) -> None:
         super().__init__(
             'localhost', timeout=timeout
         )
@@ -120,7 +120,7 @@ class SSHConnection(urllib3.connection.HTTPConnection):
 class SSHConnectionPool(urllib3.connectionpool.HTTPConnectionPool):
     scheme = 'ssh'
 
-    def __init__(self, ssh_client=None, timeout=60, maxsize=10, host=None):
+    def __init__(self, ssh_client=None, timeout=60, maxsize=10, host=None) -> None:
         super().__init__(
             'localhost', timeout=timeout, maxsize=maxsize
         )

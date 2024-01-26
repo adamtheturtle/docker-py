@@ -526,7 +526,7 @@ class DriverConfig(dict):
         options (dict): Driver-specific options. Default: ``None``.
     """
 
-    def __init__(self, name, options=None):
+    def __init__(self, name, options=None) -> None:
         self['Name'] = name
         if options:
             self['Options'] = options
@@ -548,7 +548,7 @@ class EndpointSpec(dict):
           Ports can only be provided if the ``vip`` resolution mode is used.
     """
 
-    def __init__(self, mode=None, ports=None):
+    def __init__(self, mode=None, ports=None) -> None:
         if ports:
             self['Ports'] = convert_service_ports(ports)
         if mode:
@@ -601,7 +601,7 @@ class ServiceMode(dict):
               services only.
     """
 
-    def __init__(self, mode, replicas=None, concurrency=None):
+    def __init__(self, mode, replicas=None, concurrency=None) -> None:
         replicated_modes = ('replicated', 'replicated-job')
         supported_modes = replicated_modes + ('global', 'global-job')
 
@@ -761,7 +761,7 @@ class PlacementPreference(dict):
                 nodes identified by this label.
     """
 
-    def __init__(self, strategy, descriptor):
+    def __init__(self, strategy, descriptor) -> None:
         if strategy != 'spread':
             raise errors.InvalidArgument(
                 f'PlacementPreference strategy value is invalid ({strategy}): '
@@ -783,7 +783,7 @@ class DNSConfig(dict):
                 to be modified (e.g., ``debug``, ``ndots:3``, etc.).
     """
 
-    def __init__(self, nameservers=None, search=None, options=None):
+    def __init__(self, nameservers=None, search=None, options=None) -> None:
         self['Nameservers'] = nameservers
         self['Search'] = search
         self['Options'] = options
@@ -857,7 +857,7 @@ class NetworkAttachmentConfig(dict):
                 network target.
     """
 
-    def __init__(self, target, aliases=None, options=None):
+    def __init__(self, target, aliases=None, options=None) -> None:
         self['Target'] = target
         self['Aliases'] = aliases
         self['DriverOpts'] = options

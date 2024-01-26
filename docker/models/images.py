@@ -143,7 +143,7 @@ class RegistryData(Model):
     """
     Image metadata stored on the registry, including available platforms.
     """
-    def __init__(self, image_name, *args, **kwargs):
+    def __init__(self, image_name, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.image_name = image_name
 

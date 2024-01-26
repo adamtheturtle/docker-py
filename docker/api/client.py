@@ -106,7 +106,7 @@ class APIClient(
                  timeout=DEFAULT_TIMEOUT_SECONDS, tls=False,
                  user_agent=DEFAULT_USER_AGENT, num_pools=None,
                  credstore_env=None, use_ssh_client=False,
-                 max_pool_size=DEFAULT_MAX_POOL_SIZE):
+                 max_pool_size=DEFAULT_MAX_POOL_SIZE) -> None:
         super().__init__()
 
         if tls and not base_url:

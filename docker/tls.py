@@ -18,7 +18,7 @@ class TLSConfig:
     ca_cert = None
     verify = None
 
-    def __init__(self, client_cert=None, ca_cert=None, verify=None):
+    def __init__(self, client_cert=None, ca_cert=None, verify=None) -> None:
         # Argument compatibility/mapping with
         # https://docs.docker.com/engine/articles/https/
         # This diverges from the Docker CLI in that users can specify 'tls'
