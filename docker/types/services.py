@@ -4,6 +4,7 @@ from ..utils import (
     check_resource, format_environment, format_extra_hosts, parse_bytes,
     split_command, convert_service_networks,
 )
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 class TaskTemplate(dict):
@@ -30,9 +31,9 @@ class TaskTemplate(dict):
             relevant parameters have been changed.
     """
 
-    def __init__(self, container_spec, resources=None, restart_policy=None,
-                 placement=None, log_driver=None, networks=None,
-                 force_update=None) -> None:
+    def __init__(self, container_spec: "ContainerSpec", resources: Optional[Dict[str, str]]=None, restart_policy: Optional[Dict[str, str]]=None,
+                 placement: Optional["Placement"]=None, log_driver: Optional[Dict[str, Union[str, Dict[str, str]]]]=None, networks: Optional[List[str]]=None,
+                 force_update: None=None) -> None:
         self['ContainerSpec'] = container_spec
         if resources:
             self['Resources'] = resources
@@ -119,13 +120,13 @@ class ContainerSpec(dict):
             the container
     """
 
-    def __init__(self, image, command=None, args=None, hostname=None, env=None,
-                 workdir=None, user=None, labels=None, mounts=None,
-                 stop_grace_period=None, secrets=None, tty=None, groups=None,
-                 open_stdin=None, read_only=None, stop_signal=None,
-                 healthcheck=None, hosts=None, dns_config=None, configs=None,
-                 privileges=None, isolation=None, init=None, cap_add=None,
-                 cap_drop=None, sysctls=None) -> None:
+    def __init__(self, image: str, command: Optional[str]=None, args: Optional[List[str]]=None, hostname: Optional[str]=None, env: Optional[Dict[str, str]]=None,
+                 workdir: Optional[str]=None, user: Optional[str]=None, labels: Optional[Dict[str, str]]=None, mounts: Optional[List[Union[Dict[str, str], str, "Mount"]]]=None,
+                 stop_grace_period: Optional[int]=None, secrets: None=None, tty: None=None, groups: None=None,
+                 open_stdin: None=None, read_only: None=None, stop_signal: None=None,
+                 healthcheck: None=None, hosts: None=None, dns_config: None=None, configs: None=None,
+                 privileges: None=None, isolation: None=None, init: None=None, cap_add: None=None,
+                 cap_drop: None=None, sysctls: Optional[Dict[str, str]]=None) -> None:
         self['Image'] = image
 
         if isinstance(command, str):
@@ -242,10 +243,10 @@ class Mount(dict):
         tmpfs_mode (int): The permission mode for the tmpfs mount.
     """
 
-    def __init__(self, target, source, type='volume', read_only=False,
-                 consistency=None, propagation=None, no_copy=False,
-                 labels=None, driver_config=None, tmpfs_size=None,
-                 tmpfs_mode=None) -> None:
+    def __init__(self, target: str, source: Optional[str], type: str='volume', read_only: bool=False,
+                 consistency: None=None, propagation: None=None, no_copy: bool=False,
+                 labels: None=None, driver_config: None=None, tmpfs_size: None=None,
+                 tmpfs_mode: None=None) -> None:
         self['Target'] = target
         self['Source'] = source
         if type not in ('bind', 'volume', 'tmpfs', 'npipe'):
@@ -302,7 +303,7 @@ class Mount(dict):
                 )
 
     @classmethod
-    def parse_mount_string(cls, string):
+    def parse_mount_string(cls, string: str) -> "Mount":
         parts = string.split(':')
         if len(parts) > 3:
             raise errors.InvalidArgument(
@@ -555,7 +556,7 @@ class EndpointSpec(dict):
             self['Mode'] = mode
 
 
-def convert_service_ports(ports):
+def convert_service_ports(ports: Dict[int, Any]) -> List[Dict[str, Union[str, int]]]:
     if isinstance(ports, list):
         return ports
     if not isinstance(ports, dict):
@@ -601,7 +602,7 @@ class ServiceMode(dict):
               services only.
     """
 
-    def __init__(self, mode, replicas=None, concurrency=None) -> None:
+    def __init__(self, mode: str, replicas: Optional[int]=None, concurrency: None=None) -> None:
         replicated_modes = ('replicated', 'replicated-job')
         supported_modes = replicated_modes + ('global', 'global-job')
 
@@ -636,7 +637,7 @@ class ServiceMode(dict):
                 self[service_mode]['TotalCompletions'] = replicas
 
     @staticmethod
-    def _convert_mode(original_mode):
+    def _convert_mode(original_mode: str) -> str:
         if original_mode == 'global-job':
             return 'GlobalJob'
 
@@ -646,7 +647,7 @@ class ServiceMode(dict):
         return original_mode
 
     @property
-    def replicas(self):
+    def replicas(self) -> Optional[int]:
         if 'replicated' in self:
             return self['replicated'].get('Replicas')
 
@@ -728,8 +729,8 @@ class Placement(dict):
                 expressed as ``(arch, os)`` tuples
     """
 
-    def __init__(self, constraints=None, preferences=None, platforms=None,
-                 maxreplicas=None) -> None:
+    def __init__(self, constraints: Optional[List[str]]=None, preferences: Optional[List[str]]=None, platforms: Optional[List[Tuple[str, str]]]=None,
+                 maxreplicas: Optional[int]=None) -> None:
         if constraints is not None:
             self['Constraints'] = constraints
         if preferences is not None:

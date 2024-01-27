@@ -1,8 +1,8 @@
 import copy
 import ntpath
 from collections import namedtuple
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
-from .images import Image
 from .resource import Collection, Model
 from ..api import APIClient
 from ..constants import DEFAULT_DATA_CHUNK_SIZE
@@ -12,6 +12,10 @@ from ..errors import (
 )
 from ..types import HostConfig, NetworkingConfig
 from ..utils import version_gte
+from docker.models.images import Image
+
+if TYPE_CHECKING:
+    from .images import Image
 
 
 class Container(Model):
@@ -23,7 +27,7 @@ class Container(Model):
     """
 
     @property
-    def name(self):
+    def name(self) -> str:
         """
         The name of the container.
         """
@@ -31,7 +35,7 @@ class Container(Model):
             return self.attrs['Name'].lstrip('/')
 
     @property
-    def image(self):
+    def image(self) -> Image:
         """
         The image of the container.
         """
@@ -41,7 +45,7 @@ class Container(Model):
         return self.client.images.get(image_id.split(':')[1])
 
     @property
-    def labels(self):
+    def labels(self) -> Dict[str, str]:
         """
         The labels of a container as dictionary.
         """
@@ -55,7 +59,7 @@ class Container(Model):
             ) from ke
 
     @property
-    def status(self):
+    def status(self) -> str:
         """
         The status of the container. For example, ``running``, or ``exited``.
         """
@@ -121,7 +125,7 @@ class Container(Model):
         """
         return self.client.api.attach_socket(self.id, **kwargs)
 
-    def commit(self, repository=None, tag=None, **kwargs):
+    def commit(self, repository: None=None, tag: None=None, **kwargs) -> Image:
         """
         Commit a container to an image. Similar to the ``docker commit``
         command.
@@ -161,9 +165,9 @@ class Container(Model):
         """
         return self.client.api.diff(self.id)
 
-    def exec_run(self, cmd, stdout=True, stderr=True, stdin=False, tty=False,
-                 privileged=False, user='', detach=False, stream=False,
-                 socket=False, environment=None, workdir=None, demux=False):
+    def exec_run(self, cmd: str, stdout: bool=True, stderr: bool=True, stdin: bool=False, tty: bool=False,
+                 privileged: bool=False, user: str='', detach: bool=False, stream: bool=False,
+                 socket: bool=False, environment: None=None, workdir: None=None, demux: bool=False) -> "ExecResult":
         """
         Run a command inside this container. Similar to
         ``docker exec``.
@@ -287,7 +291,7 @@ class Container(Model):
 
         return self.client.api.kill(self.id, signal=signal)
 
-    def logs(self, **kwargs):
+    def logs(self, **kwargs) -> Union[str, List[bytes]]:
         """
         Get logs from this container. Similar to the ``docker logs`` command.
 
@@ -405,7 +409,7 @@ class Container(Model):
         """
         return self.client.api.restart(self.id, **kwargs)
 
-    def start(self, **kwargs):
+    def start(self, **kwargs) -> None:
         """
         Start this container. Similar to the ``docker start`` command, but
         doesn't support attach options.
@@ -501,7 +505,7 @@ class Container(Model):
         """
         return self.client.api.update_container(self.id, **kwargs)
 
-    def wait(self, **kwargs):
+    def wait(self, **kwargs) -> Dict[str, int]:
         """
         Block until the container stops, then return its exit code. Similar to
         the ``docker wait`` command.
@@ -528,8 +532,8 @@ class Container(Model):
 class ContainerCollection(Collection):
     model = Container
 
-    def run(self, image, command=None, stdout=True, stderr=False,
-            remove=False, **kwargs):
+    def run(self, image: Union[str, Image], command: Optional[str]=None, stdout: bool=True, stderr: bool=False,
+            remove: bool=False, **kwargs) -> Union[Container, bytes]:
         """
         Run a container. By default, it will wait for the container to finish
         and return its logs, similar to ``docker run``.
@@ -907,7 +911,7 @@ class ContainerCollection(Collection):
             return out
         return b''.join(out)
 
-    def create(self, image, command=None, **kwargs):
+    def create(self, image: Union[str, Image], command: Optional[str]=None, **kwargs) -> Container:
         """
         Create a container without starting it. Similar to ``docker create``.
 
@@ -932,7 +936,7 @@ class ContainerCollection(Collection):
         resp = self.client.api.create_container(**create_kwargs)
         return self.get(resp['Id'])
 
-    def get(self, container_id):
+    def get(self, container_id: str) -> Container:
         """
         Get a container by name or ID.
 
@@ -951,8 +955,8 @@ class ContainerCollection(Collection):
         resp = self.client.api.inspect_container(container_id)
         return self.prepare_model(resp)
 
-    def list(self, all=False, before=None, filters=None, limit=-1, since=None,
-             sparse=False, ignore_removed=False):
+    def list(self, all: bool=False, before: None=None, filters: None=None, limit: int=-1, since: None=None,
+             sparse: bool=False, ignore_removed: bool=False) -> List[Union[Container, Any]]:
         """
         List containers. Similar to the ``docker ps`` command.
 
@@ -1116,7 +1120,7 @@ RUN_HOST_CONFIG_KWARGS = [
 ]
 
 
-def _create_container_args(kwargs):
+def _create_container_args(kwargs: Dict[str, Any]) -> Dict[str, Any]:
     """
     Convert arguments to create() to arguments to create_container().
     """
@@ -1178,7 +1182,7 @@ def _create_container_args(kwargs):
     return create_kwargs
 
 
-def _host_volume_from_bind(bind):
+def _host_volume_from_bind(bind: str) -> str:
     drive, rest = ntpath.splitdrive(bind)
     bits = rest.split(':', 1)
     if len(bits) == 1 or bits[1] in ('ro', 'rw'):

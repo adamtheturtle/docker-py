@@ -6,11 +6,12 @@ from docker import utils
 from docker.constants import IS_WINDOWS_PLATFORM
 from docker.constants import DEFAULT_UNIX_SOCKET
 from docker.utils.config import find_config_file
+from typing import Optional
 
 METAFILE = "meta.json"
 
 
-def get_current_context_name():
+def get_current_context_name() -> str:
     name = "default"
     docker_cfg_path = find_config_file()
     if docker_cfg_path:
@@ -47,33 +48,33 @@ def write_context_name_to_docker_config(name=None):
         return e
 
 
-def get_context_id(name):
+def get_context_id(name: str) -> str:
     return hashlib.sha256(name.encode('utf-8')).hexdigest()
 
 
-def get_context_dir():
+def get_context_dir() -> str:
     return os.path.join(os.path.dirname(find_config_file() or ""), "contexts")
 
 
-def get_meta_dir(name=None):
+def get_meta_dir(name: Optional[str]=None) -> str:
     meta_dir = os.path.join(get_context_dir(), "meta")
     if name:
         return os.path.join(meta_dir, get_context_id(name))
     return meta_dir
 
 
-def get_meta_file(name):
+def get_meta_file(name: str) -> str:
     return os.path.join(get_meta_dir(name), METAFILE)
 
 
-def get_tls_dir(name=None, endpoint=""):
+def get_tls_dir(name: Optional[str]=None, endpoint: str="") -> str:
     context_dir = get_context_dir()
     if name:
         return os.path.join(context_dir, "tls", get_context_id(name), endpoint)
     return os.path.join(context_dir, "tls")
 
 
-def get_context_host(path=None, tls=False):
+def get_context_host(path: Optional[str]=None, tls: bool=False) -> str:
     host = utils.parse_host(path, IS_WINDOWS_PLATFORM, tls)
     if host == DEFAULT_UNIX_SOCKET:
         # remove http+ from default docker socket url

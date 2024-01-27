@@ -6,6 +6,9 @@ from ..utils.utils import (
 )
 from .base import DictType
 from .healthcheck import Healthcheck
+from docker.errors import InvalidVersion
+from docker.types.networks import NetworkingConfig
+from typing import Dict, List, Optional, Tuple, Union
 
 
 class LogConfigTypesEnum:
@@ -254,29 +257,29 @@ class DeviceRequest(DictType):
 
 
 class HostConfig(dict):
-    def __init__(self, version, binds=None, port_bindings=None,
-                 lxc_conf=None, publish_all_ports=False, links=None,
-                 privileged=False, dns=None, dns_search=None,
-                 volumes_from=None, network_mode=None, restart_policy=None,
-                 cap_add=None, cap_drop=None, devices=None, extra_hosts=None,
-                 read_only=None, pid_mode=None, ipc_mode=None,
-                 security_opt=None, ulimits=None, log_config=None,
-                 mem_limit=None, memswap_limit=None, mem_reservation=None,
-                 kernel_memory=None, mem_swappiness=None, cgroup_parent=None,
-                 group_add=None, cpu_quota=None, cpu_period=None,
-                 blkio_weight=None, blkio_weight_device=None,
-                 device_read_bps=None, device_write_bps=None,
-                 device_read_iops=None, device_write_iops=None,
-                 oom_kill_disable=False, shm_size=None, sysctls=None,
-                 tmpfs=None, oom_score_adj=None, dns_opt=None, cpu_shares=None,
-                 cpuset_cpus=None, userns_mode=None, uts_mode=None,
-                 pids_limit=None, isolation=None, auto_remove=False,
-                 storage_opt=None, init=None, init_path=None,
-                 volume_driver=None, cpu_count=None, cpu_percent=None,
-                 nano_cpus=None, cpuset_mems=None, runtime=None, mounts=None,
-                 cpu_rt_period=None, cpu_rt_runtime=None,
-                 device_cgroup_rules=None, device_requests=None,
-                 cgroupns=None) -> None:
+    def __init__(self, version: str, binds: Optional[Union[Dict[str, Dict[str, str]], Dict[str, Dict[str, Union[str, bool]]], List[str]]]=None, port_bindings: Optional[Union[Dict[int, Optional[int]], Dict[Union[int, str], Optional[Union[int, Tuple[int], Tuple[str], Tuple[str, int], List[Tuple[str]]]]]]]=None,
+                 lxc_conf: Optional[Union[Dict[str, str], List[Dict[str, str]]]]=None, publish_all_ports: bool=False, links: Optional[Union[List[Tuple[str, str]], Dict[str, str]]]=None,
+                 privileged: bool=False, dns: Optional[List[str]]=None, dns_search: Optional[List[str]]=None,
+                 volumes_from: Optional[List[str]]=None, network_mode: Optional[str]=None, restart_policy: Optional[Union[Dict[str, str], Dict[str, Union[str, int]]]]=None,
+                 cap_add: Optional[List[str]]=None, cap_drop: Optional[List[str]]=None, devices: Optional[List[str]]=None, extra_hosts: Optional[Dict[str, str]]=None,
+                 read_only: Optional[bool]=None, pid_mode: Optional[str]=None, ipc_mode: Optional[str]=None,
+                 security_opt: Optional[Union[str, List[str]]]=None, ulimits: Optional[Union[List[Dict[str, Union[str, int]]], List[Ulimit]]]=None, log_config: Optional[Union[Dict[str, str], Dict[str, Union[str, Dict[str, str]]], LogConfig]]=None,
+                 mem_limit: Optional[Union[int, str, float]]=None, memswap_limit: Optional[int]=None, mem_reservation: Optional[int]=None,
+                 kernel_memory: Optional[int]=None, mem_swappiness: Optional[Union[int, str]]=None, cgroup_parent: Optional[str]=None,
+                 group_add: Optional[List[str]]=None, cpu_quota: Optional[Union[int, str, float]]=None, cpu_period: Optional[Union[int, str, float]]=None,
+                 blkio_weight: Optional[int]=None, blkio_weight_device: Optional[List[Dict[str, Union[str, int]]]]=None,
+                 device_read_bps: Optional[List[Dict[str, Union[str, int]]]]=None, device_write_bps: Optional[List[Dict[str, Union[str, int]]]]=None,
+                 device_read_iops: Optional[List[Dict[str, Union[str, int]]]]=None, device_write_iops: Optional[List[Dict[str, Union[str, int]]]]=None,
+                 oom_kill_disable: bool=False, shm_size: Optional[Union[int, str]]=None, sysctls: Optional[Union[Dict[str, str], Dict[str, Union[str, int]]]]=None,
+                 tmpfs: Optional[Union[Dict[str, str], List[str]]]=None, oom_score_adj: Optional[Union[int, str]]=None, dns_opt: Optional[List[str]]=None, cpu_shares: Optional[int]=None,
+                 cpuset_cpus: Optional[str]=None, userns_mode: Optional[str]=None, uts_mode: Optional[str]=None,
+                 pids_limit: Optional[Union[int, str]]=None, isolation: Optional[Union[Dict[str, str], str]]=None, auto_remove: bool=False,
+                 storage_opt: None=None, init: None=None, init_path: None=None,
+                 volume_driver: Optional[str]=None, cpu_count: Optional[Union[int, str]]=None, cpu_percent: Optional[Union[int, str]]=None,
+                 nano_cpus: Optional[Union[int, str]]=None, cpuset_mems: Optional[str]=None, runtime: None=None, mounts: None=None,
+                 cpu_rt_period: Optional[Union[int, str]]=None, cpu_rt_runtime: Optional[Union[int, str]]=None,
+                 device_cgroup_rules: None=None, device_requests: Optional[List[Union[Dict[str, List[str]], Dict[str, Union[str, int, List[List[str]], Dict[str, str]]]]]]=None,
+                 cgroupns: Optional[str]=None) -> None:
 
         if mem_limit is not None:
             self['Memory'] = parse_bytes(mem_limit)
@@ -654,20 +657,20 @@ class HostConfig(dict):
             self['CgroupnsMode'] = cgroupns
 
 
-def host_config_type_error(param, param_value, expected):
+def host_config_type_error(param: str, param_value: Union[Dict[str, str], str, float], expected: str) -> TypeError:
     return TypeError(
         f'Invalid type for {param} param: expected {expected} '
         f'but found {type(param_value)}'
     )
 
 
-def host_config_version_error(param, version, less_than=True):
+def host_config_version_error(param: str, version: str, less_than: bool=True) -> InvalidVersion:
     operator = '<' if less_than else '>'
     return errors.InvalidVersion(
         f'{param} param is not supported in API versions {operator} {version}',
     )
 
-def host_config_value_error(param, param_value):
+def host_config_value_error(param: str, param_value: str) -> ValueError:
     return ValueError(f'Invalid value for {param} param: {param_value}')
 
 
@@ -679,12 +682,12 @@ def host_config_incompatible_error(param, param_value, incompatible_param):
 
 class ContainerConfig(dict):
     def __init__(
-        self, version, image, command, hostname=None, user=None, detach=False,
-        stdin_open=False, tty=False, ports=None, environment=None,
-        volumes=None, network_disabled=False, entrypoint=None,
-        working_dir=None, domainname=None, host_config=None, mac_address=None,
-        labels=None, stop_signal=None, networking_config=None,
-        healthcheck=None, stop_timeout=None, runtime=None
+        self, version: str, image: str, command: Union[str, List[str]], hostname: None=None, user: Optional[int]=None, detach: bool=False,
+        stdin_open: bool=False, tty: bool=False, ports: Optional[List[Union[int, Tuple[int, str], Tuple[int]]]]=None, environment: Optional[List[str]]=None,
+        volumes: Optional[List[str]]=None, network_disabled: bool=False, entrypoint: Optional[str]=None,
+        working_dir: Optional[str]=None, domainname: None=None, host_config: Optional[HostConfig]=None, mac_address: Optional[str]=None,
+        labels: Optional[Union[Dict[str, str], List[str]]]=None, stop_signal: Optional[str]=None, networking_config: Optional[NetworkingConfig]=None,
+        healthcheck: None=None, stop_timeout: None=None, runtime: None=None
     ) -> None:
 
         if stop_timeout is not None and version_lt(version, '1.25'):

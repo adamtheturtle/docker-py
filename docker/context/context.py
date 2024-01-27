@@ -7,13 +7,14 @@ from docker.context.config import get_meta_dir
 from docker.context.config import get_meta_file
 from docker.context.config import get_tls_dir
 from docker.context.config import get_context_host
+from typing import Any, Dict, Optional, Union
 
 
 class Context:
     """A context."""
 
-    def __init__(self, name, orchestrator=None, host=None, endpoints=None,
-                 tls=False) -> None:
+    def __init__(self, name: str, orchestrator: None=None, host: Optional[str]=None, endpoints: Optional[Dict[str, Dict[str, Union[str, bool]]]]=None,
+                 tls: bool=False) -> None:
         if not name:
             raise Exception("Name not provided")
         self.name = name
@@ -72,7 +73,7 @@ class Context:
         return self.__call__()
 
     @classmethod
-    def load_context(cls, name):
+    def load_context(cls, name: str) -> "Context":
         meta = Context._load_meta(name)
         if meta:
             instance = cls(
@@ -86,7 +87,7 @@ class Context:
         return None
 
     @classmethod
-    def _load_meta(cls, name):
+    def _load_meta(cls, name: str) -> Dict[str, Union[str, Dict[str, Union[str, Dict[str, str]]], Dict[str, Dict[str, Union[str, bool]]]]]:
         meta_file = get_meta_file(name)
         if not os.path.isfile(meta_file):
             return None
@@ -178,7 +179,7 @@ class Context:
     def __str__(self) -> str:
         return json.dumps(self.__call__(), indent=2)
 
-    def __call__(self):
+    def __call__(self) -> Dict[str, Union[str, Dict[str, str], Dict[str, Dict[str, Union[str, bool]]]]]:
         result = self.Metadata
         result.update(self.TLSMaterial)
         result.update(self.Storage)
@@ -188,11 +189,11 @@ class Context:
         return self.context_type is None
 
     @property
-    def Name(self):
+    def Name(self) -> str:
         return self.name
 
     @property
-    def Host(self):
+    def Host(self) -> str:
         if not self.orchestrator or self.orchestrator == "swarm":
             endpoint = self.endpoints.get("docker", None)
             if endpoint:
@@ -206,7 +207,7 @@ class Context:
         return self.orchestrator
 
     @property
-    def Metadata(self):
+    def Metadata(self) -> Dict[str, Union[str, Dict[str, str], Dict[str, Dict[str, Union[str, bool]]]]]:
         meta = {}
         if self.orchestrator:
             meta = {"StackOrchestrator": self.orchestrator}
@@ -226,7 +227,7 @@ class Context:
         return None
 
     @property
-    def TLSMaterial(self):
+    def TLSMaterial(self) -> Dict[str, Dict[Any, Any]]:
         certs = {}
         for endpoint, tls in self.tls_cfg.items():
             cert, key = tls.cert
@@ -237,7 +238,7 @@ class Context:
         }
 
     @property
-    def Storage(self):
+    def Storage(self) -> Dict[str, Dict[str, str]]:
         return {
             "Storage": {
                 "MetadataPath": self.meta_path,

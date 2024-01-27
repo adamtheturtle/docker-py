@@ -1,4 +1,5 @@
 import re
+from typing import Dict, List, Optional, Tuple, Union
 
 PORT_SPEC = re.compile(
     "^"  # Match full string
@@ -12,14 +13,14 @@ PORT_SPEC = re.compile(
 )
 
 
-def add_port_mapping(port_bindings, internal_port, external) -> None:
+def add_port_mapping(port_bindings: Dict[str, List[Tuple[str, str]]], internal_port: str, external: Tuple[str, str]) -> None:
     if internal_port in port_bindings:
         port_bindings[internal_port].append(external)
     else:
         port_bindings[internal_port] = [external]
 
 
-def add_port(port_bindings, internal_port_range, external_range) -> None:
+def add_port(port_bindings: Dict[str, List[Tuple[str, str]]], internal_port_range: List[str], external_range: List[Tuple[str, str]]) -> None:
     if external_range is None:
         for internal_port in internal_port_range:
             add_port_mapping(port_bindings, internal_port, None)
@@ -29,7 +30,7 @@ def add_port(port_bindings, internal_port_range, external_range) -> None:
             add_port_mapping(port_bindings, internal_port, external_port)
 
 
-def build_port_bindings(ports):
+def build_port_bindings(ports: List[str]) -> Dict[str, List[Tuple[str, str]]]:
     port_bindings = {}
     for port in ports:
         internal_port_range, external_range = split_port(port)
@@ -37,13 +38,13 @@ def build_port_bindings(ports):
     return port_bindings
 
 
-def _raise_invalid_port(port) -> None:
+def _raise_invalid_port(port: str) -> None:
     raise ValueError('Invalid port "%s", should be '
                      '[[remote_ip:]remote_port[-remote_port]:]'
                      'port[/protocol]' % port)
 
 
-def port_range(start, end, proto, randomly_available_port=False):
+def port_range(start: Optional[str], end: Optional[str], proto: str, randomly_available_port: bool=False) -> Optional[Union[List[str], str]]:
     if not start:
         return start
     if not end:
@@ -53,7 +54,7 @@ def port_range(start, end, proto, randomly_available_port=False):
     return [str(port) + proto for port in range(int(start), int(end) + 1)]
 
 
-def split_port(port):
+def split_port(port: Union[str, int]) -> Union[Tuple[List[str], List[Tuple[str, str]]], Tuple[List[str], List[str]], Tuple[List[str], List[Tuple[str, None]]], Tuple[List[str], None]]:
     if hasattr(port, 'legacy_repr'):
         # This is the worst hack, but it prevents a bug in Compose 1.14.0
         # https://github.com/docker/docker-py/issues/1668

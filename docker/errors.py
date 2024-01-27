@@ -1,4 +1,10 @@
 import requests
+from requests.exceptions import HTTPError
+from requests.models import Response
+from typing import Dict, List, Optional, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from docker.models.containers import Container
 
 _image_not_found_explanation_fragments = frozenset(
     fragment.lower() for fragment in [
@@ -19,7 +25,7 @@ class DockerException(Exception):
     """
 
 
-def create_api_error_from_http_exception(e) -> None:
+def create_api_error_from_http_exception(e: HTTPError) -> None:
     """
     Create a suitable APIError from requests.exceptions.HTTPError.
     """
@@ -43,7 +49,7 @@ class APIError(requests.exceptions.HTTPError, DockerException):
     """
     An HTTP error from the API.
     """
-    def __init__(self, message, response=None, explanation=None) -> None:
+    def __init__(self, message: Union[HTTPError, str], response: Optional[Response]=None, explanation: Optional[str]=None) -> None:
         # requests 1.2 supports response as a keyword argument, but
         # requests 1.1 doesn't
         super().__init__(message)
@@ -71,19 +77,19 @@ class APIError(requests.exceptions.HTTPError, DockerException):
         return message
 
     @property
-    def status_code(self):
+    def status_code(self) -> int:
         if self.response is not None:
             return self.response.status_code
 
-    def is_error(self):
+    def is_error(self) -> bool:
         return self.is_client_error() or self.is_server_error()
 
-    def is_client_error(self):
+    def is_client_error(self) -> bool:
         if self.status_code is None:
             return False
         return 400 <= self.status_code < 500
 
-    def is_server_error(self):
+    def is_server_error(self) -> bool:
         if self.status_code is None:
             return False
         return 500 <= self.status_code < 600
@@ -136,7 +142,7 @@ class ContainerError(DockerException):
     """
     Represents a container that has exited with a non-zero exit code.
     """
-    def __init__(self, container, exit_status, command, image, stderr) -> None:
+    def __init__(self, container: "Container", exit_status: int, command: Optional[str], image: str, stderr: Optional[Union[List[bytes], str]]) -> None:
         self.container = container
         self.exit_status = exit_status
         self.command = command
@@ -166,7 +172,7 @@ class ImageLoadError(DockerException):
     pass
 
 
-def create_unexpected_kwargs_error(name, kwargs):
+def create_unexpected_kwargs_error(name: str, kwargs: Dict[str, str]) -> TypeError:
     quoted_kwargs = [f"'{k}'" for k in sorted(kwargs)]
     text = [f"{name}() "]
     if len(quoted_kwargs) == 1:
@@ -194,7 +200,7 @@ class ContextAlreadyExists(DockerException):
 
 
 class ContextException(DockerException):
-    def __init__(self, msg) -> None:
+    def __init__(self, msg: str) -> None:
         self.msg = msg
 
     def __str__(self) -> str:

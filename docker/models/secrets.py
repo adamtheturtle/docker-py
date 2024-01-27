@@ -28,7 +28,7 @@ class SecretCollection(Collection):
     """Secrets on the Docker server."""
     model = Secret
 
-    def create(self, **kwargs):
+    def create(self, **kwargs) -> Secret:
         obj = self.client.api.create_secret(**kwargs)
         obj.setdefault("Spec", {})["Name"] = kwargs.get("name")
         return self.prepare_model(obj)

@@ -1,9 +1,10 @@
 from .. import errors
 from .. import utils
+from typing import Dict, List, Optional, Union
 
 
 class VolumeApiMixin:
-    def volumes(self, filters=None):
+    def volumes(self, filters: Optional[Dict[str, bool]]=None) -> Dict[str, List[Dict[str, str]]]:
         """
         List volumes currently registered by the docker daemon. Similar to the
         ``docker volume ls`` command.
@@ -36,8 +37,8 @@ class VolumeApiMixin:
         url = self._url('/volumes')
         return self._result(self._get(url, params=params), True)
 
-    def create_volume(self, name=None, driver=None, driver_opts=None,
-                      labels=None):
+    def create_volume(self, name: Optional[str]=None, driver: Optional[str]=None, driver_opts: Optional[Union[str, List[str]]]=None,
+                      labels: Optional[Union[int, Dict[str, str]]]=None) -> Dict[str, Union[str, Dict[str, str]]]:
         """
         Create and register a named volume
 
@@ -91,7 +92,7 @@ class VolumeApiMixin:
 
         return self._result(self._post_json(url, data=data), True)
 
-    def inspect_volume(self, name):
+    def inspect_volume(self, name: str) -> Dict[str, Union[str, Dict[str, str]]]:
         """
         Retrieve volume info by name.
 
@@ -138,7 +139,7 @@ class VolumeApiMixin:
         url = self._url('/volumes/prune')
         return self._result(self._post(url, params=params), True)
 
-    def remove_volume(self, name, force=False) -> None:
+    def remove_volume(self, name: str, force: bool=False) -> None:
         """
         Remove a volume. Similar to the ``docker volume rm`` command.
 

@@ -2,6 +2,7 @@ from ..api import APIClient
 from ..utils import version_gte
 from .containers import Container
 from .resource import Model, Collection
+from typing import List
 
 
 class Network(Model):
@@ -97,7 +98,7 @@ class NetworkCollection(Collection):
     """
     model = Network
 
-    def create(self, name, *args, **kwargs):
+    def create(self, name: str, *args, **kwargs) -> Network:
         """
         Create a network. Similar to the ``docker network create``.
 
@@ -156,7 +157,7 @@ class NetworkCollection(Collection):
         resp = self.client.api.create_network(name, *args, **kwargs)
         return self.get(resp['Id'])
 
-    def get(self, network_id, *args, **kwargs):
+    def get(self, network_id: str, *args, **kwargs) -> Network:
         """
         Get a network by its ID.
 
@@ -182,7 +183,7 @@ class NetworkCollection(Collection):
             self.client.api.inspect_network(network_id, *args, **kwargs)
         )
 
-    def list(self, *args, **kwargs):
+    def list(self, *args, **kwargs) -> List[Network]:
         """
         List networks. Similar to the ``docker network ls`` command.
 

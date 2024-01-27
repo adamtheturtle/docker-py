@@ -6,6 +6,7 @@ import tempfile
 
 from .fnmatch import fnmatch
 from ..constants import IS_WINDOWS_PLATFORM
+from typing import Any, Iterator, List, Optional, Set, Tuple, Union
 
 
 _SEP = re.compile('/|\\\\') if IS_WINDOWS_PLATFORM else re.compile('/')
@@ -20,7 +21,7 @@ def match_tag(tag: str) -> bool:
     return bool(_TAG.match(tag))
 
 
-def tar(path, exclude=None, dockerfile=None, fileobj=None, gzip=False):
+def tar(path: str, exclude: Optional[List[str]]=None, dockerfile: Optional[Union[Tuple[str, None], Tuple[None, None]]]=None, fileobj: None=None, gzip: bool=False) -> tempfile._TemporaryFileWrapper:
     root = os.path.abspath(path)
     exclude = exclude or []
     dockerfile = dockerfile or (None, None)
@@ -39,7 +40,7 @@ def tar(path, exclude=None, dockerfile=None, fileobj=None, gzip=False):
     )
 
 
-def exclude_paths(root, patterns, dockerfile=None):
+def exclude_paths(root: str, patterns: List[Union[str, Any]], dockerfile: Optional[str]=None) -> Set[str]:
     """
     Given a root directory path and a list of .dockerignore patterns, return
     an iterator of all paths (both regular files and directories) in the root
@@ -68,8 +69,8 @@ def build_file_list(root):
     return files
 
 
-def create_archive(root, files=None, fileobj=None, gzip=False,
-                   extra_files=None):
+def create_archive(root: str, files: Optional[List[Union[str, Any]]]=None, fileobj: None=None, gzip: bool=False,
+                   extra_files: Optional[List[Any]]=None) -> tempfile._TemporaryFileWrapper:
     extra_files = extra_files or []
     if not fileobj:
         fileobj = tempfile.NamedTemporaryFile()
@@ -121,7 +122,7 @@ def create_archive(root, files=None, fileobj=None, gzip=False,
     return fileobj
 
 
-def mkbuildcontext(dockerfile):
+def mkbuildcontext(dockerfile: io.BytesIO) -> tempfile._TemporaryFileWrapper:
     f = tempfile.NamedTemporaryFile()
     t = tarfile.open(mode='w', fileobj=f)
     if isinstance(dockerfile, io.StringIO):
@@ -140,11 +141,11 @@ def mkbuildcontext(dockerfile):
     return f
 
 
-def split_path(p):
+def split_path(p: str) -> List[Union[str, Any]]:
     return [pt for pt in re.split(_SEP, p) if pt and pt != '.']
 
 
-def normalize_slashes(p):
+def normalize_slashes(p: str) -> str:
     if IS_WINDOWS_PLATFORM:
         return '/'.join(split_path(p))
     return p
@@ -158,13 +159,13 @@ def walk(root, patterns, default=True):
 # Heavily based on
 # https://github.com/moby/moby/blob/master/pkg/fileutils/fileutils.go
 class PatternMatcher:
-    def __init__(self, patterns) -> None:
+    def __init__(self, patterns: List[str]) -> None:
         self.patterns = list(filter(
             lambda p: p.dirs, [Pattern(p) for p in patterns]
         ))
         self.patterns.append(Pattern('!.dockerignore'))
 
-    def matches(self, filepath):
+    def matches(self, filepath: str) -> bool:
         matched = False
         parent_path = os.path.dirname(filepath)
         parent_path_dirs = split_path(parent_path)
@@ -183,7 +184,7 @@ class PatternMatcher:
 
         return matched
 
-    def walk(self, root):
+    def walk(self, root: str) -> Iterator[Any]:
         def rec_walk(current_dir):
             for f in os.listdir(current_dir):
                 fpath = os.path.join(
@@ -221,7 +222,7 @@ class PatternMatcher:
 
 
 class Pattern:
-    def __init__(self, pattern_str) -> None:
+    def __init__(self, pattern_str: str) -> None:
         self.exclusion = False
         if pattern_str.startswith('!'):
             self.exclusion = True
@@ -231,7 +232,7 @@ class Pattern:
         self.cleaned_pattern = '/'.join(self.dirs)
 
     @classmethod
-    def normalize(cls, p):
+    def normalize(cls, p: str) -> List[Union[str, Any]]:
 
         # Remove trailing spaces
         p = p.strip()
@@ -257,5 +258,5 @@ class Pattern:
                 i += 1
         return split
 
-    def match(self, filepath):
+    def match(self, filepath: str) -> bool:
         return fnmatch(normalize_slashes(filepath), self.cleaned_pattern)

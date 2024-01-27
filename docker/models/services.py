@@ -2,6 +2,8 @@ import copy
 from docker.errors import create_unexpected_kwargs_error, InvalidArgument
 from docker.types import TaskTemplate, ContainerSpec, Placement, ServiceMode
 from .resource import Model, Collection
+import docker.types.services
+from typing import Any, Dict, Union
 
 
 class Service(Model):
@@ -337,7 +339,7 @@ PLACEMENT_KWARGS = [
 ]
 
 
-def _get_create_service_kwargs(func_name, kwargs):
+def _get_create_service_kwargs(func_name: str, kwargs: Dict[str, Any]) -> Dict[str, Union[str, Dict[str, str], docker.types.services.TaskTemplate]]:
     # Copy over things which can be copied directly
     create_kwargs = {}
     for key in copy.copy(kwargs):

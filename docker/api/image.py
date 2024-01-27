@@ -3,6 +3,7 @@ import os
 
 from .. import auth, errors, utils
 from ..constants import DEFAULT_DATA_CHUNK_SIZE
+from typing import Any, Dict, Iterator, List, Optional, Union
 
 log = logging.getLogger(__name__)
 
@@ -10,7 +11,7 @@ log = logging.getLogger(__name__)
 class ImageApiMixin:
 
     @utils.check_resource('image')
-    def get_image(self, image, chunk_size=DEFAULT_DATA_CHUNK_SIZE):
+    def get_image(self, image: str, chunk_size: int=DEFAULT_DATA_CHUNK_SIZE) -> Iterator[Any]:
         """
         Get a tarball of an image. Similar to the ``docker save`` command.
 
@@ -39,7 +40,7 @@ class ImageApiMixin:
         return self._stream_raw_result(res, chunk_size, False)
 
     @utils.check_resource('image')
-    def history(self, image):
+    def history(self, image: str) -> List[Dict[str, Union[str, int]]]:
         """
         Show the history of an image.
 
@@ -56,7 +57,7 @@ class ImageApiMixin:
         res = self._get(self._url("/images/{0}/history", image))
         return self._result(res, True)
 
-    def images(self, name=None, quiet=False, all=False, filters=None):
+    def images(self, name: Optional[str]=None, quiet: bool=False, all: bool=False, filters: Optional[Dict[str, bool]]=None) -> List[Union[str, Dict[str, Union[str, List[str]]]]]:
         """
         List images. Similar to the ``docker images`` command.
 
@@ -99,8 +100,8 @@ class ImageApiMixin:
             return [x['Id'] for x in res]
         return res
 
-    def import_image(self, src=None, repository=None, tag=None, image=None,
-                     changes=None, stream_src=False):
+    def import_image(self, src: Optional[str]=None, repository: Optional[str]=None, tag: Optional[str]=None, image: Optional[str]=None,
+                     changes: None=None, stream_src: bool=False) -> str:
         """
         Import an image. Similar to the ``docker import`` command.
 
@@ -232,7 +233,7 @@ class ImageApiMixin:
         )
 
     @utils.check_resource('image')
-    def inspect_image(self, image):
+    def inspect_image(self, image: str) -> Dict[str, Union[str, Dict[str, Dict[str, str]], Dict[str, Union[str, int, bool, List[str]]], int]]:
         """
         Get detailed information about an image. Similar to the ``docker
         inspect`` command, but only for images.
@@ -288,7 +289,7 @@ class ImageApiMixin:
             self._get(url, headers=headers), True
         )
 
-    def load_image(self, data, quiet=None):
+    def load_image(self, data: str, quiet: Optional[bool]=None) -> Iterator[Any]:
         """
         Load an image that was previously saved using
         :py:meth:`~docker.api.image.ImageApiMixin.get_image` (or ``docker
@@ -348,8 +349,8 @@ class ImageApiMixin:
             params['filters'] = utils.convert_filters(filters)
         return self._result(self._post(url, params=params), True)
 
-    def pull(self, repository, tag=None, stream=False, auth_config=None,
-             decode=False, platform=None, all_tags=False):
+    def pull(self, repository: str, tag: None=None, stream: bool=False, auth_config: None=None,
+             decode: bool=False, platform: None=None, all_tags: bool=False) -> str:
         """
         Pulls an image. Similar to the ``docker pull`` command.
 
@@ -433,8 +434,8 @@ class ImageApiMixin:
 
         return self._result(response)
 
-    def push(self, repository, tag=None, stream=False, auth_config=None,
-             decode=False):
+    def push(self, repository: str, tag: Optional[str]=None, stream: bool=False, auth_config: Optional[Dict[str, str]]=None,
+             decode: bool=False) -> str:
         """
         Push an image or a repository to the registry. Similar to the ``docker
         push`` command.
@@ -500,7 +501,7 @@ class ImageApiMixin:
         return self._result(response)
 
     @utils.check_resource('image')
-    def remove_image(self, image, force=False, noprune=False):
+    def remove_image(self, image: str, force: bool=False, noprune: bool=False) -> Dict[str, str]:
         """
         Remove an image. Similar to the ``docker rmi`` command.
 
@@ -513,7 +514,7 @@ class ImageApiMixin:
         res = self._delete(self._url("/images/{0}", image), params=params)
         return self._result(res, True)
 
-    def search(self, term, limit=None):
+    def search(self, term: str, limit: None=None) -> List[Dict[str, str]]:
         """
         Search for images on Docker Hub. Similar to the ``docker search``
         command.
@@ -539,7 +540,7 @@ class ImageApiMixin:
         )
 
     @utils.check_resource('image')
-    def tag(self, image, repository, tag=None, force=False):
+    def tag(self, image: str, repository: str, tag: Optional[str]=None, force: bool=False) -> bool:
         """
         Tag an image into a repository. Similar to the ``docker tag`` command.
 
@@ -572,7 +573,7 @@ class ImageApiMixin:
         return res.status_code == 201
 
 
-def is_file(src):
+def is_file(src: str) -> bool:
     try:
         return (
             isinstance(src, str) and
@@ -582,8 +583,8 @@ def is_file(src):
         return False
 
 
-def _import_image_params(repo, tag, image=None, src=None,
-                         changes=None):
+def _import_image_params(repo: str, tag: str, image: Optional[str]=None, src: Optional[str]=None,
+                         changes: None=None) -> Dict[str, str]:
     params = {
         'repo': repo,
         'tag': tag,

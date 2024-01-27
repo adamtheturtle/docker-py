@@ -32,6 +32,12 @@ from .secret import SecretApiMixin
 from .service import ServiceApiMixin
 from .swarm import SwarmApiMixin
 from .volume import VolumeApiMixin
+from docker.tls import TLSConfig
+from docker.transport.unixconn import UnixHTTPAdapter
+from requests.models import Response
+from socket import SocketIO
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from unittest.mock import Mock
 
 try:
     from ..transport import NpipeHTTPAdapter
@@ -102,11 +108,11 @@ class APIClient(
                                               'base_url',
                                               'timeout']
 
-    def __init__(self, base_url=None, version=None,
-                 timeout=DEFAULT_TIMEOUT_SECONDS, tls=False,
-                 user_agent=DEFAULT_USER_AGENT, num_pools=None,
-                 credstore_env=None, use_ssh_client=False,
-                 max_pool_size=DEFAULT_MAX_POOL_SIZE) -> None:
+    def __init__(self, base_url: Optional[str]=None, version: Optional[Union[str, float]]=None,
+                 timeout: int=DEFAULT_TIMEOUT_SECONDS, tls: Union[bool, TLSConfig]=False,
+                 user_agent: str=DEFAULT_USER_AGENT, num_pools: None=None,
+                 credstore_env: None=None, use_ssh_client: bool=False,
+                 max_pool_size: int=DEFAULT_MAX_POOL_SIZE) -> None:
         super().__init__()
 
         if tls and not base_url:
@@ -208,7 +214,7 @@ class APIClient(
                 f'no longer supported by this library.'
             )
 
-    def _retrieve_server_version(self):
+    def _retrieve_server_version(self) -> str:
         try:
             return self.version(api_version=False)["ApiVersion"]
         except KeyError as ke:
@@ -221,7 +227,7 @@ class APIClient(
                 f'Error while fetching server API version: {e}'
             ) from e
 
-    def _set_request_timeout(self, kwargs):
+    def _set_request_timeout(self, kwargs: Dict[str, Any]) -> Dict[str, Any]:
         """Prepare the kwargs for an HTTP request by inserting the timeout
         parameter, if not already present."""
         kwargs.setdefault('timeout', self.timeout)
@@ -243,7 +249,7 @@ class APIClient(
     def _delete(self, url, **kwargs):
         return self.delete(url, **self._set_request_timeout(kwargs))
 
-    def _url(self, pathfmt, *args, **kwargs) -> str:
+    def _url(self, pathfmt: str, *args, **kwargs) -> str:
         for arg in args:
             if not isinstance(arg, str):
                 raise ValueError(
@@ -259,14 +265,14 @@ class APIClient(
         else:
             return f'{self.base_url}{formatted_path}'
 
-    def _raise_for_status(self, response) -> None:
+    def _raise_for_status(self, response: Response) -> None:
         """Raises stored :class:`APIError`, if one occurred."""
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             raise create_api_error_from_http_exception(e) from e
 
-    def _result(self, response, json=False, binary=False):
+    def _result(self, response: Response, json: bool=False, binary: bool=False) -> Any:
         assert not (json and binary)
         self._raise_for_status(response)
 
@@ -276,7 +282,7 @@ class APIClient(
             return response.content
         return response.text
 
-    def _post_json(self, url, data, **kwargs):
+    def _post_json(self, url: str, data: Any, **kwargs) -> Response:
         # Go <1.1 can't unserialize null to a string
         # so we do this disgusting thing here.
         data2 = {}
@@ -320,7 +326,7 @@ class APIClient(
                 'with the [websocket] extra to install it.'
             ) from ie
 
-    def _get_raw_response_socket(self, response):
+    def _get_raw_response_socket(self, response: Response) -> SocketIO:
         self._raise_for_status(response)
         if self.base_url == "http+docker://localnpipe":
             sock = response.raw._fp.fp.raw.sock
@@ -342,7 +348,7 @@ class APIClient(
 
         return sock
 
-    def _stream_helper(self, response, decode=False):
+    def _stream_helper(self, response: Response, decode: bool=False) -> Iterator[Union[List[Dict[str, Union[str, int]]], bytes]]:
         """Generator for data coming from a chunked-encoded HTTP response."""
 
         if response.raw._fp.chunked:
@@ -363,7 +369,7 @@ class APIClient(
             # encountered an error immediately
             yield self._result(response, json=decode)
 
-    def _multiplexed_buffer_helper(self, response):
+    def _multiplexed_buffer_helper(self, response: Response) -> Iterator[bytes]:
         """A generator of multiplexed data blocks read from a buffered
         response."""
         buf = self._result(response, binary=True)
@@ -411,7 +417,7 @@ class APIClient(
 
         yield from response.iter_content(chunk_size, decode)
 
-    def _read_from_socket(self, response, stream, tty=True, demux=False):
+    def _read_from_socket(self, response: Response, stream: bool, tty: bool=True, demux: bool=False) -> Union[Tuple[bytes, bytes], Tuple[bytes, None], bytes]:
         """Consume all data from the socket, close the response and return the
         data. If stream=True, then a generator is returned instead and the
         caller is responsible for closing the response.
@@ -465,14 +471,14 @@ class APIClient(
             s.settimeout(None)
 
     @check_resource('container')
-    def _check_is_tty(self, container):
+    def _check_is_tty(self, container: str) -> bool:
         cont = self.inspect_container(container)
         return cont['Config']['Tty']
 
-    def _get_result(self, container, stream, res):
+    def _get_result(self, container: str, stream: bool, res: Response) -> Union[Mock, bytes]:
         return self._get_result_tty(stream, res, self._check_is_tty(container))
 
-    def _get_result_tty(self, stream, res, is_tty):
+    def _get_result_tty(self, stream: bool, res: Response, is_tty: bool) -> Union[Mock, bytes]:
         # We should also use raw streaming (without keep-alives)
         # if we're dealing with a tty-enabled container.
         if is_tty:
@@ -492,7 +498,7 @@ class APIClient(
         for proto in args:
             self.adapters.pop(proto)
 
-    def get_adapter(self, url):
+    def get_adapter(self, url: str) -> Union[UnixHTTPAdapter,     requests.adapters.HTTPAdapter]:
         try:
             return super().get_adapter(url)
         except requests.exceptions.InvalidSchema as e:

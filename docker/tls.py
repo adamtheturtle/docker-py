@@ -1,6 +1,10 @@
 import os
 
 from . import errors
+from typing import Optional, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from docker.api.client import APIClient
 
 
 class TLSConfig:
@@ -18,7 +22,7 @@ class TLSConfig:
     ca_cert = None
     verify = None
 
-    def __init__(self, client_cert=None, ca_cert=None, verify=None) -> None:
+    def __init__(self, client_cert: Optional[Tuple[str, str]]=None, ca_cert: Optional[str]=None, verify: Optional[bool]=None) -> None:
         # Argument compatibility/mapping with
         # https://docs.docker.com/engine/articles/https/
         # This diverges from the Docker CLI in that users can specify 'tls'
@@ -54,7 +58,7 @@ class TLSConfig:
                 'Invalid CA certificate provided for `ca_cert`.'
             )
 
-    def configure_client(self, client) -> None:
+    def configure_client(self, client: "APIClient") -> None:
         """
         Configure a client with these TLS options.
         """

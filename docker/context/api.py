@@ -7,6 +7,7 @@ from docker.context.config import METAFILE
 from docker.context.config import get_current_context_name
 from docker.context.config import write_context_name_to_docker_config
 from docker.context import Context
+from typing import Dict, List, Union
 
 
 class ContextAPI:
@@ -18,8 +19,8 @@ class ContextAPI:
 
     @classmethod
     def create_context(
-            cls, name, orchestrator=None, host=None, tls_cfg=None,
-            default_namespace=None, skip_tls_verify=False):
+            cls, name: str, orchestrator: None=None, host: None=None, tls_cfg: None=None,
+            default_namespace: None=None, skip_tls_verify: bool=False):
         """Creates a new context.
         Returns:
             (Context): a Context object.
@@ -67,7 +68,7 @@ class ContextAPI:
         return ctx
 
     @classmethod
-    def get_context(cls, name=None):
+    def get_context(cls, name: None=None) -> Context:
         """Retrieves a context object.
         Args:
             name (str): The name of the context
@@ -95,7 +96,7 @@ class ContextAPI:
         return Context.load_context(name)
 
     @classmethod
-    def contexts(cls):
+    def contexts(cls) -> List[Context]:
         """Context list.
         Returns:
             (Context): List of context objects.
@@ -122,7 +123,7 @@ class ContextAPI:
         return contexts
 
     @classmethod
-    def get_current_context(cls):
+    def get_current_context(cls) -> Context:
         """Get current context.
         Returns:
             (Context): current context object.
@@ -174,7 +175,7 @@ class ContextAPI:
         ctx.remove()
 
     @classmethod
-    def inspect_context(cls, name="default"):
+    def inspect_context(cls, name: str="default") -> Dict[str, Union[str, Dict[str, str], Dict[str, Dict[str, Union[str, bool]]]]]:
         """Remove a context. Similar to the ``docker context inspect`` command.
 
         Args:

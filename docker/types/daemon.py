@@ -3,6 +3,8 @@ import socket
 import urllib3
 
 from ..errors import DockerException
+from requests.models import Response
+from unittest.mock import Mock
 
 
 class CancellableStream:
@@ -17,7 +19,7 @@ class CancellableStream:
         >>> events.close()
     """
 
-    def __init__(self, stream, response) -> None:
+    def __init__(self, stream: Mock, response: Response) -> None:
         self._stream = stream
         self._response = response
 

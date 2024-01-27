@@ -8,6 +8,7 @@ from ..errors import BuildError, ImageLoadError, InvalidArgument
 from ..utils import parse_repository_tag
 from ..utils.json_stream import json_stream
 from .resource import Collection, Model
+from typing import Any, Dict, List, Optional, Union
 
 
 class Image(Model):
@@ -19,7 +20,7 @@ class Image(Model):
         return f"<{self.__class__.__name__}: '{tag_str}'>"
 
     @property
-    def labels(self):
+    def labels(self) -> Dict[str, str]:
         """
         The labels of an image as dictionary.
         """
@@ -27,7 +28,7 @@ class Image(Model):
         return result or {}
 
     @property
-    def short_id(self):
+    def short_id(self) -> str:
         """
         The ID of the image truncated to 12 characters, plus the ``sha256:``
         prefix.
@@ -37,7 +38,7 @@ class Image(Model):
         return self.id[:12]
 
     @property
-    def tags(self):
+    def tags(self) -> List[Union[str, Any]]:
         """
         The image's tags.
         """
@@ -217,7 +218,7 @@ class RegistryData(Model):
 class ImageCollection(Collection):
     model = Image
 
-    def build(self, **kwargs):
+    def build(self, **kwargs) -> Image:
         """
         Build an image and return it. Similar to the ``docker build``
         command. Either ``path`` or ``fileobj`` must be set.
@@ -314,7 +315,7 @@ class ImageCollection(Collection):
             return (self.get(image_id), result_stream)
         raise BuildError(last_event or 'Unknown', result_stream)
 
-    def get(self, name):
+    def get(self, name: str) -> Image:
         """
         Gets an image.
 
@@ -356,7 +357,7 @@ class ImageCollection(Collection):
             collection=self,
         )
 
-    def list(self, name=None, all=False, filters=None):
+    def list(self, name: Optional[str]=None, all: bool=False, filters: None=None) -> List[Image]:
         """
         List images on the server.
 
@@ -380,7 +381,7 @@ class ImageCollection(Collection):
         resp = self.client.api.images(name=name, all=all, filters=filters)
         return [self.get(r["Id"]) for r in resp]
 
-    def load(self, data):
+    def load(self, data: str) -> List[Any]:
         """
         Load an image that was previously saved using
         :py:meth:`~docker.models.images.Image.save` (or ``docker save``).
@@ -412,7 +413,7 @@ class ImageCollection(Collection):
 
         return [self.get(i) for i in images]
 
-    def pull(self, repository, tag=None, all_tags=False, **kwargs):
+    def pull(self, repository: str, tag: Optional[str]=None, all_tags: bool=False, **kwargs) -> Union[Image, List[Image]]:
         """
         Pull an image of the given name and return it. Similar to the
         ``docker pull`` command.

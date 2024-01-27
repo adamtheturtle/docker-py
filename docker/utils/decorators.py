@@ -2,6 +2,7 @@ import functools
 
 from .. import errors
 from . import utils
+from typing import Callable
 
 
 def check_resource(resource_name):
@@ -34,7 +35,7 @@ def minimum_version(version):
     return decorator
 
 
-def update_headers(f):
+def update_headers(f: Callable) -> Callable:
     def inner(self, *args, **kwargs):
         if 'HttpHeaders' in self._general_configs:
             if not kwargs.get('headers'):

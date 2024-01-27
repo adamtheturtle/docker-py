@@ -1,11 +1,12 @@
 from .. import errors
 from ..utils import normalize_links, version_lt
+from typing import Dict, List, Optional, Tuple
 
 
 class EndpointConfig(dict):
-    def __init__(self, version, aliases=None, links=None, ipv4_address=None,
-                 ipv6_address=None, link_local_ips=None, driver_opt=None,
-                 mac_address=None) -> None:
+    def __init__(self, version: str, aliases: Optional[List[str]]=None, links: Optional[List[Tuple[str, str]]]=None, ipv4_address: None=None,
+                 ipv6_address: None=None, link_local_ips: None=None, driver_opt: Optional[Dict[str, str]]=None,
+                 mac_address: None=None) -> None:
         if version_lt(version, '1.22'):
             raise errors.InvalidVersion(
                 'Endpoint config is not supported for API version < 1.22'
@@ -52,7 +53,7 @@ class EndpointConfig(dict):
 
 
 class NetworkingConfig(dict):
-    def __init__(self, endpoints_config=None) -> None:
+    def __init__(self, endpoints_config: Optional[Dict[str, EndpointConfig]]=None) -> None:
         if endpoints_config:
             self["EndpointsConfig"] = endpoints_config
 
@@ -76,7 +77,7 @@ class IPAMConfig(dict):
         >>> network = client.create_network('network1', ipam=ipam_config)
 
     """
-    def __init__(self, driver='default', pool_configs=None, options=None) -> None:
+    def __init__(self, driver: str='default', pool_configs: Optional[List["IPAMPool"]]=None, options: None=None) -> None:
         self.update({
             'Driver': driver,
             'Config': pool_configs or []
@@ -118,8 +119,8 @@ class IPAMPool(dict):
         >>> ipam_config = docker.types.IPAMConfig(
                 pool_configs=[ipam_pool])
     """
-    def __init__(self, subnet=None, iprange=None, gateway=None,
-                 aux_addresses=None) -> None:
+    def __init__(self, subnet: Optional[str]=None, iprange: None=None, gateway: Optional[str]=None,
+                 aux_addresses: None=None) -> None:
         self.update({
             'Subnet': subnet,
             'IPRange': iprange,

@@ -23,7 +23,7 @@ def _purge() -> None:
     _cache.clear()
 
 
-def fnmatch(name, pat):
+def fnmatch(name: str, pat: str) -> bool:
     """Test whether FILENAME matches PATTERN.
 
     Patterns are Unix shell style:
@@ -44,7 +44,7 @@ def fnmatch(name, pat):
     return fnmatchcase(name, pat)
 
 
-def fnmatchcase(name, pat):
+def fnmatchcase(name: str, pat: str) -> bool:
     """Test whether FILENAME matches PATTERN, including case.
     This is a version of fnmatch() which doesn't case-normalize
     its arguments.
@@ -60,7 +60,7 @@ def fnmatchcase(name, pat):
     return re_pat.match(name) is not None
 
 
-def translate(pat) -> str:
+def translate(pat: str) -> str:
     """Translate a shell PATTERN to a regular expression.
 
     There is no way to quote meta-characters.

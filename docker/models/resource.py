@@ -1,10 +1,20 @@
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from docker.client import DockerClient
+    from docker.models.configs import Config
+    from docker.models.containers import Container
+    from docker.models.images import Image
+    from docker.models.networks import Network
+    from docker.models.secrets import Secret
+
 class Model:
     """
     A base class for representing a single object on the server.
     """
     id_attribute = 'Id'
 
-    def __init__(self, attrs=None, client=None, collection=None) -> None:
+    def __init__(self, attrs: Optional[Dict[str, Any]]=None, client: Optional["DockerClient"]=None, collection: Optional[Any]=None) -> None:
         #: A client pointing at the server that this object is on.
         self.client = client
 
@@ -19,21 +29,21 @@ class Model:
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: {self.short_id}>"
 
-    def __eq__(self, other):
+    def __eq__(self, other: "Container") -> bool:
         return isinstance(other, self.__class__) and self.id == other.id
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(f"{self.__class__.__name__}:{self.id}")
 
     @property
-    def id(self):
+    def id(self) -> str:
         """
         The ID of the object.
         """
         return self.attrs.get(self.id_attribute)
 
     @property
-    def short_id(self):
+    def short_id(self) -> str:
         """
         The ID of the object, truncated to 12 characters.
         """
@@ -57,7 +67,7 @@ class Collection:
     #: The type of object this collection represents, set by subclasses
     model = None
 
-    def __init__(self, client=None) -> None:
+    def __init__(self, client: Optional["DockerClient"]=None) -> None:
         #: The client pointing at the server that this collection of objects
         #: is on.
         self.client = client
@@ -78,7 +88,7 @@ class Collection:
     def create(self, attrs=None) -> None:
         raise NotImplementedError
 
-    def prepare_model(self, attrs):
+    def prepare_model(self, attrs: Dict[str, Any]) -> Union["Image", "Config", "Container", "Secret", "Network"]:
         """
         Create a model from a set of attributes.
         """

@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 
 from .. import auth, types, utils
+from docker.types.daemon import CancellableStream
+from typing import Dict, List, Optional, Union
 
 
 class DaemonApiMixin:
@@ -21,7 +23,7 @@ class DaemonApiMixin:
         url = self._url('/system/df')
         return self._result(self._get(url), True)
 
-    def events(self, since=None, until=None, filters=None, decode=None):
+    def events(self, since: Optional[datetime]=None, until: Optional[datetime]=None, filters: Optional[Dict[str, Union[str, List[str]]]]=None, decode: None=None) -> CancellableStream:
         """
         Get real-time events from the server. Similar to the ``docker events``
         command.
@@ -80,7 +82,7 @@ class DaemonApiMixin:
 
         return types.CancellableStream(stream, response)
 
-    def info(self):
+    def info(self) -> Dict[str, Union[bool, int]]:
         """
         Display system-wide information. Identical to the ``docker info``
         command.
@@ -94,8 +96,8 @@ class DaemonApiMixin:
         """
         return self._result(self._get(self._url("/info")), True)
 
-    def login(self, username, password=None, email=None, registry=None,
-              reauth=False, dockercfg_path=None):
+    def login(self, username: str, password: Optional[str]=None, email: None=None, registry: None=None,
+              reauth: bool=False, dockercfg_path: None=None) -> Dict[str, str]:
         """
         Authenticate with a registry. Similar to the ``docker login`` command.
 
@@ -151,7 +153,7 @@ class DaemonApiMixin:
             self._auth_configs.add_auth(registry or auth.INDEX_NAME, req_data)
         return self._result(response, json=True)
 
-    def ping(self):
+    def ping(self) -> bool:
         """
         Checks the server is responsive. An exception will be raised if it
         isn't responding.
@@ -165,7 +167,7 @@ class DaemonApiMixin:
         """
         return self._result(self._get(self._url('/_ping'))) == 'OK'
 
-    def version(self, api_version=True):
+    def version(self, api_version: bool=True) -> Dict[str, Union[str, List[Dict[str, Union[str, Dict[str, str]]]], Dict[str, str]]]:
         """
         Returns version information from the server. Similar to the ``docker
         version`` command.

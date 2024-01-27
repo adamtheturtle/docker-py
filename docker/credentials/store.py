@@ -7,10 +7,11 @@ import warnings
 from . import constants
 from . import errors
 from .utils import create_environment_dict
+from typing import Any, Dict, Optional
 
 
 class Store:
-    def __init__(self, program, environment=None) -> None:
+    def __init__(self, program: str, environment: None=None) -> None:
         """ Create a store object that acts as an interface to
             perform the basic operations for storing, retrieving
             and erasing credentials using `program`.
@@ -24,7 +25,7 @@ class Store:
                 stacklevel=1,
             )
 
-    def get(self, server):
+    def get(self, server: str):
         """ Retrieve credentials for `server`. If no credentials are found,
             a `StoreError` will be raised.
         """
@@ -63,13 +64,13 @@ class Store:
             server = server.encode('utf-8')
         self._execute('erase', server)
 
-    def list(self):
+    def list(self) -> Dict[Any, Any]:
         """ List stored credentials. Requires v0.4.0+ of the helper.
         """
         data = self._execute('list', None)
         return json.loads(data.decode('utf-8'))
 
-    def _execute(self, subcmd, data_input):
+    def _execute(self, subcmd: str, data_input: Optional[bytes]) -> bytes:
         if self.exe is None:
             raise errors.StoreError(
                 f'{self.program} not installed or not available in PATH'

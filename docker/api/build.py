@@ -7,20 +7,24 @@ from .. import auth
 from .. import constants
 from .. import errors
 from .. import utils
+from gzip import GzipFile
+from io import BytesIO
+from tempfile import _TemporaryFileWrapper
+from typing import Any, Dict, Iterator, Optional, Tuple, Union
 
 
 log = logging.getLogger(__name__)
 
 
 class BuildApiMixin:
-    def build(self, path=None, tag=None, quiet=False, fileobj=None,
-              nocache=False, rm=False, timeout=None,
-              custom_context=False, encoding=None, pull=False,
-              forcerm=False, dockerfile=None, container_limits=None,
-              decode=False, buildargs=None, gzip=False, shmsize=None,
-              labels=None, cache_from=None, target=None, network_mode=None,
-              squash=None, extra_hosts=None, platform=None, isolation=None,
-              use_config_proxy=True):
+    def build(self, path: Optional[str]=None, tag: Optional[str]=None, quiet: bool=False, fileobj: Optional[Union[BytesIO, GzipFile, _TemporaryFileWrapper]]=None,
+              nocache: bool=False, rm: bool=False, timeout: None=None,
+              custom_context: bool=False, encoding: Optional[str]=None, pull: bool=False,
+              forcerm: bool=False, dockerfile: Optional[str]=None, container_limits: Optional[Union[Dict[str, int], Dict[str, str]]]=None,
+              decode: bool=False, buildargs: None=None, gzip: bool=False, shmsize: None=None,
+              labels: None=None, cache_from: None=None, target: None=None, network_mode: None=None,
+              squash: None=None, extra_hosts: None=None, platform: None=None, isolation: None=None,
+              use_config_proxy: bool=True) -> Iterator[Any]:
         """
         Similar to the ``docker build`` command. Either ``path`` or ``fileobj``
         needs to be set. ``path`` can be a local path (to a directory
@@ -322,7 +326,7 @@ class BuildApiMixin:
             params['all'] = all
         return self._result(self._post(url, params=params), True)
 
-    def _set_auth_headers(self, headers) -> None:
+    def _set_auth_headers(self, headers: Dict[str, str]) -> None:
         log.debug('Looking for auth config')
 
         # If we don't have any auth data so far, try reloading the config
@@ -356,7 +360,7 @@ class BuildApiMixin:
             log.debug('No auth config found')
 
 
-def process_dockerfile(dockerfile, path):
+def process_dockerfile(dockerfile: Optional[str], path: str) -> Union[Tuple[str, str], Tuple[str, None]]:
     if not dockerfile:
         return (None, None)
 

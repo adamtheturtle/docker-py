@@ -18,7 +18,7 @@ RecentlyUsedContainer = urllib3._collections.RecentlyUsedContainer
 
 
 class SSHSocket(socket.socket):
-    def __init__(self, host) -> None:
+    def __init__(self, host: str) -> None:
         super().__init__(
             socket.AF_INET, socket.SOCK_STREAM)
         self.host = host
@@ -162,10 +162,10 @@ class SSHHTTPAdapter(BaseHTTPAdapter):
         'pools', 'timeout', 'ssh_client', 'ssh_params', 'max_pool_size'
     ]
 
-    def __init__(self, base_url, timeout=60,
-                 pool_connections=constants.DEFAULT_NUM_POOLS,
-                 max_pool_size=constants.DEFAULT_MAX_POOL_SIZE,
-                 shell_out=False) -> None:
+    def __init__(self, base_url: str, timeout: int=60,
+                 pool_connections: int=constants.DEFAULT_NUM_POOLS,
+                 max_pool_size: int=constants.DEFAULT_MAX_POOL_SIZE,
+                 shell_out: bool=False) -> None:
         self.ssh_client = None
         if not shell_out:
             self._create_paramiko_client(base_url)

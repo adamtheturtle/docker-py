@@ -8,6 +8,11 @@ from ..types import ContainerConfig
 from ..types import EndpointConfig
 from ..types import HostConfig
 from ..types import NetworkingConfig
+from docker.types.containers import ContainerConfig, HostConfig
+from docker.types.daemon import CancellableStream
+from docker.types.networks import EndpointConfig, NetworkingConfig
+from signal import Signals
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 
 class ContainerApiMixin:
@@ -111,8 +116,8 @@ class ContainerApiMixin:
         )
 
     @utils.check_resource('container')
-    def commit(self, container, repository=None, tag=None, message=None,
-               author=None, pause=True, changes=None, conf=None):
+    def commit(self, container: str, repository: None=None, tag: None=None, message: None=None,
+               author: None=None, pause: bool=True, changes: None=None, conf: None=None) -> Dict[str, str]:
         """
         Commit a container to an image. Similar to the ``docker commit``
         command.
@@ -148,9 +153,9 @@ class ContainerApiMixin:
             self._post_json(u, data=conf, params=params), json=True
         )
 
-    def containers(self, quiet=False, all=False, trunc=False, latest=False,
-                   since=None, before=None, limit=-1, size=False,
-                   filters=None):
+    def containers(self, quiet: bool=False, all: bool=False, trunc: bool=False, latest: bool=False,
+                   since: None=None, before: None=None, limit: int=-1, size: bool=False,
+                   filters: None=None) -> List[Dict[str, str]]:
         """
         List containers. Similar to the ``docker ps`` command.
 
@@ -217,15 +222,15 @@ class ContainerApiMixin:
                 x['Id'] = x['Id'][:12]
         return res
 
-    def create_container(self, image, command=None, hostname=None, user=None,
-                         detach=False, stdin_open=False, tty=False, ports=None,
-                         environment=None, volumes=None,
-                         network_disabled=False, name=None, entrypoint=None,
-                         working_dir=None, domainname=None, host_config=None,
-                         mac_address=None, labels=None, stop_signal=None,
-                         networking_config=None, healthcheck=None,
-                         stop_timeout=None, runtime=None,
-                         use_config_proxy=True, platform=None):
+    def create_container(self, image: str, command: Optional[Union[str, List[str]]]=None, hostname: None=None, user: None=None,
+                         detach: bool=False, stdin_open: bool=False, tty: bool=False, ports: Optional[List[Union[int, Tuple[int, str], Tuple[int]]]]=None,
+                         environment: Optional[Dict[str, str]]=None, volumes: Optional[Union[str, List[str]]]=None,
+                         network_disabled: bool=False, name: Optional[str]=None, entrypoint: Optional[str]=None,
+                         working_dir: Optional[str]=None, domainname: None=None, host_config: Optional[HostConfig]=None,
+                         mac_address: Optional[str]=None, labels: Optional[Union[Dict[str, str], List[str]]]=None, stop_signal: Optional[str]=None,
+                         networking_config: Optional[NetworkingConfig]=None, healthcheck: None=None,
+                         stop_timeout: None=None, runtime: None=None,
+                         use_config_proxy: bool=True, platform: Optional[str]=None) -> Dict[str, str]:
         """
         Creates a container. Parameters are similar to those for the ``docker
         run`` command except it doesn't support the attach options (``-a``).
@@ -438,10 +443,10 @@ class ContainerApiMixin:
         )
         return self.create_container_from_config(config, name, platform)
 
-    def create_container_config(self, *args, **kwargs):
+    def create_container_config(self, *args, **kwargs) -> ContainerConfig:
         return ContainerConfig(self._version, *args, **kwargs)
 
-    def create_container_from_config(self, config, name=None, platform=None):
+    def create_container_from_config(self, config: ContainerConfig, name: Optional[str]=None, platform: Optional[str]=None) -> Dict[str, str]:
         u = self._url("/containers/create")
         params = {
             'name': name
@@ -455,7 +460,7 @@ class ContainerApiMixin:
         res = self._post_json(u, data=config, params=params)
         return self._result(res, True)
 
-    def create_host_config(self, *args, **kwargs):
+    def create_host_config(self, *args, **kwargs) -> HostConfig:
         """
         Create a dictionary for the ``host_config`` argument to
         :py:meth:`create_container`.
@@ -615,7 +620,7 @@ class ContainerApiMixin:
         kwargs['version'] = self._version
         return HostConfig(*args, **kwargs)
 
-    def create_networking_config(self, *args, **kwargs):
+    def create_networking_config(self, *args, **kwargs) -> NetworkingConfig:
         """
         Create a networking config dictionary to be used as the
         ``networking_config`` parameter in :py:meth:`create_container`.
@@ -641,7 +646,7 @@ class ContainerApiMixin:
         """
         return NetworkingConfig(*args, **kwargs)
 
-    def create_endpoint_config(self, *args, **kwargs):
+    def create_endpoint_config(self, *args, **kwargs) -> EndpointConfig:
         """
         Create an endpoint config dictionary to be used with
         :py:meth:`create_networking_config`.
@@ -678,7 +683,7 @@ class ContainerApiMixin:
         return EndpointConfig(self._version, *args, **kwargs)
 
     @utils.check_resource('container')
-    def diff(self, container):
+    def diff(self, container: str) -> List[Dict[str, Union[str, int]]]:
         """
         Inspect changes on a container's filesystem.
 
@@ -698,7 +703,7 @@ class ContainerApiMixin:
         )
 
     @utils.check_resource('container')
-    def export(self, container, chunk_size=DEFAULT_DATA_CHUNK_SIZE):
+    def export(self, container: str, chunk_size: int=DEFAULT_DATA_CHUNK_SIZE) -> Iterator[Any]:
         """
         Export the contents of a filesystem as a tar archive.
 
@@ -774,7 +779,7 @@ class ContainerApiMixin:
         )
 
     @utils.check_resource('container')
-    def inspect_container(self, container):
+    def inspect_container(self, container: str) -> Dict[str, Union[str, Dict[str, Union[Dict[str, str], bool]], Dict[str, Union[str, bool, int]], Dict[str, Dict[str, str]]]]:
         """
         Identical to the `docker inspect` command, but only for containers.
 
@@ -794,7 +799,7 @@ class ContainerApiMixin:
         )
 
     @utils.check_resource('container')
-    def kill(self, container, signal=None) -> None:
+    def kill(self, container: str, signal: Optional[Signals]=None) -> None:
         """
         Kill a container or send a signal to a container.
 
@@ -817,9 +822,9 @@ class ContainerApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('container')
-    def logs(self, container, stdout=True, stderr=True, stream=False,
-             timestamps=False, tail='all', since=None, follow=None,
-             until=None):
+    def logs(self, container: str, stdout: bool=True, stderr: bool=True, stream: bool=False,
+             timestamps: bool=False, tail: Union[str, int]='all', since: Optional[Union[float, str, int, datetime]]=None, follow: Optional[bool]=None,
+             until: None=None) -> Union[CancellableStream, bytes]:
         """
         Get logs from a container. Similar to the ``docker logs`` command.
 
@@ -900,7 +905,7 @@ class ContainerApiMixin:
             return output
 
     @utils.check_resource('container')
-    def pause(self, container) -> None:
+    def pause(self, container: str) -> None:
         """
         Pauses all processes within a container.
 
@@ -916,7 +921,7 @@ class ContainerApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('container')
-    def port(self, container, private_port):
+    def port(self, container: str, private_port: int):
         """
         Lookup the public-facing port that is NAT-ed to ``private_port``.
         Identical to the ``docker port`` command.
@@ -1013,7 +1018,7 @@ class ContainerApiMixin:
         return self._result(self._post(url, params=params), True)
 
     @utils.check_resource('container')
-    def remove_container(self, container, v=False, link=False, force=False) -> None:
+    def remove_container(self, container: str, v: bool=False, link: bool=False, force: bool=False) -> None:
         """
         Remove a container. Similar to the ``docker rm`` command.
 
@@ -1036,7 +1041,7 @@ class ContainerApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('container')
-    def rename(self, container, name) -> None:
+    def rename(self, container: str, name: str) -> None:
         """
         Rename a container. Similar to the ``docker rename`` command.
 
@@ -1054,7 +1059,7 @@ class ContainerApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('container')
-    def resize(self, container, height, width) -> None:
+    def resize(self, container: str, height: int, width: int) -> None:
         """
         Resize the tty session.
 
@@ -1073,7 +1078,7 @@ class ContainerApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('container')
-    def restart(self, container, timeout=10) -> None:
+    def restart(self, container: str, timeout: int=10) -> None:
         """
         Restart a container. Similar to the ``docker restart`` command.
 
@@ -1097,7 +1102,7 @@ class ContainerApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('container')
-    def start(self, container, *args, **kwargs) -> None:
+    def start(self, container: str, *args, **kwargs) -> None:
         """
         Start a container. Similar to the ``docker start`` command, but
         doesn't support attach options.
@@ -1135,7 +1140,7 @@ class ContainerApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('container')
-    def stats(self, container, decode=None, stream=True, one_shot=None):
+    def stats(self, container: str, decode: None=None, stream: bool=True, one_shot: Optional[bool]=None) -> Dict[str, Union[str, Dict[str, int], Dict[str, Union[Dict[str, Union[int, List[int]]], float, Dict[str, int]]], Dict[str, Union[int, Dict[str, Union[int, float]]]], Dict[str, List[Union[Dict[str, Union[str, int]], Any]]]]]:
         """
         Stream statistics for a specific container. Similar to the
         ``docker stats`` command.
@@ -1183,7 +1188,7 @@ class ContainerApiMixin:
             return self._result(self._get(url, params=params), json=True)
 
     @utils.check_resource('container')
-    def stop(self, container, timeout=None) -> None:
+    def stop(self, container: str, timeout: Optional[int]=None) -> None:
         """
         Stops a container. Similar to the ``docker stop`` command.
 
@@ -1211,7 +1216,7 @@ class ContainerApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('container')
-    def top(self, container, ps_args=None):
+    def top(self, container: str, ps_args: Optional[str]=None) -> Dict[str, List[Union[List[str], str]]]:
         """
         Display the running processes of a container.
 
@@ -1233,7 +1238,7 @@ class ContainerApiMixin:
         return self._result(self._get(u, params=params), True)
 
     @utils.check_resource('container')
-    def unpause(self, container) -> None:
+    def unpause(self, container: str) -> None:
         """
         Unpause all processes within a container.
 
@@ -1247,11 +1252,11 @@ class ContainerApiMixin:
     @utils.minimum_version('1.22')
     @utils.check_resource('container')
     def update_container(
-        self, container, blkio_weight=None, cpu_period=None, cpu_quota=None,
-        cpu_shares=None, cpuset_cpus=None, cpuset_mems=None, mem_limit=None,
-        mem_reservation=None, memswap_limit=None, kernel_memory=None,
-        restart_policy=None
-    ):
+        self, container: str, blkio_weight: Optional[int]=None, cpu_period: None=None, cpu_quota: None=None,
+        cpu_shares: Optional[int]=None, cpuset_cpus: None=None, cpuset_mems: None=None, mem_limit: Optional[str]=None,
+        mem_reservation: None=None, memswap_limit: None=None, kernel_memory: None=None,
+        restart_policy: None=None
+    ) -> Dict[str, List[Any]]:
         """
         Update resource configs of one or more containers.
 
@@ -1311,7 +1316,7 @@ class ContainerApiMixin:
         return self._result(res, True)
 
     @utils.check_resource('container')
-    def wait(self, container, timeout=None, condition=None):
+    def wait(self, container: str, timeout: None=None, condition: None=None) -> Dict[str, int]:
         """
         Block until a container stops, then return its exit code. Similar to
         the ``docker wait`` command.

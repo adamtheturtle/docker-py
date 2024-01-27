@@ -1,13 +1,14 @@
 from .. import errors
 from .. import utils
 from ..types import CancellableStream
+from typing import Dict, List, Optional, Union
 
 
 class ExecApiMixin:
     @utils.check_resource('container')
-    def exec_create(self, container, cmd, stdout=True, stderr=True,
-                    stdin=False, tty=False, privileged=False, user='',
-                    environment=None, workdir=None, detach_keys=None):
+    def exec_create(self, container: str, cmd: List[str], stdout: bool=True, stderr: bool=True,
+                    stdin: bool=False, tty: bool=False, privileged: bool=False, user: str='',
+                    environment: None=None, workdir: None=None, detach_keys: None=None) -> Dict[str, str]:
         """
         Sets up an exec instance in a running container.
 
@@ -78,7 +79,7 @@ class ExecApiMixin:
         res = self._post_json(url, data=data)
         return self._result(res, True)
 
-    def exec_inspect(self, exec_id):
+    def exec_inspect(self, exec_id: str) -> Dict[str, Union[bool, Dict[str, Union[str, Dict[str, Union[Dict[str, str], bool]], Dict[str, Union[str, bool, int]], Dict[str, Dict[str, str]]]], Dict[str, Union[bool, str, List[str]]], int, str]]:
         """
         Return low-level information about an exec command.
 
@@ -97,7 +98,7 @@ class ExecApiMixin:
         res = self._get(self._url("/exec/{0}/json", exec_id))
         return self._result(res, True)
 
-    def exec_resize(self, exec_id, height=None, width=None) -> None:
+    def exec_resize(self, exec_id: str, height: Optional[int]=None, width: Optional[int]=None) -> None:
         """
         Resize the tty session used by the specified exec command.
 
@@ -116,8 +117,8 @@ class ExecApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('exec_id')
-    def exec_start(self, exec_id, detach=False, tty=False, stream=False,
-                   socket=False, demux=False):
+    def exec_start(self, exec_id: str, detach: bool=False, tty: bool=False, stream: bool=False,
+                   socket: bool=False, demux: bool=False) -> Union[str, bytes]:
         """
         Start a previously set up exec instance.
 

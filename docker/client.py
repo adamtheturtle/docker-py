@@ -11,6 +11,12 @@ from .models.services import ServiceCollection
 from .models.swarm import Swarm
 from .models.volumes import VolumeCollection
 from .utils import kwargs_from_env
+from docker.models.configs import ConfigCollection
+from docker.models.containers import ContainerCollection
+from docker.models.images import ImageCollection
+from docker.models.networks import NetworkCollection
+from docker.models.secrets import SecretCollection
+from typing import Dict, List, Union
 
 
 class DockerClient:
@@ -45,7 +51,7 @@ class DockerClient:
         self.api = APIClient(*args, **kwargs)
 
     @classmethod
-    def from_env(cls, **kwargs):
+    def from_env(cls, **kwargs) -> "DockerClient":
         """
         Return a client configured from environment variables.
 
@@ -101,7 +107,7 @@ class DockerClient:
 
     # Resources
     @property
-    def configs(self):
+    def configs(self) -> ConfigCollection:
         """
         An object for managing configs on the server. See the
         :doc:`configs documentation <configs>` for full details.
@@ -109,7 +115,7 @@ class DockerClient:
         return ConfigCollection(client=self)
 
     @property
-    def containers(self):
+    def containers(self) -> ContainerCollection:
         """
         An object for managing containers on the server. See the
         :doc:`containers documentation <containers>` for full details.
@@ -117,7 +123,7 @@ class DockerClient:
         return ContainerCollection(client=self)
 
     @property
-    def images(self):
+    def images(self) -> ImageCollection:
         """
         An object for managing images on the server. See the
         :doc:`images documentation <images>` for full details.
@@ -125,7 +131,7 @@ class DockerClient:
         return ImageCollection(client=self)
 
     @property
-    def networks(self):
+    def networks(self) -> NetworkCollection:
         """
         An object for managing networks on the server. See the
         :doc:`networks documentation <networks>` for full details.
@@ -149,7 +155,7 @@ class DockerClient:
         return PluginCollection(client=self)
 
     @property
-    def secrets(self):
+    def secrets(self) -> SecretCollection:
         """
         An object for managing secrets on the server. See the
         :doc:`secrets documentation <secrets>` for full details.
@@ -181,7 +187,7 @@ class DockerClient:
         return VolumeCollection(client=self)
 
     # Top-level methods
-    def events(self, *args, **kwargs):
+    def events(self, *args, **kwargs) -> List[Dict[str, Union[str, int]]]:
         return self.api.events(*args, **kwargs)
     events.__doc__ = APIClient.events.__doc__
 
@@ -189,7 +195,7 @@ class DockerClient:
         return self.api.df()
     df.__doc__ = APIClient.df.__doc__
 
-    def info(self, *args, **kwargs):
+    def info(self, *args, **kwargs) -> Dict[str, Union[bool, int]]:
         return self.api.info(*args, **kwargs)
     info.__doc__ = APIClient.info.__doc__
 
@@ -197,11 +203,11 @@ class DockerClient:
         return self.api.login(*args, **kwargs)
     login.__doc__ = APIClient.login.__doc__
 
-    def ping(self, *args, **kwargs):
+    def ping(self, *args, **kwargs) -> bool:
         return self.api.ping(*args, **kwargs)
     ping.__doc__ = APIClient.ping.__doc__
 
-    def version(self, *args, **kwargs):
+    def version(self, *args, **kwargs) -> Dict[str, Union[str, List[Dict[str, Union[str, Dict[str, str]]]], Dict[str, str]]]:
         return self.api.version(*args, **kwargs)
     version.__doc__ = APIClient.version.__doc__
 
@@ -209,7 +215,7 @@ class DockerClient:
         return self.api.close()
     close.__doc__ = APIClient.close.__doc__
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str):
         s = [f"'DockerClient' object has no attribute '{name}'"]
         # If a user calls a method on APIClient, they
         if hasattr(APIClient, name):

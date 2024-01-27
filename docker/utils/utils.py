@@ -17,6 +17,8 @@ from ..constants import BYTE_UNITS
 from ..tls import TLSConfig
 
 from urllib.parse import urlparse, urlunparse
+from docker.tls import TLSConfig
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 URLComponents = collections.namedtuple(
     'URLComponents',
@@ -38,14 +40,14 @@ def create_ipam_config(*args, **kwargs) -> None:
     )
 
 
-def decode_json_header(header):
+def decode_json_header(header: bytes) -> Dict[str, Union[str, int]]:
     data = base64.b64decode(header)
     data = data.decode('utf-8')
     return json.loads(data)
 
 
 @lru_cache(maxsize=None)
-def compare_version(v1, v2) -> int:
+def compare_version(v1: str, v2: str) -> int:
     """Compare docker versions
 
     >>> v1 = '1.9'
@@ -73,15 +75,15 @@ def compare_version(v1, v2) -> int:
     return 0
 
 
-def version_lt(v1, v2):
+def version_lt(v1: str, v2: str) -> bool:
     return compare_version(v1, v2) > 0
 
 
-def version_gte(v1, v2) -> bool:
+def version_gte(v1: str, v2: str) -> bool:
     return not version_lt(v1, v2)
 
 
-def _convert_port_binding(binding):
+def _convert_port_binding(binding: Optional[Union[Tuple[int], Tuple[str], int, Tuple[str, int]]]) -> Dict[str, str]:
     result = {'HostIp': '', 'HostPort': ''}
     if isinstance(binding, tuple):
         if len(binding) == 2:
@@ -109,7 +111,7 @@ def _convert_port_binding(binding):
     return result
 
 
-def convert_port_bindings(port_bindings):
+def convert_port_bindings(port_bindings: Union[Dict[Union[int, str], Optional[Union[int, Tuple[int], Tuple[str], Tuple[str, int], List[Tuple[str]]]]], Dict[int, Optional[int]]]) -> Dict[str, List[Dict[str, str]]]:
     result = {}
     for k, v in iter(port_bindings.items()):
         key = str(k)
@@ -122,7 +124,7 @@ def convert_port_bindings(port_bindings):
     return result
 
 
-def convert_volume_binds(binds):
+def convert_volume_binds(binds: Union[Dict[bytes, Dict[str, Union[bytes, str]]], Dict[str, Dict[str, Union[str, bool]]], List[str], Dict[str, str], Dict[str, Dict[str, str]]]) -> List[Union[str, Any]]:
     if isinstance(binds, list):
         return binds
 
@@ -176,7 +178,7 @@ def convert_volume_binds(binds):
     return result
 
 
-def convert_tmpfs_mounts(tmpfs):
+def convert_tmpfs_mounts(tmpfs: Union[Dict[str, str], List[str]]) -> Dict[str, str]:
     if isinstance(tmpfs, dict):
         return tmpfs
 
@@ -205,7 +207,7 @@ def convert_tmpfs_mounts(tmpfs):
     return result
 
 
-def convert_service_networks(networks):
+def convert_service_networks(networks: List[str]) -> List[Dict[str, str]]:
     if not networks:
         return networks
     if not isinstance(networks, list):
@@ -219,7 +221,7 @@ def convert_service_networks(networks):
     return result
 
 
-def parse_repository_tag(repo_name):
+def parse_repository_tag(repo_name: str) -> Union[Tuple[str, None], Tuple[str, str]]:
     parts = repo_name.rsplit('@', 1)
     if len(parts) == 2:
         return tuple(parts)
@@ -229,7 +231,7 @@ def parse_repository_tag(repo_name):
     return repo_name, None
 
 
-def parse_host(addr, is_win32=False, tls=False):
+def parse_host(addr: Optional[str], is_win32: Optional[bool]=False, tls: bool=False) -> str:
     # Sensible defaults
     if not addr and is_win32:
         return DEFAULT_NPIPE
@@ -320,7 +322,7 @@ def parse_host(addr, is_win32=False, tls=False):
     )).rstrip('/')
 
 
-def parse_devices(devices):
+def parse_devices(devices: List[Union[str, Dict[str, str]]]) -> List[Dict[str, str]]:
     device_list = []
     for device in devices:
         if isinstance(device, dict):
@@ -349,7 +351,7 @@ def parse_devices(devices):
     return device_list
 
 
-def kwargs_from_env(environment=None):
+def kwargs_from_env(environment: Optional[Dict[str, str]]=None) -> Dict[str, Union[str, TLSConfig]]:
     if not environment:
         environment = os.environ
     host = environment.get('DOCKER_HOST')
@@ -387,7 +389,7 @@ def kwargs_from_env(environment=None):
     return params
 
 
-def convert_filters(filters):
+def convert_filters(filters: Dict[str, Union[bool, int, List[int], List[str], str]]) -> str:
     result = {}
     for k, v in iter(filters.items()):
         if isinstance(v, bool):
@@ -401,13 +403,13 @@ def convert_filters(filters):
     return json.dumps(result)
 
 
-def datetime_to_timestamp(dt):
+def datetime_to_timestamp(dt: datetime) -> int:
     """Convert a datetime to a Unix timestamp"""
     delta = dt.astimezone(timezone.utc) - datetime(1970, 1, 1, tzinfo=timezone.utc)
     return delta.seconds + delta.days * 24 * 3600
 
 
-def parse_bytes(s):
+def parse_bytes(s: Union[float, int, str]) -> Union[float, int]:
     if isinstance(s, (int, float,)):
         return s
     if len(s) == 0:
@@ -447,14 +449,14 @@ def parse_bytes(s):
     return s
 
 
-def normalize_links(links):
+def normalize_links(links: Union[List[Tuple[str, str]], Dict[str, str]]) -> List[str]:
     if isinstance(links, dict):
         links = iter(links.items())
 
     return [f'{k}:{v}' if v else k for k, v in sorted(links)]
 
 
-def parse_env_file(env_file):
+def parse_env_file(env_file: str) -> Dict[str, str]:
     """
     Reads a line-separated environment file.
     The format of each line should be "key=value".
@@ -482,11 +484,11 @@ def parse_env_file(env_file):
     return environment
 
 
-def split_command(command):
+def split_command(command: str) -> List[str]:
     return shlex.split(command)
 
 
-def format_environment(environment):
+def format_environment(environment: Dict[str, Optional[Union[str, bytes]]]) -> List[Union[str, Any]]:
     def format_env(key, value):
         if value is None:
             return key
@@ -497,7 +499,7 @@ def format_environment(environment):
     return [format_env(*var) for var in iter(environment.items())]
 
 
-def format_extra_hosts(extra_hosts, task=False):
+def format_extra_hosts(extra_hosts: Dict[str, str], task: bool=False) -> List[str]:
     # Use format dictated by Swarm API if container is part of a task
     if task:
         return [

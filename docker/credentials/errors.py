@@ -1,3 +1,5 @@
+from subprocess import CalledProcessError
+
 class StoreError(RuntimeError):
     pass
 
@@ -10,7 +12,7 @@ class InitializationError(StoreError):
     pass
 
 
-def process_store_error(cpe, program):
+def process_store_error(cpe: CalledProcessError, program: str) -> CredentialsNotFound:
     message = cpe.output.decode('utf-8')
     if 'credentials not found in native keychain' in message:
         return CredentialsNotFound(f'No matching credentials in {program}')

@@ -1,4 +1,5 @@
 from .utils import format_environment
+from typing import Dict, List, Optional
 
 
 class ProxyConfig(dict):
@@ -6,23 +7,23 @@ class ProxyConfig(dict):
     Hold the client's proxy configuration
     '''
     @property
-    def http(self):
+    def http(self) -> Optional[str]:
         return self.get('http')
 
     @property
-    def https(self):
+    def https(self) -> Optional[str]:
         return self.get('https')
 
     @property
-    def ftp(self):
+    def ftp(self) -> Optional[str]:
         return self.get('ftp')
 
     @property
-    def no_proxy(self):
+    def no_proxy(self) -> Optional[str]:
         return self.get('no_proxy')
 
     @staticmethod
-    def from_dict(config):
+    def from_dict(config: Dict[str, str]) -> "ProxyConfig":
         '''
         Instantiate a new ProxyConfig from a dictionary that represents a
         client configuration, as described in `the documentation`_.
@@ -37,7 +38,7 @@ class ProxyConfig(dict):
             no_proxy=config.get('noProxy'),
         )
 
-    def get_environment(self):
+    def get_environment(self) -> Dict[str, str]:
         '''
         Return a dictionary representing the environment variables used to
         set the proxy settings.
@@ -53,7 +54,7 @@ class ProxyConfig(dict):
             env['no_proxy'] = env['NO_PROXY'] = self.no_proxy
         return env
 
-    def inject_proxy_environment(self, environment):
+    def inject_proxy_environment(self, environment: Optional[List[str]]) -> Optional[List[str]]:
         '''
         Given a list of strings representing environment variables, prepend the
         environment variables corresponding to the proxy settings.

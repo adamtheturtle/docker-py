@@ -2,10 +2,12 @@ from ..errors import InvalidVersion
 from ..utils import check_resource, minimum_version
 from ..utils import version_lt
 from .. import utils
+from docker.types.networks import IPAMConfig
+from typing import Dict, List, Optional, Tuple
 
 
 class NetworkApiMixin:
-    def networks(self, names=None, ids=None, filters=None):
+    def networks(self, names: Optional[List[str]]=None, ids: Optional[List[str]]=None, filters: None=None) -> List[Dict[str, str]]:
         """
         List networks. Similar to the ``docker network ls`` command.
 
@@ -38,10 +40,10 @@ class NetworkApiMixin:
         res = self._get(url, params=params)
         return self._result(res, json=True)
 
-    def create_network(self, name, driver=None, options=None, ipam=None,
-                       check_duplicate=None, internal=False, labels=None,
-                       enable_ipv6=False, attachable=None, scope=None,
-                       ingress=None):
+    def create_network(self, name: str, driver: Optional[str]=None, options: Optional[Dict[str, bool]]=None, ipam: Optional[IPAMConfig]=None,
+                       check_duplicate: None=None, internal: bool=False, labels: None=None,
+                       enable_ipv6: bool=False, attachable: None=None, scope: None=None,
+                       ingress: None=None) -> Dict[str, str]:
         """
         Create a network. Similar to the ``docker network create``.
 
@@ -175,7 +177,7 @@ class NetworkApiMixin:
         return self._result(self._post(url, params=params), True)
 
     @check_resource('net_id')
-    def remove_network(self, net_id) -> None:
+    def remove_network(self, net_id: str) -> None:
         """
         Remove a network. Similar to the ``docker network rm`` command.
 
@@ -187,7 +189,7 @@ class NetworkApiMixin:
         self._raise_for_status(res)
 
     @check_resource('net_id')
-    def inspect_network(self, net_id, verbose=None, scope=None):
+    def inspect_network(self, net_id: str, verbose: None=None, scope: None=None) -> Dict[str, str]:
         """
         Get detailed information about a network.
 
@@ -213,11 +215,11 @@ class NetworkApiMixin:
         return self._result(res, json=True)
 
     @check_resource('container')
-    def connect_container_to_network(self, container, net_id,
-                                     ipv4_address=None, ipv6_address=None,
-                                     aliases=None, links=None,
-                                     link_local_ips=None, driver_opt=None,
-                                     mac_address=None) -> None:
+    def connect_container_to_network(self, container: str, net_id: str,
+                                     ipv4_address: None=None, ipv6_address: None=None,
+                                     aliases: Optional[List[str]]=None, links: Optional[List[Tuple[str, str]]]=None,
+                                     link_local_ips: None=None, driver_opt: Optional[Dict[str, str]]=None,
+                                     mac_address: None=None) -> None:
         """
         Connect a container to a network.
 
@@ -254,8 +256,8 @@ class NetworkApiMixin:
         self._raise_for_status(res)
 
     @check_resource('container')
-    def disconnect_container_from_network(self, container, net_id,
-                                          force=False) -> None:
+    def disconnect_container_from_network(self, container: str, net_id: str,
+                                          force: bool=False) -> None:
         """
         Disconnect a container from a network.
 

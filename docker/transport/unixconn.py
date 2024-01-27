@@ -6,6 +6,10 @@ from .. import constants
 
 import urllib3
 import urllib3.connection
+from collections import OrderedDict
+from requests.models import PreparedRequest
+from typing import Optional, Union
+from unittest.mock import MagicMock
 
 
 RecentlyUsedContainer = urllib3._collections.RecentlyUsedContainer
@@ -13,7 +17,7 @@ RecentlyUsedContainer = urllib3._collections.RecentlyUsedContainer
 
 class UnixHTTPConnection(urllib3.connection.HTTPConnection):
 
-    def __init__(self, base_url, unix_socket, timeout=60) -> None:
+    def __init__(self, base_url: str, unix_socket: str, timeout: int=60) -> None:
         super().__init__(
             'localhost', timeout=timeout
         )
@@ -29,7 +33,7 @@ class UnixHTTPConnection(urllib3.connection.HTTPConnection):
 
 
 class UnixHTTPConnectionPool(urllib3.connectionpool.HTTPConnectionPool):
-    def __init__(self, base_url, socket_path, timeout=60, maxsize=10) -> None:
+    def __init__(self, base_url: str, socket_path: str, timeout: int=60, maxsize: int=10) -> None:
         super().__init__(
             'localhost', timeout=timeout, maxsize=maxsize
         )
@@ -37,7 +41,7 @@ class UnixHTTPConnectionPool(urllib3.connectionpool.HTTPConnectionPool):
         self.socket_path = socket_path
         self.timeout = timeout
 
-    def _new_conn(self):
+    def _new_conn(self) -> UnixHTTPConnection:
         return UnixHTTPConnection(
             self.base_url, self.socket_path, self.timeout
         )
@@ -50,9 +54,9 @@ class UnixHTTPAdapter(BaseHTTPAdapter):
                                                            'timeout',
                                                            'max_pool_size']
 
-    def __init__(self, socket_url, timeout=60,
-                 pool_connections=constants.DEFAULT_NUM_POOLS,
-                 max_pool_size=constants.DEFAULT_MAX_POOL_SIZE) -> None:
+    def __init__(self, socket_url: str, timeout: int=60,
+                 pool_connections: int=constants.DEFAULT_NUM_POOLS,
+                 max_pool_size: int=constants.DEFAULT_MAX_POOL_SIZE) -> None:
         socket_path = socket_url.replace('http+unix://', '')
         if not socket_path.startswith('/'):
             socket_path = f"/{socket_path}"
@@ -64,7 +68,7 @@ class UnixHTTPAdapter(BaseHTTPAdapter):
         )
         super().__init__()
 
-    def get_connection(self, url, proxies=None):
+    def get_connection(self, url: str, proxies: Optional[OrderedDict]=None) -> Union[MagicMock, UnixHTTPConnectionPool]:
         with self.pools.lock:
             pool = self.pools.get(url)
             if pool:
@@ -78,7 +82,7 @@ class UnixHTTPAdapter(BaseHTTPAdapter):
 
         return pool
 
-    def request_url(self, request, proxies):
+    def request_url(self, request: PreparedRequest, proxies: OrderedDict) -> str:
         # The select_proxy utility in requests errors out when the provided URL
         # doesn't have a hostname, like is the case when using a UNIX socket.
         # Since proxies are an irrelevant notion in the case of UNIX sockets

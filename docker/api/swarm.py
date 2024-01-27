@@ -4,6 +4,7 @@ from ..constants import DEFAULT_SWARM_ADDR_POOL, DEFAULT_SWARM_SUBNET_SIZE
 from .. import errors
 from .. import types
 from .. import utils
+from typing import Dict, List, Optional, Union
 
 log = logging.getLogger(__name__)
 
@@ -215,8 +216,8 @@ class SwarmApiMixin:
         return self._result(self._get(url), True)
 
     @utils.minimum_version('1.24')
-    def join_swarm(self, remote_addrs, join_token, listen_addr='0.0.0.0:2377',
-                   advertise_addr=None, data_path_addr=None) -> bool:
+    def join_swarm(self, remote_addrs: List[str], join_token: str, listen_addr: str='0.0.0.0:2377',
+                   advertise_addr: None=None, data_path_addr: None=None) -> bool:
         """
         Make this Engine join a swarm that has already been created.
 
@@ -381,7 +382,7 @@ class SwarmApiMixin:
         return True
 
     @utils.minimum_version('1.24')
-    def update_node(self, node_id, version, node_spec=None) -> bool:
+    def update_node(self, node_id: str, version: int, node_spec: Optional[Dict[str, Union[str, Dict[str, str]]]]=None) -> bool:
         """
         Update the node's configuration
 

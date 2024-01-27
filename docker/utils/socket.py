@@ -3,6 +3,8 @@ import os
 import select
 import socket as pysocket
 import struct
+from socket import SocketIO
+from typing import Any, Iterator, Tuple, Union
 
 try:
     from ..transport import NpipeSocket
@@ -23,7 +25,7 @@ class SocketError(Exception):
 NPIPE_ENDED = 109
 
 
-def read(socket, n=4096):
+def read(socket: SocketIO, n: int=4096) -> bytes:
     """
     Reads at most n bytes from socket
     """
@@ -59,7 +61,7 @@ def read(socket, n=4096):
         raise
 
 
-def read_exactly(socket, n):
+def read_exactly(socket: SocketIO, n: int) -> bytes:
     """
     Reads exactly n bytes from socket
     Raises SocketError if there isn't enough data
@@ -73,7 +75,7 @@ def read_exactly(socket, n):
     return data
 
 
-def next_frame_header(socket):
+def next_frame_header(socket: SocketIO) -> Tuple[int, int]:
     """
     Returns the stream and size of the next frame of data waiting to be read
     from socket, according to the protocol defined here:
@@ -89,7 +91,7 @@ def next_frame_header(socket):
     return (stream, actual)
 
 
-def frames_iter(socket, tty):
+def frames_iter(socket: SocketIO, tty: bool) -> Iterator[Any]:
     """
     Return a generator of frames read from socket. A frame is a tuple where
     the first item is the stream number and the second item is a chunk of data.
@@ -103,7 +105,7 @@ def frames_iter(socket, tty):
         return frames_iter_no_tty(socket)
 
 
-def frames_iter_no_tty(socket):
+def frames_iter_no_tty(socket: SocketIO) -> Iterator[Tuple[int, bytes]]:
     """
     Returns a generator of data read from the socket when the tty setting is
     not enabled.
@@ -124,7 +126,7 @@ def frames_iter_no_tty(socket):
             yield (stream, result)
 
 
-def frames_iter_tty(socket):
+def frames_iter_tty(socket: SocketIO) -> Iterator[bytes]:
     """
     Return a generator of data read from the socket when the tty setting is
     enabled.
@@ -137,7 +139,7 @@ def frames_iter_tty(socket):
         yield result
 
 
-def consume_socket_output(frames, demux=False):
+def consume_socket_output(frames: Iterator[Any], demux: bool=False) -> Union[Tuple[bytes, None], Tuple[bytes, bytes], bytes]:
     """
     Iterate through frames read from the socket and return the result.
 
@@ -174,7 +176,7 @@ def consume_socket_output(frames, demux=False):
     return tuple(out)
 
 
-def demux_adaptor(stream_id, data):
+def demux_adaptor(stream_id: int, data: bytes) -> Union[Tuple[None, bytes], Tuple[bytes, None]]:
     """
     Utility to demultiplex stdout and stderr when reading frames from the
     socket.
