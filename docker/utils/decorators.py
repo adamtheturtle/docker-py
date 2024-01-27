@@ -35,7 +35,7 @@ def minimum_version(version) -> Callable:
     return decorator
 
 
-def update_headers(f):
+def update_headers(f: Callable) -> Callable:
     def inner(self, *args, **kwargs):
         if 'HttpHeaders' in self._general_configs:
             if not kwargs.get('headers'):

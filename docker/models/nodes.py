@@ -65,7 +65,7 @@ class NodeCollection(Collection):
     """Nodes on the Docker server."""
     model = Node
 
-    def get(self, node_id):
+    def get(self, node_id: str) -> Node:
         """
         Get a node.
 

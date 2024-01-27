@@ -346,7 +346,7 @@ class Container(Model):
         """
         return self.client.api.put_archive(self.id, path, data)
 
-    def remove(self, **kwargs):
+    def remove(self, **kwargs) -> None:
         """
         Remove this container. Similar to the ``docker rm`` command.
 
@@ -1178,7 +1178,7 @@ def _create_container_args(kwargs):
     return create_kwargs
 
 
-def _host_volume_from_bind(bind):
+def _host_volume_from_bind(bind) -> str:
     drive, rest = ntpath.splitdrive(bind)
     bits = rest.split(':', 1)
     if len(bits) == 1 or bits[1] in ('ro', 'rw'):

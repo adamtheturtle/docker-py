@@ -12,6 +12,9 @@ log = logging.getLogger(__name__)
 class ImageApiMixin:
     _version: str
 
+    def _get(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     def _post(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 

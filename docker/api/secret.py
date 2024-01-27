@@ -1,11 +1,16 @@
 import base64
 
+import requests
+
 from .. import errors
 from .. import utils
 
 
 class SecretApiMixin:
     _version: str
+
+    def _get(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
 
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError

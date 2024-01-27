@@ -1,3 +1,5 @@
+import requests
+
 from ..errors import InvalidVersion
 from ..utils import check_resource, minimum_version
 from ..utils import version_lt
@@ -6,6 +8,9 @@ from .. import utils
 
 class NetworkApiMixin:
     _version: str
+
+    def _get(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
 
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError

@@ -1,9 +1,15 @@
 import base64
 
+import requests
+
 from .. import utils
 
 
 class ConfigApiMixin:
+
+    def _get(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
 

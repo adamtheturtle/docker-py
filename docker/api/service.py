@@ -1,6 +1,8 @@
 from .. import auth, errors, utils
 from ..types import ServiceMode, TaskTemplate
 
+import requests
+
 
 def _check_api_features(version, task_template, update_config, endpoint_spec,
                         rollback_config) -> None:
@@ -114,6 +116,9 @@ def _merge_task_template(current, override):
 class ServiceApiMixin:
 
     _version: str
+
+    def _get(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
 
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError

@@ -5,11 +5,16 @@ from .. import errors
 from .. import types
 from .. import utils
 
+import requests
+
 log = logging.getLogger(__name__)
 
 
 class SwarmApiMixin:
     _version: str
+
+    def _get(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
 
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
@@ -207,7 +212,7 @@ class SwarmApiMixin:
 
     @utils.check_resource('node_id')
     @utils.minimum_version('1.24')
-    def inspect_node(self, node_id):
+    def inspect_node(self, node_id: str) -> dict:
         """
         Retrieve low-level information about a swarm node
 

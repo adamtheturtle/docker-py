@@ -57,7 +57,7 @@ class VolumeCollection(Collection):
         obj = self.client.api.create_volume(name, **kwargs)
         return self.prepare_model(obj)
 
-    def get(self, volume_id):
+    def get(self, volume_id: str) -> Volume:
         """
         Get a volume.
 

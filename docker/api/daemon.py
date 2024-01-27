@@ -1,10 +1,16 @@
 import os
 from datetime import datetime
 
+import requests
+
 from .. import auth, types, utils
 
 
 class DaemonApiMixin:
+
+    def _get(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
 

@@ -16,6 +16,9 @@ class ContainerApiMixin:
     timeout: float
     _version: str
 
+    def _get(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     def _post(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 
