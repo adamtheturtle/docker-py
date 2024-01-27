@@ -10,6 +10,9 @@ class ConfigApiMixin:
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
         raise NotImplementedError
 
+    def _raise_for_status(self, response) -> None:
+        raise NotImplementedError
+
     @utils.minimum_version('1.30')
     def create_config(self, name, data, labels=None, templating=None):
         """

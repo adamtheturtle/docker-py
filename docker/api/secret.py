@@ -13,6 +13,9 @@ class SecretApiMixin:
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
         raise NotImplementedError
 
+    def _raise_for_status(self, response) -> None:
+        raise NotImplementedError
+
     @utils.minimum_version('1.25')
     def create_secret(self, name, data, labels=None, driver=None):
         """

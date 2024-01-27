@@ -121,6 +121,9 @@ class ServiceApiMixin:
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
         raise NotImplementedError
 
+    def _raise_for_status(self, response) -> None:
+        raise NotImplementedError
+
     @utils.minimum_version('1.24')
     def create_service(
             self, task_template: TaskTemplate, name=None, labels=None, mode=None,

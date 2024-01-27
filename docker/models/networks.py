@@ -9,14 +9,14 @@ class Network(Model):
     A Docker network.
     """
     @property
-    def name(self):
+    def name(self) -> str:
         """
         The name of the network.
         """
         return self.attrs.get('Name')
 
     @property
-    def containers(self):
+    def containers(self) -> list[Container]:
         """
         The containers that are connected to the network, as a list of
         :py:class:`~docker.models.containers.Container` objects.
@@ -26,7 +26,7 @@ class Network(Model):
             (self.attrs.get('Containers') or {}).keys()
         ]
 
-    def connect(self, container, *args, **kwargs):
+    def connect(self, container: str, *args, **kwargs) -> None:
         """
         Connect a container to this network.
 
@@ -59,7 +59,7 @@ class Network(Model):
             container, self.id, *args, **kwargs
         )
 
-    def disconnect(self, container, *args, **kwargs):
+    def disconnect(self, container: str, *args, **kwargs) -> None:
         """
         Disconnect a container from this network.
 

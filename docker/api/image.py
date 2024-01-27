@@ -21,6 +21,9 @@ class ImageApiMixin:
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
         raise NotImplementedError
 
+    def _raise_for_status(self, response) -> None:
+        raise NotImplementedError
+
     @utils.check_resource('image')
     def get_image(self, image, chunk_size=DEFAULT_DATA_CHUNK_SIZE):
         """
@@ -266,7 +269,7 @@ class ImageApiMixin:
 
     @utils.minimum_version('1.30')
     @utils.check_resource('image')
-    def inspect_distribution(self, image, auth_config=None):
+    def inspect_distribution(self, image: str, auth_config: dict | None = None) -> dict:
         """
         Get image digest and platform information by contacting the registry.
 

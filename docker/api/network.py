@@ -13,6 +13,9 @@ class NetworkApiMixin:
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
         raise NotImplementedError
 
+    def _raise_for_status(self, response) -> None:
+        raise NotImplementedError
+
     def networks(self, names=None, ids=None, filters=None):
         """
         List networks. Similar to the ``docker network ls`` command.

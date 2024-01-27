@@ -25,6 +25,9 @@ class ContainerApiMixin:
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
         raise NotImplementedError
 
+    def _raise_for_status(self, response) -> None:
+        raise NotImplementedError
+
     @utils.check_resource('container')
     def attach(self, container, stdout=True, stderr=True,
                stream=False, logs=False, demux=False):
