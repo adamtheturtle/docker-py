@@ -43,7 +43,7 @@ def _raise_invalid_port(port) -> None:
                      'port[/protocol]' % port)
 
 
-def port_range(start, end, proto, randomly_available_port=False):
+def port_range(start, end, proto, randomly_available_port=False) -> list[str]:
     if not start:
         return start
     if not end:

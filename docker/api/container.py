@@ -942,7 +942,7 @@ class ContainerApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('container')
-    def port(self, container, private_port):
+    def port(self, container, private_port) -> list[dict]:
         """
         Lookup the public-facing port that is NAT-ed to ``private_port``.
         Identical to the ``docker port`` command.

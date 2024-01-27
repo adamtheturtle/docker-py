@@ -73,7 +73,7 @@ class Container(Model):
         return self.attrs.get('State', {}).get('Health', {}).get('Status', 'unknown')
 
     @property
-    def ports(self):
+    def ports(self) -> dict:
         """
         The ports that the container exposes as a dictionary.
         """
@@ -501,7 +501,7 @@ class Container(Model):
         """
         return self.client.api.update_container(self.id, **kwargs)
 
-    def wait(self, **kwargs):
+    def wait(self, **kwargs) -> dict:
         """
         Block until the container stops, then return its exit code. Similar to
         the ``docker wait`` command.
