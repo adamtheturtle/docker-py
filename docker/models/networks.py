@@ -97,7 +97,7 @@ class NetworkCollection(Collection):
     """
     model = Network
 
-    def create(self, name, *args, **kwargs):
+    def create(self, name, *args, **kwargs) -> Network:
         """
         Create a network. Similar to the ``docker network create``.
 
@@ -156,7 +156,7 @@ class NetworkCollection(Collection):
         resp = self.client.api.create_network(name, *args, **kwargs)
         return self.get(resp['Id'])
 
-    def get(self, network_id, *args, **kwargs):
+    def get(self, network_id, *args, **kwargs) -> Network:
         """
         Get a network by its ID.
 
@@ -182,7 +182,7 @@ class NetworkCollection(Collection):
             self.client.api.inspect_network(network_id, *args, **kwargs)
         )
 
-    def list(self, *args, **kwargs):
+    def list(self, *args, **kwargs) -> list[Network]:
         """
         List networks. Similar to the ``docker network ls`` command.
 

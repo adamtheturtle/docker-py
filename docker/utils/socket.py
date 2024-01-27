@@ -23,7 +23,7 @@ class SocketError(Exception):
 NPIPE_ENDED = 109
 
 
-def read(socket, n=4096):
+def read(socket, n=4096) -> bytes:
     """
     Reads at most n bytes from socket
     """

@@ -1,4 +1,4 @@
-from typing import Never
+from typing import Any, Never
 
 class Model:
     """
@@ -21,10 +21,10 @@ class Model:
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: {self.short_id}>"
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, self.__class__) and self.id == other.id
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(f"{self.__class__.__name__}:{self.id}")
 
     @property
@@ -71,13 +71,13 @@ class Collection:
             "use docker.APIClient if so."
         )
 
-    def list(self) -> None:
+    def list(self) -> list[Model]:
         raise NotImplementedError
 
-    def get(self, key) -> None:
+    def get(self, key) -> Model:
         raise NotImplementedError
 
-    def create(self, attrs=None) -> None:
+    def create(self, attrs=None) -> Model:
         raise NotImplementedError
 
     def prepare_model(self, attrs) -> Model:

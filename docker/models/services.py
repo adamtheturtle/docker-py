@@ -9,7 +9,7 @@ class Service(Model):
     id_attribute = 'ID'
 
     @property
-    def name(self):
+    def name(self) -> str:
         """The service's name."""
         return self.attrs['Spec']['Name']
 

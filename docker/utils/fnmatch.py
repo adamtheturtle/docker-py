@@ -44,7 +44,7 @@ def fnmatch(name, pat):
     return fnmatchcase(name, pat)
 
 
-def fnmatchcase(name: str, pat):
+def fnmatchcase(name: str, pat: str) -> bool:
     """Test whether FILENAME matches PATTERN, including case.
     This is a version of fnmatch() which doesn't case-normalize
     its arguments.

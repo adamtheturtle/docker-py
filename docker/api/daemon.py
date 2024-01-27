@@ -165,7 +165,7 @@ class DaemonApiMixin:
         """
         return self._result(self._get(self._url('/_ping'))) == 'OK'
 
-    def version(self, api_version=True):
+    def version(self, api_version: bool = True) -> dict:
         """
         Returns version information from the server. Similar to the ``docker
         version`` command.

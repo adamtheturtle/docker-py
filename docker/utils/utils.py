@@ -8,7 +8,7 @@ import string
 from datetime import datetime, timezone
 from functools import lru_cache
 from itertools import zip_longest
-from typing import Any, Never, Literal
+from typing import Any
 
 from .. import errors
 from ..constants import DEFAULT_HTTP_HOST
@@ -351,16 +351,19 @@ def parse_devices(devices):
 
 
 def kwargs_from_env(environment: dict[str, str] | None = None) -> dict[str, Any]:
-    if not environment:
+    if environment is None:
         environment = os.environ
-    host = environment.get('DOCKER_HOST')
+    else:
+        env = environment
+
+    host = env.get('DOCKER_HOST')
 
     # empty string for cert path is the same as unset.
-    cert_path = environment.get('DOCKER_CERT_PATH') or None
+    cert_path = env.get('DOCKER_CERT_PATH') or None
 
     # empty string for tls verify counts as "false".
     # Any value or 'unset' counts as true.
-    tls_verify = environment.get('DOCKER_TLS_VERIFY')
+    tls_verify = env.get('DOCKER_TLS_VERIFY')
     if tls_verify == '':
         tls_verify = False
     else:

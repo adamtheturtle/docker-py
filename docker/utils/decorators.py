@@ -1,10 +1,11 @@
 import functools
+from typing import Callable
 
 from .. import errors
 from . import utils
 
 
-def check_resource(resource_name):
+def check_resource(resource_name) -> Callable:
     def decorator(f):
         @functools.wraps(f)
         def wrapped(self, resource_id=None, *args, **kwargs):

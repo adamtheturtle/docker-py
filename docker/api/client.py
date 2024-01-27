@@ -2,6 +2,7 @@ import json
 import struct
 import urllib
 from functools import partial
+from typing import Generator, TYPE_CHECKING
 
 import requests
 import requests.adapters
@@ -43,6 +44,8 @@ try:
 except ImportError:
     pass
 
+if TYPE_CHECKING:
+    import websocket
 
 class APIClient(
         requests.Session,
@@ -240,7 +243,7 @@ class APIClient(
         return self.put(url, **self._set_request_timeout(kwargs))
 
     @update_headers
-    def _delete(self, url, **kwargs):
+    def _delete(self, url, **kwargs) -> requests.Response:
         return self.delete(url, **self._set_request_timeout(kwargs))
 
     def _url(self, pathfmt, *args, **kwargs) -> str:
@@ -308,7 +311,7 @@ class APIClient(
         full_url = full_url.replace("https://", "wss://", 1)
         return self._create_websocket_connection(full_url)
 
-    def _create_websocket_connection(self, url):
+    def _create_websocket_connection(self, url) -> "websocket.WebSocket":
         try:
             import websocket
             return websocket.create_connection(url)
@@ -363,7 +366,7 @@ class APIClient(
             # encountered an error immediately
             yield self._result(response, json=decode)
 
-    def _multiplexed_buffer_helper(self, response):
+    def _multiplexed_buffer_helper(self, response) -> Generator[bytes, None, None]:
         """A generator of multiplexed data blocks read from a buffered
         response."""
         buf = self._result(response, binary=True)

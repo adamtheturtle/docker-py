@@ -162,7 +162,7 @@ class RegistryData(Model):
         """
         return self.id[:19]
 
-    def pull(self, platform=None):
+    def pull(self, platform=None) -> Image:
         """
         Pull the image digest.
 
@@ -176,7 +176,7 @@ class RegistryData(Model):
         repository, _ = parse_repository_tag(self.image_name)
         return self.collection.pull(repository, tag=self.id, platform=platform)
 
-    def has_platform(self, platform):
+    def has_platform(self, platform: str | dict) -> bool:
         """
         Check whether the given platform identifier is available for this
         digest.
