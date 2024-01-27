@@ -231,19 +231,19 @@ class APIClient(
         return kwargs
 
     @update_headers
-    def _post(self, url, **kwargs) -> requests.Response:
+    def _post(self, url: str, **kwargs) -> requests.Response:
         return self.post(url, **self._set_request_timeout(kwargs))
 
     @update_headers
-    def _get(self, url, **kwargs) -> requests.Response:
+    def _get(self, url: str, **kwargs) -> requests.Response:
         return self.get(url, **self._set_request_timeout(kwargs))
 
     @update_headers
-    def _put(self, url, **kwargs) -> requests.Response:
+    def _put(self, url: str, **kwargs) -> requests.Response:
         return self.put(url, **self._set_request_timeout(kwargs))
 
     @update_headers
-    def _delete(self, url, **kwargs) -> requests.Response:
+    def _delete(self, url: str, **kwargs) -> requests.Response:
         return self.delete(url, **self._set_request_timeout(kwargs))
 
     def _url(self, pathfmt, *args, **kwargs) -> str:

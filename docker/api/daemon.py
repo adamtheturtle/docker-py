@@ -8,7 +8,7 @@ from .. import auth, types, utils
 
 class DaemonApiMixin:
 
-    def _get(self, url, **kwargs) -> requests.Response:
+    def _get(self, url: str, **kwargs) -> requests.Response:
         raise NotImplementedError
 
     def _url(self, pathfmt, *args, **kwargs) -> str:

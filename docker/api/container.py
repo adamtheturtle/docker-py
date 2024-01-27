@@ -16,10 +16,10 @@ class ContainerApiMixin:
     timeout: float
     _version: str
 
-    def _get(self, url, **kwargs) -> requests.Response:
+    def _get(self, url: str, **kwargs) -> requests.Response:
         raise NotImplementedError
 
-    def _post(self, url, **kwargs) -> requests.Response:
+    def _post(self, url: str, **kwargs) -> requests.Response:
         raise NotImplementedError
 
     def _url(self, pathfmt, *args, **kwargs) -> str:
@@ -31,7 +31,7 @@ class ContainerApiMixin:
     def _raise_for_status(self, response) -> None:
         raise NotImplementedError
 
-    def _delete(self, url, **kwargs) -> requests.Response:
+    def _delete(self, url: str, **kwargs) -> requests.Response:
         raise NotImplementedError
 
     def _post_json(self, url, data, **kwargs) -> requests.Response:

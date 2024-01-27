@@ -20,7 +20,7 @@ class BuildApiMixin:
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
 
-    def _post(self, url, **kwargs) -> requests.Response:
+    def _post(self, url: str, **kwargs) -> requests.Response:
         raise NotImplementedError
 
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
