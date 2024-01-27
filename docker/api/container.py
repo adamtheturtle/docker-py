@@ -34,6 +34,9 @@ class ContainerApiMixin:
     def _delete(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 
+    def _post_json(self, url, data, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     @utils.check_resource('container')
     def attach(self, container, stdout=True, stderr=True,
                stream=False, logs=False, demux=False):

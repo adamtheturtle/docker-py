@@ -23,6 +23,9 @@ class ExecApiMixin:
     def _post(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 
+    def _post_json(self, url, data, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     @utils.check_resource('container')
     def exec_create(self, container, cmd, stdout=True, stderr=True,
                     stdin=False, tty=False, privileged=False, user='',

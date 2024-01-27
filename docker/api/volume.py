@@ -25,6 +25,9 @@ class VolumeApiMixin:
     def _delete(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 
+    def _post_json(self, url, data, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     def volumes(self, filters=None):
         """
         List volumes currently registered by the docker daemon. Similar to the

@@ -132,6 +132,9 @@ class ServiceApiMixin:
     def _delete(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 
+    def _post_json(self, url, data, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     @utils.minimum_version('1.24')
     def create_service(
             self, task_template: TaskTemplate, name: str | None = None, labels: dict | None = None, mode: ServiceMode | None = None,

@@ -17,6 +17,9 @@ class DaemonApiMixin:
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
         raise NotImplementedError
 
+    def _post_json(self, url, data, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     @utils.minimum_version('1.25')
     def df(self):
         """

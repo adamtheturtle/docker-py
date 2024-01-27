@@ -31,6 +31,9 @@ class SwarmApiMixin:
     def _delete(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 
+    def _post_json(self, url, data, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     def create_swarm_spec(self, *args, **kwargs):
         """
         Create a :py:class:`docker.types.SwarmSpec` instance that can be used

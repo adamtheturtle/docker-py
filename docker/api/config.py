@@ -22,6 +22,9 @@ class ConfigApiMixin:
     def _delete(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 
+    def _post_json(self, url, data, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     @utils.minimum_version('1.30')
     def create_config(self, name, data, labels=None, templating=None):
         """

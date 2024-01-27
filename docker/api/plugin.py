@@ -22,6 +22,9 @@ class PluginApiMixin:
     def _delete(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 
+    def _post_json(self, url, data, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     @utils.minimum_version('1.25')
     @utils.check_resource('name')
     def configure_plugin(self, name, options) -> bool:

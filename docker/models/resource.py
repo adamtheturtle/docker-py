@@ -1,6 +1,5 @@
 from typing import Any, Never
 from ..client import DockerClient
-from .resource import Collection
 
 class Model:
     """
@@ -8,7 +7,7 @@ class Model:
     """
     id_attribute = 'Id'
 
-    def __init__(self, attrs=None, client: DockerClient | None = None, collection: Collection | None = None) -> None:
+    def __init__(self, attrs=None, client: DockerClient | None = None, collection: "Collection" | None = None) -> None:
         assert client is not None
         #: A client pointing at the server that this object is on.
         self.client = client
@@ -62,7 +61,8 @@ class Collection:
     #: The type of object this collection represents, set by subclasses
     model: type[Model]
 
-    def __init__(self, client: DockerClient | None = None) -> None:
+    # TODO This used to have = None
+    def __init__(self, client: DockerClient) -> None:
         #: The client pointing at the server that this collection of objects
         #: is on.
         self.client = client

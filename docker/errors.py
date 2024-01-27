@@ -166,7 +166,7 @@ class ImageLoadError(DockerException):
     pass
 
 
-def create_unexpected_kwargs_error(name, kwargs):
+def create_unexpected_kwargs_error(name, kwargs) -> TypeError:
     quoted_kwargs = [f"'{k}'" for k in sorted(kwargs)]
     text = [f"{name}() "]
     if len(quoted_kwargs) == 1:

@@ -30,6 +30,9 @@ class ImageApiMixin:
     def _delete(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 
+    def _post_json(self, url, data, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     @utils.check_resource('image')
     def get_image(self, image, chunk_size=DEFAULT_DATA_CHUNK_SIZE):
         """

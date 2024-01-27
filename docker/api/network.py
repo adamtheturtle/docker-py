@@ -27,6 +27,9 @@ class NetworkApiMixin:
     def _delete(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 
+    def _post_json(self, url, data, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     def networks(self, names=None, ids=None, filters=None):
         """
         List networks. Similar to the ``docker network ls`` command.
