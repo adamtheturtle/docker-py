@@ -18,6 +18,9 @@ class BuildApiMixin:
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
 
+    def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
+        raise NotImplementedError
+
     def build(self, path=None, tag=None, quiet=False, fileobj=None,
               nocache=False, rm=False, timeout=None,
               custom_context=False, encoding=None, pull=False,

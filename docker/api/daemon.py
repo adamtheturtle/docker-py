@@ -5,7 +5,8 @@ from .. import auth, types, utils
 
 
 class DaemonApiMixin:
-    _url: str
+    def _url(self, pathfmt, *args, **kwargs) -> str:
+        raise NotImplementedError
 
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
         raise NotImplementedError

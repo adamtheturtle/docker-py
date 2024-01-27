@@ -22,6 +22,9 @@ class ContainerApiMixin:
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
 
+    def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
+        raise NotImplementedError
+
     @utils.check_resource('container')
     def attach(self, container, stdout=True, stderr=True,
                stream=False, logs=False, demux=False):

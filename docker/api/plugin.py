@@ -5,6 +5,9 @@ class PluginApiMixin:
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
 
+    def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
+        raise NotImplementedError
+
     @utils.minimum_version('1.25')
     @utils.check_resource('name')
     def configure_plugin(self, name, options) -> bool:

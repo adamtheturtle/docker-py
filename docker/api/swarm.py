@@ -14,6 +14,9 @@ class SwarmApiMixin:
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
 
+    def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
+        raise NotImplementedError
+
     def create_swarm_spec(self, *args, **kwargs):
         """
         Create a :py:class:`docker.types.SwarmSpec` instance that can be used

@@ -8,6 +8,9 @@ class VolumeApiMixin:
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
 
+    def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
+        raise NotImplementedError
+
     def volumes(self, filters=None):
         """
         List volumes currently registered by the docker daemon. Similar to the

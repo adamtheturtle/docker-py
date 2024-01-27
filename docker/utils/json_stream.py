@@ -1,6 +1,6 @@
 import json
 import json.decoder
-from typing import Generator
+from typing import Generator, Any, Callable
 
 from ..errors import StreamParseError
 
@@ -34,7 +34,7 @@ def json_splitter(buffer):
         return None
 
 
-def json_stream(stream):
+def json_stream(stream) -> Generator[dict, None, None]:
     """Given a stream of text, return a stream of json objects.
     This handles streams which are inconsistently buffered (some entries may
     be newline delimited, and others are not).
@@ -42,14 +42,14 @@ def json_stream(stream):
     return split_buffer(stream, json_splitter, json_decoder.decode)
 
 
-def line_splitter(buffer, separator='\n'):
+def line_splitter(buffer, separator: str = '\n') -> tuple[str, str] | None:
     index = buffer.find(str(separator))
     if index == -1:
         return None
     return buffer[:index + 1], buffer[index + 1:]
 
 
-def split_buffer(stream, splitter=None, decoder=lambda a: a) -> Generator[str, None, None]:
+def split_buffer(stream: Generator[str, Any, Any], splitter: Callable | None = None, decoder: Callable = lambda a: a) -> Generator[str, None, None]:
     """Given a generator which yields strings and a splitter function,
     joins all input, splits on the separator and yields each chunk.
     Unlike string.split(), each chunk includes the trailing

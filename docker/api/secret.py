@@ -10,6 +10,9 @@ class SecretApiMixin:
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
 
+    def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
+        raise NotImplementedError
+
     @utils.minimum_version('1.25')
     def create_secret(self, name, data, labels=None, driver=None):
         """

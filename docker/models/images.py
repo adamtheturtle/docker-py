@@ -59,7 +59,7 @@ class Image(Model):
         """
         return self.client.api.history(self.id)
 
-    def remove(self, force=False, noprune=False):
+    def remove(self, force: bool = False, noprune: bool = False):
         """
         Remove this image.
 

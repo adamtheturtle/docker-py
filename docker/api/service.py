@@ -118,6 +118,9 @@ class ServiceApiMixin:
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
 
+    def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
+        raise NotImplementedError
+
     @utils.minimum_version('1.24')
     def create_service(
             self, task_template: TaskTemplate, name=None, labels=None, mode=None,

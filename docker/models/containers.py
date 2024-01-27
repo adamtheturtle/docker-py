@@ -390,7 +390,7 @@ class Container(Model):
         """
         return self.client.api.resize(self.id, height, width)
 
-    def restart(self, **kwargs):
+    def restart(self, **kwargs) -> None:
         """
         Restart this container. Similar to the ``docker restart`` command.
 
@@ -405,7 +405,7 @@ class Container(Model):
         """
         return self.client.api.restart(self.id, **kwargs)
 
-    def start(self, **kwargs):
+    def start(self, **kwargs) -> None:
         """
         Start this container. Similar to the ``docker start`` command, but
         doesn't support attach options.
