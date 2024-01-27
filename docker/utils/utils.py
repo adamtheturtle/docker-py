@@ -391,7 +391,7 @@ def kwargs_from_env(environment: dict[str, str] | None = None) -> dict[str, Any]
     return params
 
 
-def convert_filters(filters):
+def convert_filters(filters: dict) -> str:
     result = {}
     for k, v in iter(filters.items()):
         if isinstance(v, bool):
