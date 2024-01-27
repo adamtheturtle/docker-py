@@ -81,7 +81,7 @@ class NodeCollection(Collection):
         """
         return self.prepare_model(self.client.api.inspect_node(node_id))
 
-    def list(self, *args, **kwargs):
+    def list(self, *args, **kwargs) -> list[Node]:
         """
         List swarm nodes.
 

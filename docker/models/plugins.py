@@ -191,7 +191,7 @@ class PluginCollection(Collection):
             pass
         return self.get(local_name or remote_name)
 
-    def list(self):
+    def list(self) -> list[Plugin]:
         """
         List plugins installed on the server.
 

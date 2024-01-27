@@ -74,16 +74,16 @@ class Collection:
             "use docker.APIClient if so."
         )
 
-    def list(self) -> list[Model]:
+    def list(self) -> list[Any]:
         raise NotImplementedError
 
-    def get(self, key) -> Model:
+    def get(self, key) -> Any:
         raise NotImplementedError
 
-    def create(self, attrs=None) -> Model:
+    def create(self, attrs=None) -> Any:
         raise NotImplementedError
 
-    def prepare_model(self, attrs) -> Model:
+    def prepare_model(self, attrs) -> Any:
         """
         Create a model from a set of attributes.
         """

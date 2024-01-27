@@ -258,7 +258,7 @@ class ServiceCollection(Collection):
             self.client.api.inspect_service(service_id, insert_defaults)
         )
 
-    def list(self, **kwargs):
+    def list(self, **kwargs) -> list[Service]:
         """
         List services.
 

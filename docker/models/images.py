@@ -1,6 +1,7 @@
 import itertools
 import re
 import warnings
+import typing
 
 from ..api import APIClient
 from ..constants import DEFAULT_DATA_CHUNK_SIZE
@@ -356,7 +357,7 @@ class ImageCollection(Collection):
             collection=self,
         )
 
-    def list(self, name=None, all=False, filters=None):
+    def list(self, name: str | None = None, all: bool = False, filters: dict | None = None) -> list[Image]:
         """
         List images on the server.
 
@@ -412,7 +413,7 @@ class ImageCollection(Collection):
 
         return [self.get(i) for i in images]
 
-    def pull(self, repository: str, tag: str | None = None, all_tags: bool = False, **kwargs) -> Image | list[Image]:
+    def pull(self, repository: str, tag: str | None = None, all_tags: bool = False, **kwargs) -> Image | typing.List[Image]:
         """
         Pull an image of the given name and return it. Similar to the
         ``docker pull`` command.

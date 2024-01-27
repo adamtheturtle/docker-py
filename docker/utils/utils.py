@@ -352,7 +352,7 @@ def parse_devices(devices):
 
 def kwargs_from_env(environment: dict[str, str] | None = None) -> dict[str, Any]:
     if environment is None:
-        environment = os.environ
+        env = dict(os.environ)
     else:
         env = environment
 
@@ -365,10 +365,10 @@ def kwargs_from_env(environment: dict[str, str] | None = None) -> dict[str, Any]
     # Any value or 'unset' counts as true.
     tls_verify = env.get('DOCKER_TLS_VERIFY')
     if tls_verify == '':
-        tls_verify = False
+        tls_verify_bool = False
     else:
-        tls_verify = tls_verify is not None
-    enable_tls = cert_path or tls_verify
+        tls_verify_bool = tls_verify is not None
+    enable_tls = cert_path or tls_verify_bool
 
     params = {}
 
@@ -385,7 +385,7 @@ def kwargs_from_env(environment: dict[str, str] | None = None) -> dict[str, Any]
         client_cert=(os.path.join(cert_path, 'cert.pem'),
                      os.path.join(cert_path, 'key.pem')),
         ca_cert=os.path.join(cert_path, 'ca.pem'),
-        verify=tls_verify,
+        verify=tls_verify_bool,
     )
 
     return params
