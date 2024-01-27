@@ -41,7 +41,7 @@ class Container(Model):
         return self.client.images.get(image_id.split(':')[1])
 
     @property
-    def labels(self):
+    def labels(self) -> dict:
         """
         The labels of a container as dictionary.
         """
@@ -1178,7 +1178,7 @@ def _create_container_args(kwargs):
     return create_kwargs
 
 
-def _host_volume_from_bind(bind) -> str:
+def _host_volume_from_bind(bind: str) -> str:
     drive, rest = ntpath.splitdrive(bind)
     bits = rest.split(':', 1)
     if len(bits) == 1 or bits[1] in ('ro', 'rw'):

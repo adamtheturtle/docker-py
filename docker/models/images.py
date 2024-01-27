@@ -19,7 +19,7 @@ class Image(Model):
         return f"<{self.__class__.__name__}: '{tag_str}'>"
 
     @property
-    def labels(self):
+    def labels(self) -> dict:
         """
         The labels of an image as dictionary.
         """

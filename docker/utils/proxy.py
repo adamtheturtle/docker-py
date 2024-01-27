@@ -22,7 +22,7 @@ class ProxyConfig(dict):
         return self.get('no_proxy')
 
     @staticmethod
-    def from_dict(config):
+    def from_dict(config) -> "ProxyConfig":
         '''
         Instantiate a new ProxyConfig from a dictionary that represents a
         client configuration, as described in `the documentation`_.
