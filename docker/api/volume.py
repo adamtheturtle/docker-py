@@ -3,6 +3,8 @@ from .. import utils
 
 
 class VolumeApiMixin:
+    _version: str
+
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
 

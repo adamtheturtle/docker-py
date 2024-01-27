@@ -13,6 +13,8 @@ log = logging.getLogger(__name__)
 
 
 class BuildApiMixin:
+    _version: str
+
     def _url(self, pathfmt, *args, **kwargs) -> str:
         raise NotImplementedError
 

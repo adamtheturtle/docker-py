@@ -661,17 +661,17 @@ def host_config_type_error(param, param_value, expected):
     )
 
 
-def host_config_version_error(param, version, less_than=True):
+def host_config_version_error(param, version: str, less_than: bool = True) -> errors.InvalidVersion:
     operator = '<' if less_than else '>'
     return errors.InvalidVersion(
         f'{param} param is not supported in API versions {operator} {version}',
     )
 
-def host_config_value_error(param, param_value):
+def host_config_value_error(param, param_value) -> ValueError:
     return ValueError(f'Invalid value for {param} param: {param_value}')
 
 
-def host_config_incompatible_error(param, param_value, incompatible_param):
+def host_config_incompatible_error(param, param_value, incompatible_param) -> errors.InvalidArgument:
     return errors.InvalidArgument(
         f'\"{param_value}\" {param} is incompatible with {incompatible_param}'
     )

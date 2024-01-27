@@ -14,6 +14,7 @@ from ..types import NetworkingConfig
 
 class ContainerApiMixin:
     timeout: float
+    _version: str
 
     def _post(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError

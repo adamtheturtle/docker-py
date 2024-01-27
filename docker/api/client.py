@@ -211,7 +211,7 @@ class APIClient(
                 f'no longer supported by this library.'
             )
 
-    def _retrieve_server_version(self):
+    def _retrieve_server_version(self) -> str:
         try:
             return self.version(api_version=False)["ApiVersion"]
         except KeyError as ke:
