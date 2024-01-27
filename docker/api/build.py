@@ -3,6 +3,8 @@ import logging
 import os
 import random
 
+import requests
+
 from .. import auth
 from .. import constants
 from .. import errors
@@ -16,6 +18,9 @@ class BuildApiMixin:
     _version: str
 
     def _url(self, pathfmt, *args, **kwargs) -> str:
+        raise NotImplementedError
+
+    def _post(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:

@@ -37,7 +37,7 @@ class Image(Model):
         return self.id[:12]
 
     @property
-    def tags(self):
+    def tags(self) -> list[str]:
         """
         The image's tags.
         """

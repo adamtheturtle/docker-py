@@ -19,6 +19,9 @@ class VolumeApiMixin:
     def _raise_for_status(self, response) -> None:
         raise NotImplementedError
 
+    def _post(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     def volumes(self, filters=None):
         """
         List volumes currently registered by the docker daemon. Similar to the

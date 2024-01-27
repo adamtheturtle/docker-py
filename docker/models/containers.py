@@ -932,7 +932,7 @@ class ContainerCollection(Collection):
         resp = self.client.api.create_container(**create_kwargs)
         return self.get(resp['Id'])
 
-    def get(self, container_id) -> Container:
+    def get(self, container_id: str) -> Container:
         """
         Get a container by name or ID.
 

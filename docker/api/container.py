@@ -814,7 +814,7 @@ class ContainerApiMixin:
         )
 
     @utils.check_resource('container')
-    def kill(self, container, signal=None) -> None:
+    def kill(self, container: str, signal: str | int | None = None) -> None:
         """
         Kill a container or send a signal to a container.
 

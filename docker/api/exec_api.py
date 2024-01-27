@@ -20,6 +20,9 @@ class ExecApiMixin:
     def _raise_for_status(self, response) -> None:
         raise NotImplementedError
 
+    def _post(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     @utils.check_resource('container')
     def exec_create(self, container, cmd, stdout=True, stderr=True,
                     stdin=False, tty=False, privileged=False, user='',
