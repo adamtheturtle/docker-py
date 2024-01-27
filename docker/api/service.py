@@ -1,5 +1,5 @@
 from .. import auth, errors, utils
-from ..types import ServiceMode
+from ..types import ServiceMode, TaskTemplate
 
 
 def _check_api_features(version, task_template, update_config, endpoint_spec,
@@ -115,9 +115,12 @@ class ServiceApiMixin:
 
     _version: str
 
+    def _url(self, pathfmt, *args, **kwargs) -> str:
+        raise NotImplementedError
+
     @utils.minimum_version('1.24')
     def create_service(
-            self, task_template, name=None, labels=None, mode=None,
+            self, task_template: TaskTemplate, name=None, labels=None, mode=None,
             update_config=None, networks=None, endpoint_config=None,
             endpoint_spec=None, rollback_config=None
     ):

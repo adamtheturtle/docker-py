@@ -907,7 +907,7 @@ class ContainerCollection(Collection):
             return out
         return b''.join(out)
 
-    def create(self, image, command=None, **kwargs):
+    def create(self, image, command=None, **kwargs) -> Container:
         """
         Create a container without starting it. Similar to ``docker create``.
 
@@ -932,7 +932,7 @@ class ContainerCollection(Collection):
         resp = self.client.api.create_container(**create_kwargs)
         return self.get(resp['Id'])
 
-    def get(self, container_id):
+    def get(self, container_id) -> Container:
         """
         Get a container by name or ID.
 
@@ -951,8 +951,8 @@ class ContainerCollection(Collection):
         resp = self.client.api.inspect_container(container_id)
         return self.prepare_model(resp)
 
-    def list(self, all=False, before=None, filters=None, limit=-1, since=None,
-             sparse=False, ignore_removed=False):
+    def list(self, all: bool = False, before: str | None = None, filters: dict | None = None, limit: int = -1, since: str | None =None,
+             sparse: bool = False, ignore_removed: bool = False) -> list[Container]:
         """
         List containers. Similar to the ``docker ps`` command.
 

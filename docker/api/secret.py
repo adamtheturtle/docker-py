@@ -5,6 +5,9 @@ from .. import utils
 
 
 class SecretApiMixin:
+    def _url(self, pathfmt, *args, **kwargs) -> str:
+        raise NotImplementedError
+
     @utils.minimum_version('1.25')
     def create_secret(self, name, data, labels=None, driver=None):
         """

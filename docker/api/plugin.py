@@ -2,6 +2,9 @@ from .. import auth, utils
 
 
 class PluginApiMixin:
+    def _url(self, pathfmt, *args, **kwargs) -> str:
+        raise NotImplementedError
+
     @utils.minimum_version('1.25')
     @utils.check_resource('name')
     def configure_plugin(self, name, options) -> bool:

@@ -4,6 +4,9 @@ from ..types import CancellableStream
 
 
 class ExecApiMixin:
+    def _url(self, pathfmt, *args, **kwargs) -> str:
+        raise NotImplementedError
+
     @utils.check_resource('container')
     def exec_create(self, container, cmd, stdout=True, stderr=True,
                     stdin=False, tty=False, privileged=False, user='',

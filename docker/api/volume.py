@@ -3,6 +3,9 @@ from .. import utils
 
 
 class VolumeApiMixin:
+    def _url(self, pathfmt, *args, **kwargs) -> str:
+        raise NotImplementedError
+
     def volumes(self, filters=None):
         """
         List volumes currently registered by the docker daemon. Similar to the

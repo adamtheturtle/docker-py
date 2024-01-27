@@ -14,6 +14,9 @@ class ImageApiMixin:
     def _post(self, url, **kwargs) -> requests.Response:
         raise NotImplementedError
 
+    def _url(self, pathfmt, *args, **kwargs) -> str:
+        raise NotImplementedError
+
     @utils.check_resource('image')
     def get_image(self, image, chunk_size=DEFAULT_DATA_CHUNK_SIZE):
         """

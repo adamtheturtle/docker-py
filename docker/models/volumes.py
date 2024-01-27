@@ -75,7 +75,7 @@ class VolumeCollection(Collection):
         """
         return self.prepare_model(self.client.api.inspect_volume(volume_id))
 
-    def list(self, **kwargs):
+    def list(self, **kwargs) -> list[Volume]:
         """
         List volumes. Similar to the ``docker volume ls`` command.
 

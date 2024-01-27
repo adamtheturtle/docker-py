@@ -52,7 +52,7 @@ class ConfigCollection(Collection):
         """
         return self.prepare_model(self.client.api.inspect_config(config_id))
 
-    def list(self, **kwargs):
+    def list(self, **kwargs) -> list[Config]:
         """
         List configs. Similar to the ``docker config ls`` command.
 

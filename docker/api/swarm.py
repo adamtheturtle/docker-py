@@ -10,6 +10,9 @@ log = logging.getLogger(__name__)
 
 class SwarmApiMixin:
 
+    def _url(self, pathfmt, *args, **kwargs) -> str:
+        raise NotImplementedError
+
     def create_swarm_spec(self, *args, **kwargs):
         """
         Create a :py:class:`docker.types.SwarmSpec` instance that can be used

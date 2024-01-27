@@ -62,7 +62,7 @@ class Collection:
     #: The type of object this collection represents, set by subclasses
     model: type[Model]
 
-    def __init__(self, client=None) -> None:
+    def __init__(self, client: DockerClient | None = None) -> None:
         #: The client pointing at the server that this collection of objects
         #: is on.
         self.client = client

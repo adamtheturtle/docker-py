@@ -4,6 +4,9 @@ from .. import utils
 
 
 class ConfigApiMixin:
+    def _url(self, pathfmt, *args, **kwargs) -> str:
+        raise NotImplementedError
+
     @utils.minimum_version('1.30')
     def create_config(self, name, data, labels=None, templating=None):
         """

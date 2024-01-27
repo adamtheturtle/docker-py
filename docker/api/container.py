@@ -1321,7 +1321,7 @@ class ContainerApiMixin:
         return self._result(res, True)
 
     @utils.check_resource('container')
-    def wait(self, container, timeout=None, condition=None):
+    def wait(self, container: str | dict, timeout: int | None = None, condition: str | None = None) -> dict:
         """
         Block until a container stops, then return its exit code. Similar to
         the ``docker wait`` command.
