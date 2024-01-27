@@ -22,7 +22,7 @@ def check_resource(resource_name) -> Callable:
     return decorator
 
 
-def minimum_version(version):
+def minimum_version(version) -> Callable:
     def decorator(f):
         @functools.wraps(f)
         def wrapper(self, *args, **kwargs):

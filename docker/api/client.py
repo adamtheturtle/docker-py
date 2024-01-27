@@ -269,7 +269,7 @@ class APIClient(
         except requests.exceptions.HTTPError as e:
             raise create_api_error_from_http_exception(e) from e
 
-    def _result(self, response, json=False, binary=False):
+    def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
         assert not (json and binary)
         self._raise_for_status(response)
 

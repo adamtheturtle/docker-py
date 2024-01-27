@@ -5,6 +5,11 @@ from .. import auth, types, utils
 
 
 class DaemonApiMixin:
+    _url: str
+
+    def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
+        raise NotImplementedError
+
     @utils.minimum_version('1.25')
     def df(self):
         """
@@ -80,7 +85,7 @@ class DaemonApiMixin:
 
         return types.CancellableStream(stream, response)
 
-    def info(self):
+    def info(self) -> dict:
         """
         Display system-wide information. Identical to the ``docker info``
         command.
@@ -94,8 +99,8 @@ class DaemonApiMixin:
         """
         return self._result(self._get(self._url("/info")), True)
 
-    def login(self, username, password=None, email=None, registry=None,
-              reauth=False, dockercfg_path=None):
+    def login(self, username: str, password: str | None = None, email: str | None = None, registry: str | None = None,
+              reauth: bool = False, dockercfg_path: str | None = None) -> dict:
         """
         Authenticate with a registry. Similar to the ``docker login`` command.
 

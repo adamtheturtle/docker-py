@@ -119,7 +119,7 @@ class Image(Model):
 
         return self.client.api.get_image(img, chunk_size)
 
-    def tag(self, repository, tag=None, **kwargs):
+    def tag(self, repository: str, tag: str | None = None, **kwargs) -> bool:
         """
         Tag this image into a repository. Similar to the ``docker tag``
         command.
@@ -148,21 +148,21 @@ class RegistryData(Model):
         self.image_name = image_name
 
     @property
-    def id(self):
+    def id(self) -> str:
         """
         The ID of the object.
         """
         return self.attrs['Descriptor']['digest']
 
     @property
-    def short_id(self):
+    def short_id(self) -> str:
         """
         The ID of the image truncated to 12 characters, plus the ``sha256:``
         prefix.
         """
         return self.id[:19]
 
-    def pull(self, platform=None) -> Image:
+    def pull(self, platform: str | None = None) -> Image:
         """
         Pull the image digest.
 
@@ -332,7 +332,7 @@ class ImageCollection(Collection):
         """
         return self.prepare_model(self.client.api.inspect_image(name))
 
-    def get_registry_data(self, name, auth_config=None):
+    def get_registry_data(self, name: str, auth_config: dict | None = None) -> RegistryData:
         """
         Gets the registry data for an image.
 
@@ -412,7 +412,7 @@ class ImageCollection(Collection):
 
         return [self.get(i) for i in images]
 
-    def pull(self, repository, tag=None, all_tags=False, **kwargs):
+    def pull(self, repository: str, tag: str | None = None, all_tags: bool = False, **kwargs) -> Image | list[Image]:
         """
         Pull an image of the given name and return it. Similar to the
         ``docker pull`` command.

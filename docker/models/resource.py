@@ -1,4 +1,6 @@
 from typing import Any, Never
+from ..client import DockerClient
+from .resource import Collection
 
 class Model:
     """
@@ -6,7 +8,8 @@ class Model:
     """
     id_attribute = 'Id'
 
-    def __init__(self, attrs=None, client=None, collection=None) -> None:
+    def __init__(self, attrs=None, client: DockerClient | None = None, collection: Collection | None = None) -> None:
+        assert client is not None
         #: A client pointing at the server that this object is on.
         self.client = client
 

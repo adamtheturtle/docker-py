@@ -112,6 +112,9 @@ def _merge_task_template(current, override):
 
 
 class ServiceApiMixin:
+
+    _version: str
+
     @utils.minimum_version('1.24')
     def create_service(
             self, task_template, name=None, labels=None, mode=None,

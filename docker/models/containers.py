@@ -237,8 +237,8 @@ class Container(Model):
         """
         return self.client.api.export(self.id, chunk_size)
 
-    def get_archive(self, path, chunk_size=DEFAULT_DATA_CHUNK_SIZE,
-                    encode_stream=False):
+    def get_archive(self, path: str, chunk_size: int = DEFAULT_DATA_CHUNK_SIZE,
+                    encode_stream: bool = False):
         """
         Retrieve a file or folder from the container in the form of a tar
         archive.
@@ -318,7 +318,7 @@ class Container(Model):
         """
         return self.client.api.logs(self.id, **kwargs)
 
-    def pause(self):
+    def pause(self) -> None:
         """
         Pauses all processes within this container.
 

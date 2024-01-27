@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import requests
+
 from .. import errors
 from .. import utils
 from ..constants import DEFAULT_DATA_CHUNK_SIZE
@@ -11,6 +13,14 @@ from ..types import NetworkingConfig
 
 
 class ContainerApiMixin:
+    timeout: float
+
+    def _post(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
+    def _url(self, pathfmt, *args, **kwargs) -> str:
+        raise NotImplementedError
+
     @utils.check_resource('container')
     def attach(self, container, stdout=True, stderr=True,
                stream=False, logs=False, demux=False):
@@ -1054,7 +1064,7 @@ class ContainerApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('container')
-    def resize(self, container, height, width) -> None:
+    def resize(self, container: str | dict, height: int, width: int) -> None:
         """
         Resize the tty session.
 

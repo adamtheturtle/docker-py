@@ -10,7 +10,7 @@ class Secret(Model):
         return f"<{self.__class__.__name__}: '{self.name}'>"
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.attrs['Spec']['Name']
 
     def remove(self):
@@ -28,13 +28,13 @@ class SecretCollection(Collection):
     """Secrets on the Docker server."""
     model = Secret
 
-    def create(self, **kwargs):
+    def create(self, **kwargs) -> Secret:
         obj = self.client.api.create_secret(**kwargs)
         obj.setdefault("Spec", {})["Name"] = kwargs.get("name")
         return self.prepare_model(obj)
     create.__doc__ = APIClient.create_secret.__doc__
 
-    def get(self, secret_id):
+    def get(self, secret_id: str) -> Secret:
         """
         Get a secret.
 
@@ -52,7 +52,7 @@ class SecretCollection(Collection):
         """
         return self.prepare_model(self.client.api.inspect_secret(secret_id))
 
-    def list(self, **kwargs):
+    def list(self, **kwargs) -> list[Secret]:
         """
         List secrets. Similar to the ``docker secret ls`` command.
 

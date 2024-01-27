@@ -1,6 +1,8 @@
 import logging
 import os
 
+import requests
+
 from .. import auth, errors, utils
 from ..constants import DEFAULT_DATA_CHUNK_SIZE
 
@@ -8,6 +10,9 @@ log = logging.getLogger(__name__)
 
 
 class ImageApiMixin:
+
+    def _post(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
 
     @utils.check_resource('image')
     def get_image(self, image, chunk_size=DEFAULT_DATA_CHUNK_SIZE):

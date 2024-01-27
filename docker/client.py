@@ -167,7 +167,7 @@ class DockerClient:
         return ServiceCollection(client=self)
 
     @property
-    def swarm(self):
+    def swarm(self) -> Swarm:
         """
         An object for managing a swarm on the server. See the
         :doc:`swarm documentation <swarm>` for full details.
@@ -207,11 +207,11 @@ class DockerClient:
         return self.api.version(*args, **kwargs)
     version.__doc__ = APIClient.version.__doc__
 
-    def close(self):
+    def close(self) -> None:
         return self.api.close()
     close.__doc__ = APIClient.close.__doc__
 
-    def __getattr__(self, name):
+    def __getattr__(self, name) -> None:
         s = [f"'DockerClient' object has no attribute '{name}'"]
         # If a user calls a method on APIClient, they
         if hasattr(APIClient, name):

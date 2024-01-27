@@ -46,7 +46,7 @@ def decode_json_header(header):
 
 
 @lru_cache(maxsize=None)
-def compare_version(v1, v2) -> int:
+def compare_version(v1: str, v2: str) -> int:
     """Compare docker versions
 
     >>> v1 = '1.9'
@@ -74,7 +74,7 @@ def compare_version(v1, v2) -> int:
     return 0
 
 
-def version_lt(v1, v2) -> bool:
+def version_lt(v1: str, v2: str) -> bool:
     return compare_version(v1, v2) > 0
 
 
@@ -411,7 +411,7 @@ def datetime_to_timestamp(dt: datetime) -> int:
     return delta.seconds + delta.days * 24 * 3600
 
 
-def parse_bytes(s):
+def parse_bytes(s: int | float | bytes) -> float:
     if isinstance(s, (int, float,)):
         return s
     if len(s) == 0:
