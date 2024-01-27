@@ -314,7 +314,7 @@ class ImageCollection(Collection):
             return (self.get(image_id), result_stream)
         raise BuildError(last_event or 'Unknown', result_stream)
 
-    def get(self, name):
+    def get(self, name: str) -> Image:
         """
         Gets an image.
 
@@ -495,7 +495,7 @@ class ImageCollection(Collection):
     prune_builds.__doc__ = APIClient.prune_builds.__doc__
 
 
-def normalize_platform(platform, engine_info):
+def normalize_platform(platform: dict | None, engine_info: dict) -> dict:
     if platform is None:
         platform = {}
     if 'os' not in platform:

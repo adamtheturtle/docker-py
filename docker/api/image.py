@@ -27,6 +27,9 @@ class ImageApiMixin:
     def _raise_for_status(self, response) -> None:
         raise NotImplementedError
 
+    def _delete(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     @utils.check_resource('image')
     def get_image(self, image, chunk_size=DEFAULT_DATA_CHUNK_SIZE):
         """

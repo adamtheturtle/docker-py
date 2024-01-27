@@ -24,7 +24,7 @@ class Store:
                 stacklevel=1,
             )
 
-    def get(self, server):
+    def get(self, server: bytes | str) -> dict:
         """ Retrieve credentials for `server`. If no credentials are found,
             a `StoreError` will be raised.
         """

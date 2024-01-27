@@ -129,12 +129,15 @@ class ServiceApiMixin:
     def _raise_for_status(self, response) -> None:
         raise NotImplementedError
 
+    def _delete(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     @utils.minimum_version('1.24')
     def create_service(
-            self, task_template: TaskTemplate, name=None, labels=None, mode=None,
+            self, task_template: TaskTemplate, name: str | None = None, labels: dict | None = None, mode: ServiceMode | None = None,
             update_config=None, networks=None, endpoint_config=None,
             endpoint_spec=None, rollback_config=None
-    ):
+    ) -> dict:
         """
         Create a service.
 

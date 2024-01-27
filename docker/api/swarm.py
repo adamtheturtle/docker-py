@@ -28,6 +28,9 @@ class SwarmApiMixin:
     def _raise_for_status(self, response) -> None:
         raise NotImplementedError
 
+    def _delete(self, url, **kwargs) -> requests.Response:
+        raise NotImplementedError
+
     def create_swarm_spec(self, *args, **kwargs):
         """
         Create a :py:class:`docker.types.SwarmSpec` instance that can be used

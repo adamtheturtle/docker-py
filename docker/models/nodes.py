@@ -41,7 +41,7 @@ class Node(Model):
         """
         return self.client.api.update_node(self.id, self.version, node_spec)
 
-    def remove(self, force=False):
+    def remove(self, force: bool = False) -> bool:
         """
         Remove this node from the swarm.
 
