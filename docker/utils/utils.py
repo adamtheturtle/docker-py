@@ -411,9 +411,10 @@ def datetime_to_timestamp(dt: datetime) -> int:
     return delta.seconds + delta.days * 24 * 3600
 
 
-def parse_bytes(s: int | float | bytes) -> float:
+def parse_bytes(s: int | float | str) -> float:
     if isinstance(s, (int, float,)):
         return s
+
     if len(s) == 0:
         return 0
 

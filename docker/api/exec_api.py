@@ -86,7 +86,7 @@ class ExecApiMixin:
         res = self._post_json(url, data=data)
         return self._result(res, True)
 
-    def exec_inspect(self, exec_id):
+    def exec_inspect(self, exec_id: str) -> dict:
         """
         Return low-level information about an exec command.
 
@@ -105,7 +105,7 @@ class ExecApiMixin:
         res = self._get(self._url("/exec/{0}/json", exec_id))
         return self._result(res, True)
 
-    def exec_resize(self, exec_id, height=None, width=None) -> None:
+    def exec_resize(self, exec_id: str, height: int | None = None, width: int | None = None) -> None:
         """
         Resize the tty session used by the specified exec command.
 
@@ -124,8 +124,8 @@ class ExecApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('exec_id')
-    def exec_start(self, exec_id, detach=False, tty=False, stream=False,
-                   socket=False, demux=False):
+    def exec_start(self, exec_id: str, detach: bool = False, tty: bool = False, stream: bool = False,
+                   socket: bool = False, demux: bool = False):
         """
         Start a previously set up exec instance.
 
