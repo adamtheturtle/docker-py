@@ -1,4 +1,5 @@
 import copy
+from typing import Any
 
 import docker
 from docker.constants import DEFAULT_DOCKER_API_VERSION
@@ -10,7 +11,7 @@ class CopyReturnMagicMock(mock.MagicMock):
     """
     A MagicMock which deep copies every return value.
     """
-    def _mock_call(self, *args, **kwargs):
+    def _mock_call(self, *args, **kwargs: Any):
         ret = super()._mock_call(*args, **kwargs)
         if isinstance(ret, (dict, list)):
             ret = copy.deepcopy(ret)

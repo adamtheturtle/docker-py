@@ -2,6 +2,7 @@ import itertools
 import re
 import warnings
 import typing
+from typing import Any
 
 from ..api import APIClient
 from ..constants import DEFAULT_DATA_CHUNK_SIZE
@@ -144,7 +145,7 @@ class RegistryData(Model):
     """
     Image metadata stored on the registry, including available platforms.
     """
-    def __init__(self, image_name, *args, **kwargs) -> None:
+    def __init__(self, image_name, *args, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.image_name = image_name
 
@@ -218,7 +219,7 @@ class RegistryData(Model):
 class ImageCollection(Collection):
     model = Image
 
-    def build(self, **kwargs):
+    def build(self, **kwargs: Any):
         """
         Build an image and return it. Similar to the ``docker build``
         command. Either ``path`` or ``fileobj`` must be set.
@@ -475,15 +476,15 @@ class ImageCollection(Collection):
             return self.get(f'{repository}{sep}{tag}')
         return self.list(repository)
 
-    def push(self, repository, tag=None, **kwargs):
+    def push(self, repository, tag=None, **kwargs: Any):
         return self.client.api.push(repository, tag=tag, **kwargs)
     push.__doc__ = APIClient.push.__doc__
 
-    def remove(self, *args, **kwargs) -> None:
+    def remove(self, *args, **kwargs: Any) -> None:
         self.client.api.remove_image(*args, **kwargs)
     remove.__doc__ = APIClient.remove_image.__doc__
 
-    def search(self, *args, **kwargs):
+    def search(self, *args, **kwargs: Any):
         return self.client.api.search(*args, **kwargs)
     search.__doc__ = APIClient.search.__doc__
 
@@ -491,7 +492,7 @@ class ImageCollection(Collection):
         return self.client.api.prune_images(filters=filters)
     prune.__doc__ = APIClient.prune_images.__doc__
 
-    def prune_builds(self, *args, **kwargs):
+    def prune_builds(self, *args, **kwargs: Any):
         return self.client.api.prune_builds(*args, **kwargs)
     prune_builds.__doc__ = APIClient.prune_builds.__doc__
 

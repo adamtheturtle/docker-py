@@ -1,3 +1,5 @@
+from typing import Any
+
 from .api.client import APIClient
 from .constants import (DEFAULT_TIMEOUT_SECONDS, DEFAULT_MAX_POOL_SIZE)
 from .models.configs import ConfigCollection
@@ -42,12 +44,12 @@ class DockerClient:
         max_pool_size (int): The maximum number of connections
             to save in the pool.
     """
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs: Any) -> None:
         self.api = APIClient(*args, **kwargs)
 
     @classmethod
     # In Python 3.11 this can be changed to: "-> typing.Self".
-    def from_env(cls, **kwargs) -> "DockerClient":
+    def from_env(cls, **kwargs: Any) -> "DockerClient":
         """
         Return a client configured from environment variables.
 
@@ -183,7 +185,7 @@ class DockerClient:
         return VolumeCollection(client=self)
 
     # Top-level methods
-    def events(self, *args, **kwargs) -> CancellableStream:
+    def events(self, *args, **kwargs: Any) -> CancellableStream:
         return self.api.events(*args, **kwargs)
     events.__doc__ = APIClient.events.__doc__
 
@@ -191,19 +193,19 @@ class DockerClient:
         return self.api.df()
     df.__doc__ = APIClient.df.__doc__
 
-    def info(self, *args, **kwargs):
+    def info(self, *args, **kwargs: Any):
         return self.api.info(*args, **kwargs)
     info.__doc__ = APIClient.info.__doc__
 
-    def login(self, *args, **kwargs):
+    def login(self, *args, **kwargs: Any):
         return self.api.login(*args, **kwargs)
     login.__doc__ = APIClient.login.__doc__
 
-    def ping(self, *args, **kwargs) -> bool:
+    def ping(self, *args, **kwargs: Any) -> bool:
         return self.api.ping(*args, **kwargs)
     ping.__doc__ = APIClient.ping.__doc__
 
-    def version(self, *args, **kwargs):
+    def version(self, *args, **kwargs: Any):
         return self.api.version(*args, **kwargs)
     version.__doc__ = APIClient.version.__doc__
 

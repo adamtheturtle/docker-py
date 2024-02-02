@@ -1,3 +1,5 @@
+from typing import Any
+
 import requests
 
 from .. import errors
@@ -8,10 +10,10 @@ from ..types import CancellableStream
 class ExecApiMixin:
     _version: str
 
-    def _get(self, url: str, **kwargs) -> requests.Response:
+    def _get(self, url: str, **kwargs: Any) -> requests.Response:
         raise NotImplementedError
 
-    def _url(self, pathfmt, *args, **kwargs) -> str:
+    def _url(self, pathfmt, *args, **kwargs: Any) -> str:
         raise NotImplementedError
 
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
@@ -20,10 +22,10 @@ class ExecApiMixin:
     def _raise_for_status(self, response) -> None:
         raise NotImplementedError
 
-    def _post(self, url: str, **kwargs) -> requests.Response:
+    def _post(self, url: str, **kwargs: Any) -> requests.Response:
         raise NotImplementedError
 
-    def _post_json(self, url, data, **kwargs) -> requests.Response:
+    def _post_json(self, url, data, **kwargs: Any) -> requests.Response:
         raise NotImplementedError
 
     @utils.check_resource('container')

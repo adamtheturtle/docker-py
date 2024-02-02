@@ -1,6 +1,7 @@
 import os
 import shutil
 import unittest
+from typing import Any
 
 import docker
 from .. import helpers
@@ -89,12 +90,12 @@ class BaseAPIIntegrationTest(BaseIntegrationTest):
         )
 
     @staticmethod
-    def _init_swarm(client, **kwargs):
+    def _init_swarm(client, **kwargs: Any):
         return client.init_swarm(
             '127.0.0.1', listen_addr=helpers.swarm_listen_addr(), **kwargs
         )
 
-    def run_container(self, *args, **kwargs):
+    def run_container(self, *args, **kwargs: Any):
         container = self.client.create_container(*args, **kwargs)
         self.tmp_containers.append(container)
         self.client.start(container)
@@ -107,14 +108,14 @@ class BaseAPIIntegrationTest(BaseIntegrationTest):
 
         return container
 
-    def create_and_start(self, image=TEST_IMG, command='top', **kwargs):
+    def create_and_start(self, image=TEST_IMG, command='top', **kwargs: Any):
         container = self.client.create_container(
             image=image, command=command, **kwargs)
         self.tmp_containers.append(container)
         self.client.start(container)
         return container
 
-    def execute(self, container, cmd, exit_code=0, **kwargs):
+    def execute(self, container, cmd, exit_code=0, **kwargs: Any):
         exc = self.client.exec_create(container, cmd, **kwargs)
         output = self.client.exec_start(exc)
         actual_exit_code = self.client.exec_inspect(exc)['ExitCode']
@@ -122,5 +123,5 @@ class BaseAPIIntegrationTest(BaseIntegrationTest):
             " ".join(cmd), exit_code, actual_exit_code, output)
         assert actual_exit_code == exit_code, msg
 
-    def init_swarm(self, **kwargs):
+    def init_swarm(self, **kwargs: Any):
         return self._init_swarm(self.client, **kwargs)

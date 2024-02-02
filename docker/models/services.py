@@ -1,4 +1,6 @@
 import copy
+from typing import Any
+
 from docker.errors import create_unexpected_kwargs_error, InvalidArgument
 from docker.types import TaskTemplate, ContainerSpec, Placement, ServiceMode
 from .resource import Model, Collection
@@ -53,7 +55,7 @@ class Service(Model):
         filters['service'] = self.id
         return self.client.api.tasks(filters=filters)
 
-    def update(self, **kwargs):
+    def update(self, **kwargs: Any):
         """
         Update a service's configuration. Similar to the ``docker service
         update`` command.
@@ -82,7 +84,7 @@ class Service(Model):
             **create_kwargs
         )
 
-    def logs(self, **kwargs):
+    def logs(self, **kwargs: Any):
         """
         Get log stream for the service.
         Note: This method works only for services with the ``json-file``
@@ -145,7 +147,7 @@ class ServiceCollection(Collection):
     """Services on the Docker server."""
     model = Service
 
-    def create(self, image, command=None, **kwargs):
+    def create(self, image, command=None, **kwargs: Any):
         """
         Create a service. Similar to the ``docker service create`` command.
 
@@ -258,7 +260,7 @@ class ServiceCollection(Collection):
             self.client.api.inspect_service(service_id, insert_defaults)
         )
 
-    def list(self, **kwargs) -> list[Service]:
+    def list(self, **kwargs: Any) -> list[Service]:
         """
         List services.
 

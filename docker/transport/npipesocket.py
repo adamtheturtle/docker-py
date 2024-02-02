@@ -1,13 +1,13 @@
 import functools
 import time
 import io
+from typing import Any
 
 import win32file
 import win32pipe
 import pywintypes
 import win32event
 import win32api
-from typing import Never, Literal
 
 cERROR_PIPE_BUSY = 0xe7
 cSECURITY_SQOS_PRESENT = 0x100000
@@ -18,7 +18,7 @@ MAXIMUM_RETRY_COUNT = 10
 
 def check_closed(f):
     @functools.wraps(f)
-    def wrapped(self, *args, **kwargs):
+    def wrapped(self, *args, **kwargs: Any):
         if self._closed:
             raise RuntimeError(
                 'Can not reuse socket after connection was closed.'

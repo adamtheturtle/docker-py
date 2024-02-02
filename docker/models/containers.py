@@ -1,6 +1,7 @@
 import copy
 import ntpath
 from collections import namedtuple
+from typing import Any
 
 from .images import Image
 from .resource import Collection, Model
@@ -79,7 +80,7 @@ class Container(Model):
         """
         return self.attrs.get('NetworkSettings', {}).get('Ports', {})
 
-    def attach(self, **kwargs):
+    def attach(self, **kwargs: Any):
         """
         Attach to this container.
 
@@ -105,7 +106,7 @@ class Container(Model):
         """
         return self.client.api.attach(self.id, **kwargs)
 
-    def attach_socket(self, **kwargs):
+    def attach_socket(self, **kwargs: Any):
         """
         Like :py:meth:`attach`, but returns the underlying socket-like object
         for the HTTP request.
@@ -121,7 +122,7 @@ class Container(Model):
         """
         return self.client.api.attach_socket(self.id, **kwargs)
 
-    def commit(self, repository=None, tag=None, **kwargs):
+    def commit(self, repository=None, tag=None, **kwargs: Any):
         """
         Commit a container to an image. Similar to the ``docker commit``
         command.
@@ -287,7 +288,7 @@ class Container(Model):
 
         return self.client.api.kill(self.id, signal=signal)
 
-    def logs(self, **kwargs) -> str | CancellableStream:
+    def logs(self, **kwargs: Any) -> str | CancellableStream:
         """
         Get logs from this container. Similar to the ``docker logs`` command.
 
@@ -346,7 +347,7 @@ class Container(Model):
         """
         return self.client.api.put_archive(self.id, path, data)
 
-    def remove(self, **kwargs) -> None:
+    def remove(self, **kwargs: Any) -> None:
         """
         Remove this container. Similar to the ``docker rm`` command.
 
@@ -390,7 +391,7 @@ class Container(Model):
         """
         return self.client.api.resize(self.id, height, width)
 
-    def restart(self, **kwargs) -> None:
+    def restart(self, **kwargs: Any) -> None:
         """
         Restart this container. Similar to the ``docker restart`` command.
 
@@ -405,7 +406,7 @@ class Container(Model):
         """
         return self.client.api.restart(self.id, **kwargs)
 
-    def start(self, **kwargs) -> None:
+    def start(self, **kwargs: Any) -> None:
         """
         Start this container. Similar to the ``docker start`` command, but
         doesn't support attach options.
@@ -416,7 +417,7 @@ class Container(Model):
         """
         return self.client.api.start(self.id, **kwargs)
 
-    def stats(self, **kwargs):
+    def stats(self, **kwargs: Any):
         """
         Stream statistics for this container. Similar to the
         ``docker stats`` command.
@@ -434,7 +435,7 @@ class Container(Model):
         """
         return self.client.api.stats(self.id, **kwargs)
 
-    def stop(self, **kwargs):
+    def stop(self, **kwargs: Any):
         """
         Stops a container. Similar to the ``docker stop`` command.
 
@@ -448,7 +449,7 @@ class Container(Model):
         """
         return self.client.api.stop(self.id, **kwargs)
 
-    def top(self, **kwargs) -> str:
+    def top(self, **kwargs: Any) -> str:
         """
         Display the running processes of the container.
 
@@ -474,7 +475,7 @@ class Container(Model):
         """
         return self.client.api.unpause(self.id)
 
-    def update(self, **kwargs):
+    def update(self, **kwargs: Any):
         """
         Update resource configuration of the containers.
 
@@ -501,7 +502,7 @@ class Container(Model):
         """
         return self.client.api.update_container(self.id, **kwargs)
 
-    def wait(self, **kwargs) -> dict:
+    def wait(self, **kwargs: Any) -> dict:
         """
         Block until the container stops, then return its exit code. Similar to
         the ``docker wait`` command.
@@ -529,7 +530,7 @@ class ContainerCollection(Collection):
     model = Container
 
     def run(self, image, command=None, stdout=True, stderr=False,
-            remove=False, **kwargs):
+            remove=False, **kwargs: Any):
         """
         Run a container. By default, it will wait for the container to finish
         and return its logs, similar to ``docker run``.
@@ -907,7 +908,7 @@ class ContainerCollection(Collection):
             return out
         return b''.join(out)
 
-    def create(self, image, command=None, **kwargs) -> Container:
+    def create(self, image, command=None, **kwargs: Any) -> Container:
         """
         Create a container without starting it. Similar to ``docker create``.
 

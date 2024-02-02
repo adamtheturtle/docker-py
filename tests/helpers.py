@@ -7,6 +7,8 @@ import socket
 import tarfile
 import tempfile
 import time
+from typing import Any
+
 
 import docker
 import paramiko
@@ -49,7 +51,7 @@ def untar_file(tardata, filename):
 def skip_if_desktop():
     def fn(f):
         @functools.wraps(f)
-        def wrapped(self, *args, **kwargs):
+        def wrapped(self, *args, **kwargs: Any):
             info = self.client.info()
             if info['Name'] == 'docker-desktop':
                 pytest.skip('Test does not support Docker Desktop')
@@ -77,7 +79,7 @@ def requires_experimental(until=None):
 
     def req_exp(f):
         @functools.wraps(f)
-        def wrapped(self, *args, **kwargs):
+        def wrapped(self, *args, **kwargs: Any):
             if not self.client.info()['ExperimentalBuild']:
                 pytest.skip('Feature requires Docker Engine experimental mode')
             return f(self, *args, **kwargs)

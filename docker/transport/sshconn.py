@@ -7,6 +7,7 @@ import os
 import signal
 import socket
 import subprocess
+from typing import Any
 
 from docker.transport.basehttpadapter import BaseHTTPAdapter
 from .. import constants
@@ -31,7 +32,7 @@ class SSHSocket(socket.socket):
 
         self.proc = None
 
-    def connect(self, **kwargs) -> None:
+    def connect(self, **kwargs: Any) -> None:
         args = ['ssh']
         if self.user:
             args = args + ['-l', self.user]

@@ -1,4 +1,5 @@
 import unittest
+from typing import Any
 
 import pytest
 
@@ -12,7 +13,7 @@ from docker.types.services import convert_service_ports
 from unittest import mock
 
 
-def create_host_config(*args, **kwargs):
+def create_host_config(*args, **kwargs: Any):
     return HostConfig(*args, **kwargs)
 
 

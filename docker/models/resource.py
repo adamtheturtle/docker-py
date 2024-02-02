@@ -67,7 +67,7 @@ class Collection:
         #: is on.
         self.client = client
 
-    def __call__(self, *args, **kwargs) -> Never:
+    def __call__(self, *args, **kwargs: Any) -> Never:
         raise TypeError(
             f"'{self.__class__.__name__}' object is not callable. "
             "You might be trying to use the old (pre-2.0) API - "

@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import random
+from typing import Any
 
 import requests
 
@@ -17,10 +18,10 @@ log = logging.getLogger(__name__)
 class BuildApiMixin:
     _version: str
 
-    def _url(self, pathfmt, *args, **kwargs) -> str:
+    def _url(self, pathfmt, *args, **kwargs: Any) -> str:
         raise NotImplementedError
 
-    def _post(self, url: str, **kwargs) -> requests.Response:
+    def _post(self, url: str, **kwargs: Any) -> requests.Response:
         raise NotImplementedError
 
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:

@@ -12,6 +12,7 @@ import time
 import unittest
 import socketserver
 import http.server
+from typing import Any
 
 import docker
 import pytest
@@ -42,7 +43,7 @@ def response(status_code=200, content='', headers=None, reason=None, elapsed=0,
     return res
 
 
-def fake_resolve_authconfig(authconfig, registry=None, *args, **kwargs):
+def fake_resolve_authconfig(authconfig, registry=None, *args, **kwargs: Any):
     return None
 
 
@@ -50,7 +51,7 @@ def fake_inspect_container(self, container, tty=False):
     return fake_api.get_fake_inspect_container(tty=tty)[1]
 
 
-def fake_resp(method, url, *args, **kwargs):
+def fake_resp(method, url, *args, **kwargs: Any):
     key = None
     if url in fake_api.fake_responses:
         key = url
@@ -65,19 +66,19 @@ def fake_resp(method, url, *args, **kwargs):
 fake_request = mock.Mock(side_effect=fake_resp)
 
 
-def fake_get(self, url, *args, **kwargs):
+def fake_get(self, url, *args, **kwargs: Any):
     return fake_request('GET', url, *args, **kwargs)
 
 
-def fake_post(self, url, *args, **kwargs):
+def fake_post(self, url, *args, **kwargs: Any):
     return fake_request('POST', url, *args, **kwargs)
 
 
-def fake_put(self, url, *args, **kwargs):
+def fake_put(self, url, *args, **kwargs: Any):
     return fake_request('PUT', url, *args, **kwargs)
 
 
-def fake_delete(self, url, *args, **kwargs):
+def fake_delete(self, url, *args, **kwargs: Any):
     return fake_request('DELETE', url, *args, **kwargs)
 
 

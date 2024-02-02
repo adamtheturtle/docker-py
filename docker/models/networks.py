@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..api import APIClient
 from ..utils import version_gte
 from .containers import Container
@@ -26,7 +28,7 @@ class Network(Model):
             (self.attrs.get('Containers') or {}).keys()
         ]
 
-    def connect(self, container: str, *args, **kwargs) -> None:
+    def connect(self, container: str, *args, **kwargs: Any) -> None:
         """
         Connect a container to this network.
 
@@ -59,7 +61,7 @@ class Network(Model):
             container, self.id, *args, **kwargs
         )
 
-    def disconnect(self, container: str, *args, **kwargs) -> None:
+    def disconnect(self, container: str, *args, **kwargs: Any) -> None:
         """
         Disconnect a container from this network.
 
@@ -97,7 +99,7 @@ class NetworkCollection(Collection):
     """
     model = Network
 
-    def create(self, name, *args, **kwargs) -> Network:
+    def create(self, name, *args, **kwargs: Any) -> Network:
         """
         Create a network. Similar to the ``docker network create``.
 
@@ -156,7 +158,7 @@ class NetworkCollection(Collection):
         resp = self.client.api.create_network(name, *args, **kwargs)
         return self.get(resp['Id'])
 
-    def get(self, network_id, *args, **kwargs) -> Network:
+    def get(self, network_id, *args, **kwargs: Any) -> Network:
         """
         Get a network by its ID.
 
@@ -182,7 +184,7 @@ class NetworkCollection(Collection):
             self.client.api.inspect_network(network_id, *args, **kwargs)
         )
 
-    def list(self, *args, **kwargs) -> list[Network]:
+    def list(self, *args, **kwargs: Any) -> list[Network]:
         """
         List networks. Similar to the ``docker network ls`` command.
 

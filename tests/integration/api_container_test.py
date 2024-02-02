@@ -4,6 +4,7 @@ import signal
 import tempfile
 import threading
 from datetime import datetime
+from typing import Any
 
 import pytest
 import requests
@@ -630,7 +631,7 @@ class VolumeBindTest(BaseAPIIntegrationTest):
         assert mount_data['RW'] == rw
         assert mount_data['Propagation'] == propagation
 
-    def run_with_volume(self, ro, *args, **kwargs):
+    def run_with_volume(self, ro, *args, **kwargs: Any):
         return self.run_container(
             *args,
             volumes={self.mount_dest: {}},
@@ -646,7 +647,7 @@ class VolumeBindTest(BaseAPIIntegrationTest):
             **kwargs
         )
 
-    def run_with_volume_propagation(self, ro, propagation, *args, **kwargs):
+    def run_with_volume_propagation(self, ro, propagation, *args, **kwargs: Any):
         return self.run_container(
             *args,
             volumes={self.mount_dest: {}},

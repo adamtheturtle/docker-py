@@ -1,3 +1,5 @@
+from typing import Any
+
 from .. import errors
 from ..utils.utils import (
     convert_port_bindings, convert_tmpfs_mounts, convert_volume_binds,
@@ -55,7 +57,7 @@ class LogConfig(DictType):
     """
     types = LogConfigTypesEnum
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         log_driver_type = kwargs.get('type', kwargs.get('Type'))
         config = kwargs.get('config', kwargs.get('Config')) or {}
 
@@ -114,7 +116,7 @@ class Ulimit(DictType):
         [{'Name': 'nproc', 'Hard': 0, 'Soft': 1024}]
 
     """
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         name = kwargs.get('name', kwargs.get('Name'))
         soft = kwargs.get('soft', kwargs.get('Soft'))
         hard = kwargs.get('hard', kwargs.get('Hard'))
@@ -176,7 +178,7 @@ class DeviceRequest(DictType):
         options (dict): Driver-specific options. Optional.
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         driver = kwargs.get('driver', kwargs.get('Driver'))
         count = kwargs.get('count', kwargs.get('Count'))
         device_ids = kwargs.get('device_ids', kwargs.get('DeviceIDs'))

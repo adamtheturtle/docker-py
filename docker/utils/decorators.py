@@ -1,5 +1,5 @@
 import functools
-from typing import Callable
+from typing import Any, Callable
 
 from .. import errors
 from . import utils
@@ -8,7 +8,7 @@ from . import utils
 def check_resource(resource_name) -> Callable:
     def decorator(f):
         @functools.wraps(f)
-        def wrapped(self, resource_id=None, *args, **kwargs):
+        def wrapped(self, resource_id=None, *args, **kwargs: Any):
             if resource_id is None and kwargs.get(resource_name):
                 resource_id = kwargs.pop(resource_name)
             if isinstance(resource_id, dict):
@@ -25,7 +25,7 @@ def check_resource(resource_name) -> Callable:
 def minimum_version(version) -> Callable:
     def decorator(f):
         @functools.wraps(f)
-        def wrapper(self, *args, **kwargs):
+        def wrapper(self, *args, **kwargs: Any):
             if utils.version_lt(self._version, version):
                 raise errors.InvalidVersion(
                     f'{f.__name__} is not available for version < {version}',
@@ -36,7 +36,7 @@ def minimum_version(version) -> Callable:
 
 
 def update_headers(f: Callable) -> Callable:
-    def inner(self, *args, **kwargs):
+    def inner(self, *args, **kwargs: Any):
         if 'HttpHeaders' in self._general_configs:
             if not kwargs.get('headers'):
                 kwargs['headers'] = self._general_configs['HttpHeaders']

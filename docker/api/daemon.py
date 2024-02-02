@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from typing import Any
 
 import requests
 
@@ -8,16 +9,16 @@ from .. import auth, types, utils
 
 class DaemonApiMixin:
 
-    def _get(self, url: str, **kwargs) -> requests.Response:
+    def _get(self, url: str, **kwargs: Any) -> requests.Response:
         raise NotImplementedError
 
-    def _url(self, pathfmt, *args, **kwargs) -> str:
+    def _url(self, pathfmt, *args, **kwargs: Any) -> str:
         raise NotImplementedError
 
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
         raise NotImplementedError
 
-    def _post_json(self, url, data, **kwargs) -> requests.Response:
+    def _post_json(self, url, data, **kwargs: Any) -> requests.Response:
         raise NotImplementedError
 
     @utils.minimum_version('1.25')

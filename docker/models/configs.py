@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..api import APIClient
 from .resource import Model, Collection
 
@@ -28,7 +30,7 @@ class ConfigCollection(Collection):
     """Configs on the Docker server."""
     model = Config
 
-    def create(self, **kwargs):
+    def create(self, **kwargs: Any):
         obj = self.client.api.create_config(**kwargs)
         obj.setdefault("Spec", {})["Name"] = kwargs.get("name")
         return self.prepare_model(obj)
@@ -52,7 +54,7 @@ class ConfigCollection(Collection):
         """
         return self.prepare_model(self.client.api.inspect_config(config_id))
 
-    def list(self, **kwargs) -> list[Config]:
+    def list(self, **kwargs: Any) -> list[Config]:
         """
         List configs. Similar to the ``docker config ls`` command.
 

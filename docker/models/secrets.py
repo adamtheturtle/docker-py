@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..api import APIClient
 from .resource import Model, Collection
 
@@ -28,7 +30,7 @@ class SecretCollection(Collection):
     """Secrets on the Docker server."""
     model = Secret
 
-    def create(self, **kwargs) -> Secret:
+    def create(self, **kwargs: Any) -> Secret:
         obj = self.client.api.create_secret(**kwargs)
         obj.setdefault("Spec", {})["Name"] = kwargs.get("name")
         return self.prepare_model(obj)
@@ -52,7 +54,7 @@ class SecretCollection(Collection):
         """
         return self.prepare_model(self.client.api.inspect_secret(secret_id))
 
-    def list(self, **kwargs) -> list[Secret]:
+    def list(self, **kwargs: Any) -> list[Secret]:
         """
         List secrets. Similar to the ``docker secret ls`` command.
 

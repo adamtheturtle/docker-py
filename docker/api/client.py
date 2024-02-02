@@ -2,7 +2,7 @@ import json
 import struct
 import urllib
 from functools import partial
-from typing import Generator, TYPE_CHECKING
+from typing import Any, Generator, TYPE_CHECKING
 
 import requests
 import requests.adapters
@@ -231,22 +231,22 @@ class APIClient(
         return kwargs
 
     @update_headers
-    def _post(self, url: str, **kwargs) -> requests.Response:
+    def _post(self, url: str, **kwargs: Any) -> requests.Response:
         return self.post(url, **self._set_request_timeout(kwargs))
 
     @update_headers
-    def _get(self, url: str, **kwargs) -> requests.Response:
+    def _get(self, url: str, **kwargs: Any) -> requests.Response:
         return self.get(url, **self._set_request_timeout(kwargs))
 
     @update_headers
-    def _put(self, url: str, **kwargs) -> requests.Response:
+    def _put(self, url: str, **kwargs: Any) -> requests.Response:
         return self.put(url, **self._set_request_timeout(kwargs))
 
     @update_headers
-    def _delete(self, url: str, **kwargs) -> requests.Response:
+    def _delete(self, url: str, **kwargs: Any) -> requests.Response:
         return self.delete(url, **self._set_request_timeout(kwargs))
 
-    def _url(self, pathfmt, *args, **kwargs) -> str:
+    def _url(self, pathfmt, *args, **kwargs: Any) -> str:
         for arg in args:
             if not isinstance(arg, str):
                 raise ValueError(
@@ -279,7 +279,7 @@ class APIClient(
             return response.content
         return response.text
 
-    def _post_json(self, url, data, **kwargs) -> requests.Response:
+    def _post_json(self, url, data, **kwargs: Any) -> requests.Response:
         # Go <1.1 can't unserialize null to a string
         # so we do this disgusting thing here.
         data2 = {}

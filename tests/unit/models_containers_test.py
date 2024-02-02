@@ -1,4 +1,5 @@
 import unittest
+from typing import Any
 
 import pytest
 
@@ -626,7 +627,7 @@ class ContainerCollectionTest(unittest.TestCase):
         assert containers[0].id == FAKE_CONTAINER_ID
 
     def test_list_ignore_removed(self) -> None:
-        def side_effect(*args, **kwargs):
+        def side_effect(*args, **kwargs: Any):
             raise docker.errors.NotFound('Container not found')
 
         client = make_fake_client({

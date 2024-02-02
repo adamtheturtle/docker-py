@@ -1,4 +1,5 @@
 import base64
+from typing import Any
 
 import requests
 
@@ -9,10 +10,10 @@ from .. import utils
 class SecretApiMixin:
     _version: str
 
-    def _get(self, url: str, **kwargs) -> requests.Response:
+    def _get(self, url: str, **kwargs: Any) -> requests.Response:
         raise NotImplementedError
 
-    def _url(self, pathfmt, *args, **kwargs) -> str:
+    def _url(self, pathfmt, *args, **kwargs: Any) -> str:
         raise NotImplementedError
 
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
@@ -21,10 +22,10 @@ class SecretApiMixin:
     def _raise_for_status(self, response) -> None:
         raise NotImplementedError
 
-    def _delete(self, url: str, **kwargs) -> requests.Response:
+    def _delete(self, url: str, **kwargs: Any) -> requests.Response:
         raise NotImplementedError
 
-    def _post_json(self, url, data, **kwargs) -> requests.Response:
+    def _post_json(self, url, data, **kwargs: Any) -> requests.Response:
         raise NotImplementedError
 
     @utils.minimum_version('1.25')

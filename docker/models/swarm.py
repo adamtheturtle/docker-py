@@ -1,3 +1,5 @@
+from typing import Any
+
 from docker.api import APIClient
 from docker.errors import APIError
 from .resource import Model
@@ -10,7 +12,7 @@ class Swarm(Model):
     """
     id_attribute = 'ID'
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         if self.client:
             try:
@@ -36,7 +38,7 @@ class Swarm(Model):
     def init(self, advertise_addr=None, listen_addr='0.0.0.0:2377',
              force_new_cluster=False, default_addr_pool=None,
              subnet_size=None, data_path_addr=None, data_path_port=None,
-             **kwargs):
+             **kwargs: Any):
         """
         Initialize a new swarm on this Engine.
 
@@ -132,11 +134,11 @@ class Swarm(Model):
         self.reload()
         return node_id
 
-    def join(self, *args, **kwargs):
+    def join(self, *args, **kwargs: Any):
         return self.client.api.join_swarm(*args, **kwargs)
     join.__doc__ = APIClient.join_swarm.__doc__
 
-    def leave(self, *args, **kwargs):
+    def leave(self, *args, **kwargs: Any):
         return self.client.api.leave_swarm(*args, **kwargs)
     leave.__doc__ = APIClient.leave_swarm.__doc__
 
@@ -156,7 +158,7 @@ class Swarm(Model):
     unlock.__doc__ = APIClient.unlock_swarm.__doc__
 
     def update(self, rotate_worker_token=False, rotate_manager_token=False,
-               rotate_manager_unlock_key=False, **kwargs):
+               rotate_manager_unlock_key=False, **kwargs: Any):
         """
         Update the swarm's configuration.
 

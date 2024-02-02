@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..api import APIClient
 from .resource import Model, Collection
 
@@ -29,7 +31,7 @@ class VolumeCollection(Collection):
     """Volumes on the Docker server."""
     model = Volume
 
-    def create(self, name=None, **kwargs):
+    def create(self, name=None, **kwargs: Any):
         """
         Create a volume.
 
@@ -75,7 +77,7 @@ class VolumeCollection(Collection):
         """
         return self.prepare_model(self.client.api.inspect_volume(volume_id))
 
-    def list(self, **kwargs) -> list[Volume]:
+    def list(self, **kwargs: Any) -> list[Volume]:
         """
         List volumes. Similar to the ``docker volume ls`` command.
 

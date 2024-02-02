@@ -1,3 +1,5 @@
+from typing import Any
+
 import docker
 from docker.types import IPAMConfig, IPAMPool
 import pytest
@@ -11,7 +13,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         self.client.leave_swarm(force=True)
         super().tearDown()
 
-    def create_network(self, *args, **kwargs):
+    def create_network(self, *args, **kwargs: Any):
         net_name = random_name()
         net_id = self.client.create_network(net_name, *args, **kwargs)['Id']
         self.tmp_networks.append(net_id)
