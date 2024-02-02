@@ -529,8 +529,8 @@ class Container(Model):
 class ContainerCollection(Collection):
     model = Container
 
-    def run(self, image, command=None, stdout=True, stderr=False,
-            remove=False, **kwargs: Any):
+    def run(self, image: str, command: str | list[str] | None = None, stdout: bool = True, stderr: bool = False,
+            remove: bool = False, **kwargs: Any) -> bytes | Container:
         """
         Run a container. By default, it will wait for the container to finish
         and return its logs, similar to ``docker run``.
