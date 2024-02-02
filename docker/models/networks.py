@@ -61,7 +61,7 @@ class Network(Model):
             container, self.id, *args, **kwargs
         )
 
-    def disconnect(self, container: str, *args, **kwargs: Any) -> None:
+    def disconnect(self, container: str | Container, *args, **kwargs: Any) -> None:
         """
         Disconnect a container from this network.
 

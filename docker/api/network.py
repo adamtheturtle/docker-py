@@ -281,8 +281,8 @@ class NetworkApiMixin:
         self._raise_for_status(res)
 
     @check_resource('container')
-    def disconnect_container_from_network(self, container, net_id,
-                                          force=False) -> None:
+    def disconnect_container_from_network(self, container: str, net_id: str,
+                                          force: bool = False) -> None:
         """
         Disconnect a container from a network.
 
