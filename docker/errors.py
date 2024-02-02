@@ -1,3 +1,5 @@
+from typing import Any
+
 import requests
 
 _image_not_found_explanation_fragments = frozenset(
@@ -156,7 +158,7 @@ class StreamParseError(RuntimeError):
 
 
 class BuildError(DockerException):
-    def __init__(self, reason: str, build_log: dict[str, dict[str, str]]) -> None:
+    def __init__(self, reason: str, build_log: dict[Any, Any]) -> None:
         super().__init__(reason)
         self.msg = reason
         self.build_log = build_log
