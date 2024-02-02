@@ -214,7 +214,7 @@ class NetworkApiMixin:
         self._raise_for_status(res)
 
     @check_resource('net_id')
-    def inspect_network(self, net_id, verbose=None, scope=None):
+    def inspect_network(self, net_id: str, verbose: bool | None = None, scope: str | None = None):
         """
         Get detailed information about a network.
 
