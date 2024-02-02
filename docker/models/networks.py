@@ -99,7 +99,7 @@ class NetworkCollection(Collection):
     """
     model = Network
 
-    def create(self, name, *args, **kwargs: Any) -> Network:
+    def create(self, name: str, *args: Any, **kwargs: Any) -> Network:
         """
         Create a network. Similar to the ``docker network create``.
 
