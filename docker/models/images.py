@@ -219,7 +219,7 @@ class RegistryData(Model):
 class ImageCollection(Collection):
     model = Image
 
-    def build(self, **kwargs: Any) -> tuple[Image, Iterator[dict]]:
+    def build(self, **kwargs: Any) -> tuple[Image, Iterator[dict[str, str]]]:
         """
         Build an image and return it. Similar to the ``docker build``
         command. Either ``path`` or ``fileobj`` must be set.
