@@ -12,10 +12,10 @@ class Config(Model):
         return f"<{self.__class__.__name__}: '{self.name}'>"
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.attrs['Spec']['Name']
 
-    def remove(self):
+    def remove(self) -> bool:
         """
         Remove this config.
 

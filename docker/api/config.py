@@ -78,7 +78,7 @@ class ConfigApiMixin:
 
     @utils.minimum_version('1.30')
     @utils.check_resource('id')
-    def remove_config(self, id) -> bool:
+    def remove_config(self, id: str) -> bool:
         """
             Remove a config
 
