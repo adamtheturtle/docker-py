@@ -307,6 +307,7 @@ class APIClient(
         url = self._url("/containers/{0}/attach/ws", container)
         req = requests.Request("POST", url, params=self._attach_params(params))
         full_url = req.prepare().url
+        assert full_url is not None
         full_url = full_url.replace("http://", "ws://", 1)
         full_url = full_url.replace("https://", "wss://", 1)
         return self._create_websocket_connection(full_url)

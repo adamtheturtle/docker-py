@@ -13,7 +13,7 @@ class Config(Model):
 
     @property
     def name(self) -> str:
-        return self.attrs['Spec']['Name']
+        return str(self.attrs['Spec']['Name'])
 
     def remove(self) -> bool:
         """

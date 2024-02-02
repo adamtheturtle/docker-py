@@ -154,7 +154,7 @@ class RegistryData(Model):
         """
         The ID of the object.
         """
-        return self.attrs['Descriptor']['digest']
+        return str(self.attrs['Descriptor']['digest'])
 
     @property
     def short_id(self) -> str:

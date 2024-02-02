@@ -43,7 +43,7 @@ def read(socket, n=4096) -> bytes:
         if hasattr(socket, 'recv'):
             return socket.recv(n)
         if isinstance(socket, pysocket.SocketIO):
-            return socket.read(n)
+            return socket.read(n) or b""
         return os.read(socket.fileno(), n)
     except OSError as e:
         if e.errno not in recoverable_errors:
