@@ -202,7 +202,7 @@ class NetworkApiMixin:
         return self._result(self._post(url, params=params), True)
 
     @check_resource('net_id')
-    def remove_network(self, net_id) -> None:
+    def remove_network(self, net_id: str) -> None:
         """
         Remove a network. Similar to the ``docker network rm`` command.
 

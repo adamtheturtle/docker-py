@@ -82,7 +82,7 @@ class Network(Model):
             container, self.id, *args, **kwargs
         )
 
-    def remove(self):
+    def remove(self) -> None:
         """
         Remove this network.
 
