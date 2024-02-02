@@ -845,7 +845,7 @@ class ContainerApiMixin:
     @utils.check_resource('container')
     def logs(self, container, stdout=True, stderr=True, stream=False,
              timestamps=False, tail='all', since=None, follow=None,
-             until=None):
+             until=None) -> str | CancellableStream:
         """
         Get logs from a container. Similar to the ``docker logs`` command.
 

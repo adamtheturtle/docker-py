@@ -10,7 +10,7 @@ from ..errors import (
     ContainerError, DockerException, ImageNotFound,
     NotFound, create_unexpected_kwargs_error
 )
-from ..types import HostConfig, NetworkingConfig
+from ..types import CancellableStream, HostConfig, NetworkingConfig
 from ..utils import version_gte
 
 
@@ -287,7 +287,7 @@ class Container(Model):
 
         return self.client.api.kill(self.id, signal=signal)
 
-    def logs(self, **kwargs):
+    def logs(self, **kwargs) -> str | CancellableStream:
         """
         Get logs from this container. Similar to the ``docker logs`` command.
 
