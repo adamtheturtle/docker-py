@@ -2,7 +2,7 @@ import itertools
 import re
 import warnings
 import typing
-from typing import Any
+from typing import Any, Iterator
 
 from ..api import APIClient
 from ..constants import DEFAULT_DATA_CHUNK_SIZE
@@ -219,7 +219,7 @@ class RegistryData(Model):
 class ImageCollection(Collection):
     model = Image
 
-    def build(self, **kwargs: Any):
+    def build(self, **kwargs: Any) -> tuple[Image, Iterator[dict]]:
         """
         Build an image and return it. Similar to the ``docker build``
         command. Either ``path`` or ``fileobj`` must be set.
