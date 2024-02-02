@@ -16,7 +16,7 @@ class Model:
         self.collection = collection
 
         #: The raw representation of this object from the API
-        self.attrs = attrs
+        self.attrs: dict[Any, Any] = attrs
         if self.attrs is None:
             self.attrs = {}
 
