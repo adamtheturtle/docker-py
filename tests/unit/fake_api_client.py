@@ -11,7 +11,7 @@ class CopyReturnMagicMock(mock.MagicMock):
     """
     A MagicMock which deep copies every return value.
     """
-    def _mock_call(self, *args, **kwargs: Any):
+    def _mock_call(self, *args: Any, **kwargs: Any):
         ret = super()._mock_call(*args, **kwargs)
         if isinstance(ret, (dict, list)):
             ret = copy.deepcopy(ret)

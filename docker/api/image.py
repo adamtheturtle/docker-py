@@ -19,7 +19,7 @@ class ImageApiMixin:
     def _post(self, url: str, **kwargs: Any) -> requests.Response:
         raise NotImplementedError
 
-    def _url(self, pathfmt, *args, **kwargs: Any) -> str:
+    def _url(self, pathfmt, *args: Any, **kwargs: Any) -> str:
         raise NotImplementedError
 
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:

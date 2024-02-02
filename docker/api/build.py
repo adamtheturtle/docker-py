@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 class BuildApiMixin:
     _version: str
 
-    def _url(self, pathfmt, *args, **kwargs: Any) -> str:
+    def _url(self, pathfmt, *args: Any, **kwargs: Any) -> str:
         raise NotImplementedError
 
     def _post(self, url: str, **kwargs: Any) -> requests.Response:

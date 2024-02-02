@@ -1386,7 +1386,7 @@ class ServiceTest(BaseAPIIntegrationTest):
         assert len(task_template['Networks']) > 0
         assert task_template['Networks'][0]['Target'] == net2['Id']
 
-    def _update_service(self, svc_id, *args, **kwargs: Any) -> None:
+    def _update_service(self, svc_id, *args: Any, **kwargs: Any) -> None:
         # service update tests seem to be a bit flaky
         # give them a chance to retry the update with a new version index
         try:

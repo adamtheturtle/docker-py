@@ -246,7 +246,7 @@ class APIClient(
     def _delete(self, url: str, **kwargs: Any) -> requests.Response:
         return self.delete(url, **self._set_request_timeout(kwargs))
 
-    def _url(self, pathfmt, *args, **kwargs: Any) -> str:
+    def _url(self, pathfmt, *args: Any, **kwargs: Any) -> str:
         for arg in args:
             if not isinstance(arg, str):
                 raise ValueError(

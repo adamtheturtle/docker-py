@@ -13,7 +13,7 @@ from docker.types.services import convert_service_ports
 from unittest import mock
 
 
-def create_host_config(*args, **kwargs: Any):
+def create_host_config(*args: Any, **kwargs: Any):
     return HostConfig(*args, **kwargs)
 
 

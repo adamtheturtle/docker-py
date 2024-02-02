@@ -13,7 +13,7 @@ class TestNetworks(BaseAPIIntegrationTest):
         self.client.leave_swarm(force=True)
         super().tearDown()
 
-    def create_network(self, *args, **kwargs: Any):
+    def create_network(self, *args: Any, **kwargs: Any):
         net_name = random_name()
         net_id = self.client.create_network(net_name, *args, **kwargs)['Id']
         self.tmp_networks.append(net_id)

@@ -28,7 +28,7 @@ class Network(Model):
             (self.attrs.get('Containers') or {}).keys()
         ]
 
-    def connect(self, container: str, *args, **kwargs: Any) -> None:
+    def connect(self, container: str, *args: Any, **kwargs: Any) -> None:
         """
         Connect a container to this network.
 
@@ -61,7 +61,7 @@ class Network(Model):
             container, self.id, *args, **kwargs
         )
 
-    def disconnect(self, container: str | Container, *args, **kwargs: Any) -> None:
+    def disconnect(self, container: str | Container, *args: Any, **kwargs: Any) -> None:
         """
         Disconnect a container from this network.
 
@@ -158,7 +158,7 @@ class NetworkCollection(Collection):
         resp = self.client.api.create_network(name, *args, **kwargs)
         return self.get(resp['Id'])
 
-    def get(self, network_id, *args, **kwargs: Any) -> Network:
+    def get(self, network_id, *args: Any, **kwargs: Any) -> Network:
         """
         Get a network by its ID.
 
@@ -184,7 +184,7 @@ class NetworkCollection(Collection):
             self.client.api.inspect_network(network_id, *args, **kwargs)
         )
 
-    def list(self, *args, **kwargs: Any) -> list[Network]:
+    def list(self, *args: Any, **kwargs: Any) -> list[Network]:
         """
         List networks. Similar to the ``docker network ls`` command.
 

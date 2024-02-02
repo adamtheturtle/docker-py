@@ -25,14 +25,14 @@ URLComponents = collections.namedtuple(
 )
 
 
-def create_ipam_pool(*args, **kwargs: Any) -> None:
+def create_ipam_pool(*args: Any, **kwargs: Any) -> None:
     raise errors.DeprecatedMethod(
         'utils.create_ipam_pool has been removed. Please use a '
         'docker.types.IPAMPool object instead.'
     )
 
 
-def create_ipam_config(*args, **kwargs: Any) -> None:
+def create_ipam_config(*args: Any, **kwargs: Any) -> None:
     raise errors.DeprecatedMethod(
         'utils.create_ipam_config has been removed. Please use a '
         'docker.types.IPAMConfig object instead.'
@@ -514,7 +514,7 @@ def format_extra_hosts(extra_hosts, task=False):
     ]
 
 
-def create_host_config(self, *args, **kwargs: Any) -> None:
+def create_host_config(self, *args: Any, **kwargs: Any) -> None:
     raise errors.DeprecatedMethod(
         'utils.create_host_config has been removed. Please use a '
         'docker.types.HostConfig object instead.'

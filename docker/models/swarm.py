@@ -12,7 +12,7 @@ class Swarm(Model):
     """
     id_attribute = 'ID'
 
-    def __init__(self, *args, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         if self.client:
             try:
@@ -134,11 +134,11 @@ class Swarm(Model):
         self.reload()
         return node_id
 
-    def join(self, *args, **kwargs: Any):
+    def join(self, *args: Any, **kwargs: Any):
         return self.client.api.join_swarm(*args, **kwargs)
     join.__doc__ = APIClient.join_swarm.__doc__
 
-    def leave(self, *args, **kwargs: Any):
+    def leave(self, *args: Any, **kwargs: Any):
         return self.client.api.leave_swarm(*args, **kwargs)
     leave.__doc__ = APIClient.leave_swarm.__doc__
 

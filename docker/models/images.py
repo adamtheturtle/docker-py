@@ -145,7 +145,7 @@ class RegistryData(Model):
     """
     Image metadata stored on the registry, including available platforms.
     """
-    def __init__(self, image_name, *args, **kwargs: Any) -> None:
+    def __init__(self, image_name, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.image_name = image_name
 
@@ -480,11 +480,11 @@ class ImageCollection(Collection):
         return self.client.api.push(repository, tag=tag, **kwargs)
     push.__doc__ = APIClient.push.__doc__
 
-    def remove(self, *args, **kwargs: Any) -> None:
+    def remove(self, *args: Any, **kwargs: Any) -> None:
         self.client.api.remove_image(*args, **kwargs)
     remove.__doc__ = APIClient.remove_image.__doc__
 
-    def search(self, *args, **kwargs: Any):
+    def search(self, *args: Any, **kwargs: Any):
         return self.client.api.search(*args, **kwargs)
     search.__doc__ = APIClient.search.__doc__
 
@@ -492,7 +492,7 @@ class ImageCollection(Collection):
         return self.client.api.prune_images(filters=filters)
     prune.__doc__ = APIClient.prune_images.__doc__
 
-    def prune_builds(self, *args, **kwargs: Any):
+    def prune_builds(self, *args: Any, **kwargs: Any):
         return self.client.api.prune_builds(*args, **kwargs)
     prune_builds.__doc__ = APIClient.prune_builds.__doc__
 

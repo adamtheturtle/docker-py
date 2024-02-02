@@ -44,7 +44,7 @@ class DockerClient:
         max_pool_size (int): The maximum number of connections
             to save in the pool.
     """
-    def __init__(self, *args, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.api = APIClient(*args, **kwargs)
 
     @classmethod
@@ -185,7 +185,7 @@ class DockerClient:
         return VolumeCollection(client=self)
 
     # Top-level methods
-    def events(self, *args, **kwargs: Any) -> CancellableStream:
+    def events(self, *args: Any, **kwargs: Any) -> CancellableStream:
         return self.api.events(*args, **kwargs)
     events.__doc__ = APIClient.events.__doc__
 
@@ -193,19 +193,19 @@ class DockerClient:
         return self.api.df()
     df.__doc__ = APIClient.df.__doc__
 
-    def info(self, *args, **kwargs: Any):
+    def info(self, *args: Any, **kwargs: Any):
         return self.api.info(*args, **kwargs)
     info.__doc__ = APIClient.info.__doc__
 
-    def login(self, *args, **kwargs: Any):
+    def login(self, *args: Any, **kwargs: Any):
         return self.api.login(*args, **kwargs)
     login.__doc__ = APIClient.login.__doc__
 
-    def ping(self, *args, **kwargs: Any) -> bool:
+    def ping(self, *args: Any, **kwargs: Any) -> bool:
         return self.api.ping(*args, **kwargs)
     ping.__doc__ = APIClient.ping.__doc__
 
-    def version(self, *args, **kwargs: Any):
+    def version(self, *args: Any, **kwargs: Any):
         return self.api.version(*args, **kwargs)
     version.__doc__ = APIClient.version.__doc__
 

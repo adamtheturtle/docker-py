@@ -23,7 +23,7 @@ class ContainerApiMixin:
     def _post(self, url: str, **kwargs: Any) -> requests.Response:
         raise NotImplementedError
 
-    def _url(self, pathfmt, *args, **kwargs: Any) -> str:
+    def _url(self, pathfmt, *args: Any, **kwargs: Any) -> str:
         raise NotImplementedError
 
     def _result(self, response, json=False, binary: bool = False) -> dict | str | bytes:
@@ -465,7 +465,7 @@ class ContainerApiMixin:
         )
         return self.create_container_from_config(config, name, platform)
 
-    def create_container_config(self, *args, **kwargs: Any) -> ContainerConfig:
+    def create_container_config(self, *args: Any, **kwargs: Any) -> ContainerConfig:
         return ContainerConfig(self._version, *args, **kwargs)
 
     def create_container_from_config(self, config, name=None, platform=None):
@@ -482,7 +482,7 @@ class ContainerApiMixin:
         res = self._post_json(u, data=config, params=params)
         return self._result(res, True)
 
-    def create_host_config(self, *args, **kwargs: Any) -> HostConfig:
+    def create_host_config(self, *args: Any, **kwargs: Any) -> HostConfig:
         """
         Create a dictionary for the ``host_config`` argument to
         :py:meth:`create_container`.
@@ -642,7 +642,7 @@ class ContainerApiMixin:
         kwargs['version'] = self._version
         return HostConfig(*args, **kwargs)
 
-    def create_networking_config(self, *args, **kwargs: Any):
+    def create_networking_config(self, *args: Any, **kwargs: Any):
         """
         Create a networking config dictionary to be used as the
         ``networking_config`` parameter in :py:meth:`create_container`.
@@ -668,7 +668,7 @@ class ContainerApiMixin:
         """
         return NetworkingConfig(*args, **kwargs)
 
-    def create_endpoint_config(self, *args, **kwargs: Any):
+    def create_endpoint_config(self, *args: Any, **kwargs: Any):
         """
         Create an endpoint config dictionary to be used with
         :py:meth:`create_networking_config`.
@@ -1124,7 +1124,7 @@ class ContainerApiMixin:
         self._raise_for_status(res)
 
     @utils.check_resource('container')
-    def start(self, container, *args, **kwargs: Any) -> None:
+    def start(self, container, *args: Any, **kwargs: Any) -> None:
         """
         Start a container. Similar to the ``docker start`` command, but
         doesn't support attach options.

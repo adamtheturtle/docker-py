@@ -18,7 +18,7 @@ MAXIMUM_RETRY_COUNT = 10
 
 def check_closed(f):
     @functools.wraps(f)
-    def wrapped(self, *args, **kwargs: Any):
+    def wrapped(self, *args: Any, **kwargs: Any):
         if self._closed:
             raise RuntimeError(
                 'Can not reuse socket after connection was closed.'

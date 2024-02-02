@@ -773,7 +773,7 @@ class CredstoreTest(unittest.TestCase):
 
 
 class InMemoryStore(credentials.Store):
-    def __init__(self, *args, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.__store = {}
 
     def get(self, server):

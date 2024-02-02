@@ -95,7 +95,7 @@ class BaseAPIIntegrationTest(BaseIntegrationTest):
             '127.0.0.1', listen_addr=helpers.swarm_listen_addr(), **kwargs
         )
 
-    def run_container(self, *args, **kwargs: Any):
+    def run_container(self, *args: Any, **kwargs: Any):
         container = self.client.create_container(*args, **kwargs)
         self.tmp_containers.append(container)
         self.client.start(container)
