@@ -77,10 +77,10 @@ class Collection:
     def list(self) -> list[Any]:
         raise NotImplementedError
 
-    def get(self, key) -> Any:
+    def get(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError
 
-    def create(self, attrs=None) -> Any:
+    def create(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError
 
     def prepare_model(self, attrs) -> Any:

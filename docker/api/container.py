@@ -1273,11 +1273,11 @@ class ContainerApiMixin:
     @utils.minimum_version('1.22')
     @utils.check_resource('container')
     def update_container(
-        self, container, blkio_weight=None, cpu_period=None, cpu_quota=None,
-        cpu_shares=None, cpuset_cpus=None, cpuset_mems=None, mem_limit=None,
-        mem_reservation=None, memswap_limit=None, kernel_memory=None,
-        restart_policy=None
-    ):
+        self, container: str, blkio_weight: int | None = None, cpu_period: int | None = None, cpu_quota: int | None = None,
+        cpu_shares: int | None = None, cpuset_cpus: str | None = None, cpuset_mems: str | None = None, mem_limit: float | str | None = None,
+        mem_reservation: float | str | None = None, memswap_limit: int | str | None = None, kernel_memory: int | str | None = None,
+        restart_policy: dict | None = None
+    ) -> dict:
         """
         Update resource configs of one or more containers.
 
